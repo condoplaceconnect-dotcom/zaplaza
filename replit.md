@@ -330,15 +330,27 @@ Campos principais:
   - Campos herdados do responsável (bloco, apartamento, condoId)
   - Link no menu de perfil
   - Testes E2E completos e aprovados
+- [x] **Sistema de Marketplace completo:**
+  - Schemas de validação Zod rigorosos (insertMarketplaceItemSchema, updateMarketplaceItemSchema)
+  - Rotas backend: GET/POST/PATCH/DELETE /api/marketplace
+  - Validação server-side completa com safeParse e whitelisting explícito
+  - Página frontend /marketplace com Form + zodResolver
+  - Validação client-side espelha backend (title, type, price validation)
+  - CRUD completo: criar, listar, editar, remover itens
+  - Filtros por tipo (venda/doação/troca) e categoria
+  - Isolamento por condomínio (condoId)
+  - Verificação de ownership (apenas dono pode editar/remover)
+  - Campos protegidos (condoId, userId, views) não podem ser sobrescritos
+  - Testes E2E completos e aprovados
 
 ### ⏳ EM DESENVOLVIMENTO
-- [ ] Página Marketplace
 - [ ] Página Achados & Perdidos
 - [ ] Sistema de Entregas Internas
 - [ ] Sistema de Denúncias
 - [ ] Chat em tempo real
 - [ ] Atualização de design (verde e branco)
 - [ ] Sistema de aprovação de compras para menores (integrado com Conta Família)
+- [ ] Upload de imagens para marketplace
 
 ### 📋 PENDENTE
 - [ ] Notificações push
