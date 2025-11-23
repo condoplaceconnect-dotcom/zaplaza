@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { User, LogOut, Building2, Edit, Save, X, ArrowLeft } from "lucide-react";
+import { User, LogOut, Building2, Edit, Save, X, ArrowLeft, Users } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import {
   AlertDialog,
@@ -331,6 +331,15 @@ export default function ProfilePage() {
           <Card className="p-6">
             <h2 className="text-xl font-semibold mb-4">Configurações da Conta</h2>
             <div className="space-y-3">
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => setLocation("/family")}
+                data-testid="button-family-account"
+              >
+                <Users className="w-4 h-4 mr-2" />
+                Conta Família
+              </Button>
               <Button
                 variant="destructive"
                 className="w-full justify-start"
