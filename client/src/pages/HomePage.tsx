@@ -9,6 +9,7 @@ import CartButton from "@/components/CartButton";
 import CartDrawer from "@/components/CartDrawer";
 import ThemeToggle from "@/components/ThemeToggle";
 import BottomNav from "@/components/BottomNav";
+import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 
 import heroBannerImg from '@assets/generated_images/marketplace_hero_banner.png';
@@ -133,8 +134,19 @@ export default function HomePage() {
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-8">
         <HeroBanner banners={banners} />
 
+        <div className="flex gap-4 justify-center">
+          <Button
+            size="lg"
+            onClick={() => setLocation('/services')}
+            data-testid="button-browse-services"
+            className="flex-1 max-w-sm"
+          >
+            Buscar Serviços & Profissionais
+          </Button>
+        </div>
+
         <div>
-          <h2 className="text-2xl font-bold mb-4">Categorias</h2>
+          <h2 className="text-2xl font-bold mb-4">Categorias de Produtos</h2>
           <CategoryChips
             categories={categories}
             selectedCategory={selectedCategory}
