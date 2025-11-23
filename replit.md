@@ -306,7 +306,7 @@ Campos principais:
 ## ✅ Status de Implementação
 
 ### ✅ CONCLUÍDO
-- [x] Schema do banco de dados completo
+- [x] Schema do banco de dados completo (PostgreSQL + Drizzle ORM)
 - [x] Tabelas: users, condominiums, stores, products, services
 - [x] Tabelas: delivery_persons, orders, appointments
 - [x] **NOVOS:** marketplace_items, lost_and_found, reports
@@ -314,9 +314,15 @@ Campos principais:
 - [x] Sistema multi-condomínios
 - [x] Autenticação JWT
 - [x] Registro e login básico
+- [x] **Migração completa para PostgreSQL** (dados persistem entre restarts)
+- [x] **Verificação de idade robusta:**
+  - Validação Zod (data válida, não futura, idade 0-120 anos)
+  - Cálculo correto de idade (mês e dia)
+  - Menores (<18) bloqueados no registro E login
+  - Funções helper centralizadas (isUserBlocked, getBlockedMinorMessage)
+  - Proteção em todas as rotas de autenticação
 
 ### ⏳ EM DESENVOLVIMENTO
-- [ ] Verificação de idade (bloquear <18)
 - [ ] Sistema de Conta Família
 - [ ] Página Marketplace
 - [ ] Página Achados & Perdidos
