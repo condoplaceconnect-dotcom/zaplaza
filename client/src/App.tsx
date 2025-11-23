@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -43,32 +43,8 @@ function PageLoader() {
 function Router() {
   const isLoggedIn = !!localStorage.getItem("token");
   const selectedCondoId = localStorage.getItem("selectedCondoId");
-  const [condoStatus, setCondoStatus] = useState<'loading' | 'approved' | 'pending' | 'none'>('loading');
 
-  // Verificar status do condomínio se o usuário está logado e tem um condomínio selecionado
-  useEffect(() => {
-    if (isLoggedIn && selectedCondoId) {
-      const checkCondoStatus = async () => {
-        try {
-          const response = await fetch(`/api/condominiums/${selectedCondoId}`);
-          if (response.ok) {
-            const condo = await response.json();
-            setCondoStatus(condo.status === 'approved' ? 'approved' : 'pending');
-          } else {
-            setCondoStatus('none');
-          }
-        } catch (error) {
-          console.error("Erro ao verificar status do condomínio:", error);
-          setCondoStatus('none');
-        }
-      };
-      checkCondoStatus();
-    } else {
-      setCondoStatus('none');
-    }
-  }, [isLoggedIn, selectedCondoId]);
-
-  // Usuário não logado → Landing Page (não pode acessar nada)
+  // ❌ NÃO está logado → TELA INICIAL (LandingPage)
   if (!isLoggedIn) {
     return (
       <Suspense fallback={<PageLoader />}>
@@ -84,8 +60,8 @@ function Router() {
     );
   }
 
-  // Usuário logado sem condomínio ou condomínio status é 'none' → CondoSelectorPage
-  if (!selectedCondoId || condoStatus === 'none') {
+  // ✅ Está logado MAS NÃO tem condomínio → SELECIONADOR DE CONDOMÍNIO
+  if (!selectedCondoId) {
     return (
       <Suspense fallback={<PageLoader />}>
         <Switch>
@@ -101,23 +77,7 @@ function Router() {
     );
   }
 
-  // Condomínio pendente → Tela de Aguardando Aprovação
-  if (condoStatus === 'pending') {
-    return (
-      <Suspense fallback={<PageLoader />}>
-        <Switch>
-          <Route path="/" component={PendingApprovalPage} />
-          <Route path="/settings" component={SettingsPage} />
-          <Route path="/profile" component={ProfilePage} />
-          <Route path="/admin/login" component={AdminLoginPage} />
-          <Route path="/admin/dashboard" component={AdminDashboardPage} />
-          <Route component={NotFound} />
-        </Switch>
-      </Suspense>
-    );
-  }
-
-  // Condomínio aprovado → Acesso completo ao app
+  // ✅ Está logado E tem condomínio → ACESSO COMPLETO
   return (
     <Suspense fallback={<PageLoader />}>
       <Switch>
