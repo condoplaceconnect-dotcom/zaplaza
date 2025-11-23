@@ -1,41 +1,57 @@
+import { lazy, Suspense } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
-import HomePage from "@/pages/HomePage";
-import OrdersPage from "@/pages/OrdersPage";
-import VendorDashboard from "@/pages/VendorDashboard";
-import ServicesPage from "@/pages/ServicesPage";
-import AppointmentsPage from "@/pages/AppointmentsPage";
-import ProfilePage from "@/pages/ProfilePage";
-import VendorProfilePage from "@/pages/VendorProfilePage";
-import DeliveryProfilePage from "@/pages/DeliveryProfilePage";
-import SettingsPage from "@/pages/SettingsPage";
-import CondoRegistrationPage from "@/pages/CondoRegistrationPage";
-import UserRegistrationPage from "@/pages/UserRegistrationPage";
-import CheckoutPage from "@/pages/CheckoutPage";
-import AdminPaymentsPage from "@/pages/AdminPaymentsPage";
+
+// ✅ Code Splitting com lazy loading
+const HomePage = lazy(() => import("@/pages/HomePage"));
+const OrdersPage = lazy(() => import("@/pages/OrdersPage"));
+const VendorDashboard = lazy(() => import("@/pages/VendorDashboard"));
+const ServicesPage = lazy(() => import("@/pages/ServicesPage"));
+const AppointmentsPage = lazy(() => import("@/pages/AppointmentsPage"));
+const ProfilePage = lazy(() => import("@/pages/ProfilePage"));
+const VendorProfilePage = lazy(() => import("@/pages/VendorProfilePage"));
+const DeliveryProfilePage = lazy(() => import("@/pages/DeliveryProfilePage"));
+const SettingsPage = lazy(() => import("@/pages/SettingsPage"));
+const CondoRegistrationPage = lazy(() => import("@/pages/CondoRegistrationPage"));
+const UserRegistrationPage = lazy(() => import("@/pages/UserRegistrationPage"));
+const CheckoutPage = lazy(() => import("@/pages/CheckoutPage"));
+const AdminPaymentsPage = lazy(() => import("@/pages/AdminPaymentsPage"));
+
+// Componente de carregamento
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-pulse">
+        <div className="h-12 w-12 bg-primary rounded-full"></div>
+      </div>
+    </div>
+  );
+}
 
 function Router() {
   return (
-    <Switch>
-      <Route path="/" component={HomePage} />
-      <Route path="/orders" component={OrdersPage} />
-      <Route path="/services" component={ServicesPage} />
-      <Route path="/appointments" component={AppointmentsPage} />
-      <Route path="/vendor" component={VendorDashboard} />
-      <Route path="/profile" component={ProfilePage} />
-      <Route path="/vendor/profile" component={VendorProfilePage} />
-      <Route path="/delivery/profile" component={DeliveryProfilePage} />
-      <Route path="/settings" component={SettingsPage} />
-      <Route path="/register-condo" component={CondoRegistrationPage} />
-      <Route path="/register" component={UserRegistrationPage} />
-      <Route path="/checkout" component={CheckoutPage} />
-      <Route path="/admin/payments" component={AdminPaymentsPage} />
-      <Route component={NotFound} />
-    </Switch>
+    <Suspense fallback={<PageLoader />}>
+      <Switch>
+        <Route path="/" component={HomePage} />
+        <Route path="/orders" component={OrdersPage} />
+        <Route path="/services" component={ServicesPage} />
+        <Route path="/appointments" component={AppointmentsPage} />
+        <Route path="/vendor" component={VendorDashboard} />
+        <Route path="/profile" component={ProfilePage} />
+        <Route path="/vendor/profile" component={VendorProfilePage} />
+        <Route path="/delivery/profile" component={DeliveryProfilePage} />
+        <Route path="/settings" component={SettingsPage} />
+        <Route path="/register-condo" component={CondoRegistrationPage} />
+        <Route path="/register" component={UserRegistrationPage} />
+        <Route path="/checkout" component={CheckoutPage} />
+        <Route path="/admin/payments" component={AdminPaymentsPage} />
+        <Route component={NotFound} />
+      </Switch>
+    </Suspense>
   );
 }
 

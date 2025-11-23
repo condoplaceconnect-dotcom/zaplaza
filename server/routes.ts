@@ -1,6 +1,8 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { authService, authMiddleware, adminMiddleware } from "./auth";
+import { insertUserSchema } from "@shared/schema";
 
 interface PaymentIntentRequest {
   amount: number;
@@ -15,9 +17,72 @@ interface PixQrRequest {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // ✅ ROTA: Criar Payment Intent (Stripe)
-  // Isso será integrado com Stripe no futuro
-  app.post("/api/payments/create-payment-intent", async (req: Request, res: Response) => {
+  // ✅ ROTA: Login
+  app.post("/api/auth/login", async (req: Request, res: Response) => {
+    try {
+      const { username, password } = req.body;
+
+      if (!username || !password) {
+        return res.status(400).json({ error: "Username e password são obrigatórios" });
+      }
+
+      const user = await storage.getUserByUsername(username);
+      if (!user) {
+        return res.status(401).json({ error: "Credenciais inválidas" });
+      }
+
+      const isPasswordValid = await authService.verifyPassword(password, user.password);
+      if (!isPasswordValid) {
+        return res.status(401).json({ error: "Credenciais inválidas" });
+      }
+
+      const token = authService.generateToken(user, 'user');
+      res.json({ token, user: { id: user.id, username: user.username } });
+    } catch (error) {
+      console.error("[LOGIN ERROR]", error);
+      res.status(500).json({ error: "Erro ao fazer login" });
+    }
+  });
+
+  // ✅ ROTA: Register
+  app.post("/api/auth/register", async (req: Request, res: Response) => {
+    try {
+      const { username, password } = req.body;
+
+      // Validar com Zod
+      const validation = insertUserSchema.safeParse({ username, password });
+      if (!validation.success) {
+        return res.status(400).json({ error: validation.error.errors[0].message });
+      }
+
+      // Verificar se user já existe
+      const existingUser = await storage.getUserByUsername(username);
+      if (existingUser) {
+        return res.status(400).json({ error: "Username já está em uso" });
+      }
+
+      // Hash password
+      const hashedPassword = await authService.hashPassword(password);
+      const newUser = await storage.createUser({
+        username,
+        password: hashedPassword
+      });
+
+      const token = authService.generateToken(newUser, 'user');
+      res.status(201).json({ token, user: { id: newUser.id, username: newUser.username } });
+    } catch (error) {
+      console.error("[REGISTER ERROR]", error);
+      res.status(500).json({ error: "Erro ao registrar" });
+    }
+  });
+
+  // ✅ ROTA: Verificar token (protegida)
+  app.get("/api/auth/me", authMiddleware, (req: Request, res: Response) => {
+    res.json({ user: req.user });
+  });
+
+  // ✅ ROTA: Criar Payment Intent (Stripe) - PROTEGIDA
+  app.post("/api/payments/create-payment-intent", authMiddleware, async (req: Request, res: Response) => {
     try {
       const body: PaymentIntentRequest = req.body;
 
@@ -65,8 +130,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ✅ ROTA: Gerar QR Code Pix
-  app.post("/api/payments/create-pix-qr", async (req: Request, res: Response) => {
+  // ✅ ROTA: Gerar QR Code Pix - PROTEGIDA
+  app.post("/api/payments/create-pix-qr", authMiddleware, async (req: Request, res: Response) => {
     try {
       const body: PixQrRequest = req.body;
 
@@ -132,8 +197,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ✅ ROTA: Upload de Arquivo (com validações seguras)
-  app.post("/api/upload", async (req: Request, res: Response) => {
+  // ✅ ROTA: Upload de Arquivo (com validações seguras) - PROTEGIDA
+  app.post("/api/upload", authMiddleware, async (req: Request, res: Response) => {
     try {
       // IMPORTANTE: Usar middleware como multer com validações:
       // const upload = multer({
