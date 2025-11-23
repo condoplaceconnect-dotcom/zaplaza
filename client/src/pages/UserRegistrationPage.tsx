@@ -26,7 +26,17 @@ const STORE_CATEGORIES = [
   'Brinquedos',
   'Artigos Esportivos',
   'Itens para Casa',
-  'Flores e Plantas'
+  'Flores e Plantas',
+  'Carne e Peixes',
+  'Frutas e Verduras',
+  'Café e Pães',
+  'Lanchonete',
+  'Acesórios',
+  'Calçados',
+  'Cosmética',
+  'Produtos de Higiene',
+  'Decoração',
+  'Móveis'
 ];
 
 const SERVICE_TYPES = [
@@ -41,7 +51,18 @@ const SERVICE_TYPES = [
   'Personal Trainer',
   'Aulas e Consultoria',
   'Reparo de Eletrônicos',
-  'Jardinage'
+  'Jardinagem',
+  'Cabeleireiro',
+  'Manicure e Pedicure',
+  'Massagem',
+  'Pilates',
+  'Yoga',
+  'Manutenção de Computadores',
+  'Consultoria Financeira',
+  'Aulas de Idiomas',
+  'Fotografia',
+  'Tradução',
+  'Contabilidade'
 ];
 
 export default function UserRegistrationPage() {
@@ -76,6 +97,25 @@ export default function UserRegistrationPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validações básicas
+    if (!formData.name || !formData.email || !formData.phone) {
+      toast({
+        title: "Erro",
+        description: "Por favor, preencha todos os campos obrigatórios.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!formData.condo || !formData.block || !formData.apartment) {
+      toast({
+        title: "Erro",
+        description: "Por favor, preencha seu endereço completo (condomínio, bloco e apartamento).",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
       toast({
         title: "Erro",
@@ -85,9 +125,45 @@ export default function UserRegistrationPage() {
       return;
     }
 
+    if (formData.password.length < 8) {
+      toast({
+        title: "Erro",
+        description: "A senha deve ter no mínimo 8 caracteres.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (userType === 'vendor' && !vendorType) {
+      toast({
+        title: "Erro",
+        description: "Por favor, selecione se você é uma Loja ou Prestador de Serviço.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (userType === 'vendor' && vendorType === 'store' && !formData.storeCategory) {
+      toast({
+        title: "Erro",
+        description: "Por favor, selecione a categoria da loja.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (userType === 'vendor' && vendorType === 'service' && !formData.serviceType) {
+      toast({
+        title: "Erro",
+        description: "Por favor, selecione o tipo de serviço.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     toast({
       title: "Cadastro Realizado!",
-      description: `Bem-vindo ao ${userType === 'customer' ? 'CondomínioMarket' : userType === 'vendor' ? 'nosso marketplace de vendedores' : 'nossa plataforma de entregadores'}!`,
+      description: `Bem-vindo ao CondomínioMarket! Sua conta foi criada com sucesso.`,
     });
 
     setLocation('/');
