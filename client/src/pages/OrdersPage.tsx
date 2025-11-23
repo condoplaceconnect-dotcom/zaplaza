@@ -12,40 +12,8 @@ export default function OrdersPage() {
   const [, setLocation] = useLocation();
   const [cartCount] = useState(3);
 
-  const orders = [
-    {
-      id: '1',
-      storeName: 'Doces da Maria',
-      items: [
-        { name: 'Brigadeiro Gourmet', quantity: 6 },
-        { name: 'Brownie', quantity: 2 }
-      ],
-      total: 35.00,
-      status: 'preparing' as const,
-      date: new Date(Date.now() - 30 * 60000)
-    },
-    {
-      id: '2',
-      storeName: 'Salgados da Dona Ana',
-      items: [
-        { name: 'Coxinha', quantity: 4 },
-        { name: 'Empada', quantity: 3 }
-      ],
-      total: 18.50,
-      status: 'delivered' as const,
-      date: new Date(Date.now() - 2 * 60 * 60000)
-    },
-    {
-      id: '3',
-      storeName: 'Lanchonete do Seu José',
-      items: [
-        { name: 'Marmita Fitness', quantity: 1 }
-      ],
-      total: 18.00,
-      status: 'pending' as const,
-      date: new Date(Date.now() - 5 * 60000)
-    }
-  ];
+  const orders: any[] = [];
+  // Os pedidos aparecerão aqui quando você começar a fazer compras
 
   const activeOrders = orders.filter(o => ['pending', 'accepted', 'preparing', 'ready'].includes(o.status));
   const pastOrders = orders.filter(o => ['delivered', 'cancelled'].includes(o.status));

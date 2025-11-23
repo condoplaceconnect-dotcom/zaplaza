@@ -26,40 +26,7 @@ export default function VendorDashboard() {
   const [, setLocation] = useLocation();
   const [storeOpen, setStoreOpen] = useState(true);
   const [orders, setOrders] = useState<VendorOrder[]>([
-    {
-      id: '1',
-      customerName: 'João Silva',
-      unit: '301',
-      items: [
-        { name: 'Brigadeiro Gourmet', quantity: 6, price: 3.50 },
-        { name: 'Brownie', quantity: 2, price: 8.00 }
-      ],
-      total: 37.00,
-      status: 'pending',
-      date: new Date(Date.now() - 5 * 60000)
-    },
-    {
-      id: '2',
-      customerName: 'Maria Santos',
-      unit: '102',
-      items: [
-        { name: 'Cookies Caseiros', quantity: 1, price: 12.00 }
-      ],
-      total: 12.00,
-      status: 'preparing',
-      date: new Date(Date.now() - 20 * 60000)
-    },
-    {
-      id: '3',
-      customerName: 'Carlos Oliveira',
-      unit: '205',
-      items: [
-        { name: 'Brigadeiro Gourmet', quantity: 12, price: 3.50 }
-      ],
-      total: 42.00,
-      status: 'ready',
-      date: new Date(Date.now() - 35 * 60000)
-    }
+    // Os pedidos dos clientes aparecerão aqui quando começarem a fazer compras
   ]);
 
   const pendingOrders = orders.filter(o => o.status === 'pending');

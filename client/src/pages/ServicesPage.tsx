@@ -27,24 +27,10 @@ export default function ServicesPage() {
   const [cartCount] = useState(3);
   const { toast } = useToast();
 
-  const condos = [
-    { id: '1', name: 'Residencial Jardim das Flores' },
-    { id: '2', name: 'Condomínio Vila Verde' },
-    { id: '3', name: 'Edifício Solar do Parque' }
-  ];
-
-  const categories = ['Beleza', 'Reparos', 'Moda', 'Fitness', 'Outros'];
-
-  const services = [
-    { id: '1', name: 'Studio da Ana - Cabeleireira', category: 'Beleza', rating: 4.9, reviewCount: 84, priceRange: 'R$ 50-150' },
-    { id: '2', name: 'Barbearia do João', category: 'Beleza', rating: 4.8, reviewCount: 127, priceRange: 'R$ 30-80' },
-    { id: '3', name: 'Manicure da Paula', category: 'Beleza', rating: 4.7, reviewCount: 95, priceRange: 'R$ 40-90' },
-    { id: '4', name: 'Eletricista Carlos', category: 'Reparos', rating: 4.9, reviewCount: 156, priceRange: 'R$ 80-200' },
-    { id: '5', name: 'Encanador Roberto', category: 'Reparos', rating: 4.8, reviewCount: 103, priceRange: 'R$ 70-180' },
-    { id: '6', name: 'Moda da Maria - Roupas', category: 'Moda', rating: 4.6, reviewCount: 67, priceRange: 'R$ 50-300' },
-    { id: '7', name: 'Tapetes e Decoração', category: 'Moda', rating: 4.5, reviewCount: 42, priceRange: 'R$ 80-500' },
-    { id: '8', name: 'Personal Trainer Lucas', category: 'Fitness', rating: 4.9, reviewCount: 88, priceRange: 'R$ 60-120' },
-  ];
+  const condos: any[] = [];
+  const categories: string[] = [];
+  const services: any[] = [];
+  // Os serviços e profissionais aparecerão aqui quando forem cadastrados
 
   const filteredServices = services.filter(service => {
     const matchesSearch = service.name.toLowerCase().includes(search.toLowerCase());

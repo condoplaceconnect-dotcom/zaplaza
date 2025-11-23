@@ -28,14 +28,10 @@ export default function HomePage() {
   const [cartOpen, setCartOpen] = useState(false);
   const [selectedCondo, setSelectedCondo] = useState({ id: '1', name: 'Residencial Jardim das Flores' });
   
-  const [cartItems, setCartItems] = useState([
-    { id: '1', name: 'Brigadeiro Gourmet', price: 3.50, quantity: 2, image: brigadeiroImg },
-  ]);
+  const [cartItems, setCartItems] = useState<Array<{ id: string; name: string; price: number; quantity: number; image: string }>>([]);
 
   const condos = [
-    { id: '1', name: 'Residencial Jardim das Flores' },
-    { id: '2', name: 'Condomínio Vila Verde' },
-    { id: '3', name: 'Edifício Solar do Parque' }
+    // Adicione seus condominios aqui após o cadastro
   ];
 
   const banners = [
@@ -53,23 +49,11 @@ export default function HomePage() {
     }
   ];
 
-  const categories = ['Lanches', 'Sobremesas', 'Bebidas', 'Salgados', 'Almoço'];
+  const categories: string[] = [];
 
-  const stores = [
-    { id: '1', name: 'Doces da Maria', category: 'Sobremesas', rating: 4.8, reviewCount: 127, deliveryTime: '15-20 min' },
-    { id: '2', name: 'Lanchonete do Seu José', category: 'Lanches', rating: 4.6, reviewCount: 89, deliveryTime: '20-25 min' },
-    { id: '3', name: 'Salgados da Dona Ana', category: 'Salgados', rating: 4.9, reviewCount: 203, deliveryTime: '10-15 min' },
-  ];
+  const stores: Array<{ id: string; name: string; category: string; rating: number; reviewCount: number; deliveryTime: string }> = [];
 
-  const products = [
-    { id: '1', name: 'Brigadeiro Gourmet', description: 'Delicioso brigadeiro artesanal feito com chocolate belga', price: 3.50, image: brigadeiroImg, category: 'Sobremesas' },
-    { id: '2', name: 'Pão de Queijo', description: 'Pão de queijo mineiro tradicional, quentinho', price: 2.00, image: cheeseImg, category: 'Lanches' },
-    { id: '3', name: 'Marmita Fitness', description: 'Marmita saudável com arroz integral, frango grelhado e salada', price: 18.00, image: lunchImg, category: 'Almoço' },
-    { id: '4', name: 'Suco Natural', description: 'Suco de laranja natural sem açúcar', price: 6.00, image: juiceImg, category: 'Bebidas' },
-    { id: '5', name: 'Cookies Caseiros', description: 'Cookies artesanais de chocolate e aveia', price: 12.00, image: cookiesImg, category: 'Sobremesas' },
-    { id: '6', name: 'Brownie', description: 'Brownie de chocolate meio amargo', price: 8.00, image: brownieImg, category: 'Sobremesas' },
-    { id: '7', name: 'Salgadinhos Variados', description: 'Coxinha, empada e risole', price: 4.50, image: salgadoImg, category: 'Salgados' },
-  ];
+  const products: Array<{ id: string; name: string; description: string; price: number; image: string; category: string }> = [];
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(search.toLowerCase());
@@ -173,6 +157,12 @@ export default function HomePage() {
 
         <div>
           <h2 className="text-2xl font-bold mb-4">Lojas Populares</h2>
+          {stores.length === 0 ? (
+            <div className="text-center py-12 bg-card rounded-lg border">
+              <p className="text-muted-foreground">Nenhuma loja cadastrada ainda</p>
+              <p className="text-sm text-muted-foreground mt-2">Seja o primeiro vendedor! Clique em "Cadastro" para registrar sua loja</p>
+            </div>
+          ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {stores.map(store => (
               <StoreCard

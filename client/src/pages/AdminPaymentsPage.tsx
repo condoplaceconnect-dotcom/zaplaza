@@ -32,63 +32,11 @@ export default function AdminPaymentsPage() {
   const [, setLocation] = useLocation();
 
   const [transactions] = useState<Transaction[]>([
-    {
-      id: '1',
-      vendorName: 'Doces da Maria',
-      orderId: 'PED-001',
-      orderValue: 35.00,
-      vendorEarnings: 35.00,
-      status: 'completed',
-      date: new Date(Date.now() - 1 * 60 * 60 * 1000)
-    },
-    {
-      id: '2',
-      vendorName: 'Lanchonete do Seu José',
-      orderId: 'PED-002',
-      orderValue: 28.50,
-      vendorEarnings: 28.50,
-      status: 'completed',
-      date: new Date(Date.now() - 3 * 60 * 60 * 1000)
-    },
-    {
-      id: '3',
-      vendorName: 'Studio da Beleza',
-      orderId: 'APT-001',
-      orderValue: 150.00,
-      vendorEarnings: 150.00,
-      status: 'completed',
-      date: new Date(Date.now() - 5 * 60 * 60 * 1000)
-    }
+    // As transações aparecerão aqui quando os vendedores começarem a receber pedidos
   ]);
 
   const [vendorPayments] = useState<VendorPayment[]>([
-    {
-      id: '1',
-      name: 'Doces da Maria',
-      type: 'store',
-      totalEarnings: 1250.50,
-      pendingPayment: 450.75,
-      lastPayment: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-      status: 'active'
-    },
-    {
-      id: '2',
-      name: 'Lanchonete do Seu José',
-      type: 'store',
-      totalEarnings: 890.30,
-      pendingPayment: 290.10,
-      lastPayment: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
-      status: 'active'
-    },
-    {
-      id: '3',
-      name: 'Studio da Beleza',
-      type: 'service',
-      totalEarnings: 3500.00,
-      pendingPayment: 1200.00,
-      lastPayment: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-      status: 'active'
-    }
+    // Os vendedores registrados aparecerão aqui
   ]);
 
   const totalRevenue = transactions.reduce((sum, t) => sum + t.orderValue, 0);
