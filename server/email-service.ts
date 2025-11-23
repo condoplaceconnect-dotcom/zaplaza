@@ -49,7 +49,7 @@ export async function sendVerificationEmail(
   try {
     const { client, fromEmail } = await getUncachableResendClient();
     
-    const verificationUrl = `${process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000'}/verify-email/${verificationToken}`;
+    const verificationUrl = `${process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000'}/verify-email?token=${verificationToken}`;
     
     const { data, error } = await client.emails.send({
       from: fromEmail,

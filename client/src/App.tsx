@@ -30,6 +30,7 @@ const DeliveryDashboardPage = lazy(() => import("@/pages/DeliveryDashboardPage")
 const FamilyAccountPage = lazy(() => import("@/pages/FamilyAccountPage"));
 const MarketplacePage = lazy(() => import("@/pages/MarketplacePage"));
 const LoginPage = lazy(() => import("@/pages/LoginPage"));
+const EmailVerificationPage = lazy(() => import("@/pages/EmailVerificationPage"));
 
 // Componente de carregamento
 function PageLoader() {
@@ -137,6 +138,7 @@ function Router() {
         <Switch>
           <Route path="/" component={LandingPage} />
           <Route path="/login" component={LoginPage} />
+          <Route path="/verify-email" component={EmailVerificationPage} />
           <Route path="/select-condo" component={CondoSelectorPage} />
           <Route path="/admin/login" component={AdminLoginPage} />
           <Route path="/register-condo" component={CondoRegistrationPage} />

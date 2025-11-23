@@ -8,6 +8,7 @@ import CartButton from "@/components/CartButton";
 import CartDrawer from "@/components/CartDrawer";
 import ThemeToggle from "@/components/ThemeToggle";
 import BottomNav from "@/components/BottomNav";
+import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { User } from "lucide-react";
@@ -27,10 +28,11 @@ export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
   const [condoName, setCondoName] = useState<string>("Carregando...");
+  const [emailVerified, setEmailVerified] = useState<boolean>(true);
   
   const [cartItems, setCartItems] = useState<Array<{ id: string; name: string; price: number; quantity: number; image: string }>>([]);
 
-  // Buscar nome do condomínio
+  // Buscar dados do usuário (incluindo status de verificação de email)
   useEffect(() => {
     const selectedCondoId = localStorage.getItem("selectedCondoId");
     if (selectedCondoId) {
@@ -38,6 +40,19 @@ export default function HomePage() {
         .then(res => res.json())
         .then(data => setCondoName(data.name))
         .catch(() => setCondoName("Condomínio"));
+    }
+
+    // Buscar status de verificação de email
+    const token = localStorage.getItem("token");
+    if (token) {
+      fetch("/api/auth/me", {
+        headers: { "Authorization": `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          setEmailVerified(data.user?.emailVerified ?? true);
+        })
+        .catch(() => setEmailVerified(true));
     }
   }, []);
 
@@ -129,6 +144,7 @@ export default function HomePage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-8">
+        <EmailVerificationBanner emailVerified={emailVerified} />
         <HeroBanner banners={banners} />
 
         <div className="flex gap-4 justify-center flex-wrap">
