@@ -1,94 +1,280 @@
-# CondoPlace - Condominium Marketplace
+# CondoPlace - Marketplace Interno de Condomínios
 
-## 📋 Visão Geral
-App de marketplace hiperlocal para condomínios. Funciona como iFood interno com produtos, serviços e agendamentos. 100% da comissão vai para vendedores (0% do app).
+## 📋 Conceito Geral
+CondoPlace é um **app mobile estilo "mini iFood + marketplace interno"** para condomínios residenciais.
 
-## 🎯 Estrutura de Usuários e Permissões
+**Arquitetura tipo WhatsApp Communities:**
+- 🏢 **App = Comunidade Geral**
+- 🏘️ **Cada Condomínio = um "Servidor/Grupo" dentro da comunidade**
+- 🌟 **Acqua Sena (Canoas, RS) = Primeiro Servidor Oficial**
 
-### 🟦 Cliente/Morador (resident)
-- Visualizar lojas do condomínio
-- Comprar produtos (carrinho + checkout)
-- Visualizar serviços
-- Solicitar/agendar serviços
-- Ler comunicados
-- Editar perfil
+### Características Principais
+- Zero comissão (100% vai para vendedores)
+- Tema verde e branco
+- Interface leve e minimalista
+- Mobile-first (preparado para APK Android)
+- Chat apenas para transações (sem chat entre moradores)
 
-### 🟥 Administrador (admin)
-- Registrar condomínio (com Google Maps autocomplete)
-- Gerenciar moradores (CRUD)
-- Gerenciar lojas e prestadores
+---
+
+## 👥 Tipos de Usuários e Permissões
+
+### 🟢 Cliente Adulto (18+)
+**Permissões:**
+- Comprar produtos e contratar serviços
+- Usar marketplace (vender/doar/trocar)
+- Criar posts em Achados & Perdidos
+- Favoritar lojas e produtos
+- Avaliar vendedores e serviços
+- Denunciar conteúdo inadequado
+- **Criar Conta Família** (adicionar dependentes menores)
+
+### 🟡 Cliente Menor (<18 anos)
+**Permissões limitadas:**
+- Navegar e explorar lojas
+- Favoritar produtos
+- **Solicitar compras** (adulto responsável aprova)
+- Reportar problemas ao responsável
+- Ver Achados & Perdidos (visualização limitada)
+
+**Restrições:**
+- NÃO pode fazer login sozinho
+- NÃO compra sem aprovação adulta
+- NÃO acessa marketplace adulto
+- NÃO usa chat
+
+### 🟠 Lojista (Vendedor)
+**Permissões:**
+- Criar e gerenciar loja
+- Adicionar/editar produtos
+- Receber e gerenciar pedidos
+- Chat com clientes (apenas sobre pedidos)
+- Ver estatísticas de vendas
+
+### 🔵 Prestador de Serviço
+**Permissões:**
+- Criar perfil profissional
+- Listar serviços oferecidos
+- Gerenciar agenda de agendamentos
+- Chat com clientes (apenas sobre serviços)
+- Receber avaliações
+
+### 🟣 Entregador Interno
+**Permissões:**
+- Ver fila de entregas
+- Atualizar status de entrega
+- Chat com cliente (apenas sobre entrega)
+- Receber gorjetas
+- Sistema de roteamento interno
+
+### ⚪ Funcionários do Condomínio (Bloco 0)
+**Localização especial:**
+- Bloco 0 / Apto 00 = Porteiros
+- Bloco 0 / Apto 01 = Zelador
+- Bloco 0 / Apto 02+ = Outros funcionários
+
+**Permissões:**
+- Acesso comum de cliente
+- Podem fazer compras e usar serviços
+
+### 🔴 Administrador (Admin)
+**Permissões completas:**
+- Aprovar/rejeitar cadastros
+- Gerenciar todos os usuários
+- Moderar denúncias
 - Criar comunicados
-- Ver dashboard com métricas
-- Definir regras internas
+- Ver métricas e dashboard
+- Configurar regras do condomínio
 
-### 🟧 Vendedor (vendor)
-- Criar/editar produtos (nome, preço, descrição, ingredientes)
-- Upload de imagens
-- Gerenciar estoque (disponibilidade)
-- Acompanhar pedidos
-- Responder clientes (futuro)
+---
 
-### 🟩 Prestador de Serviço (service_provider)
-- Criar perfil (imagem, descrição, categorias)
-- Listar serviços (nome, preço, duração)
-- Gerenciar disponibilidade
-- Receber/confirmar agendamentos
-- Responder clientes (futuro)
+## 🏗️ Arquitetura do Banco de Dados
 
-## 🏗️ Arquitetura do Projeto
+### Tabelas Principais
 
-### Frontend (React + Vite)
-```
-client/src/
-├── pages/
-│   ├── CondoSelectorPage.tsx        ✅ Seleção de condomínio
-│   ├── CondoRegistrationPage.tsx    ✅ Registro de condomínio (Google Maps)
-│   ├── UserRegistrationPage.tsx     ✅ Registro de usuário
-│   ├── HomePage.tsx                 ✅ Home com lojas e produtos
-│   ├── StoreProfilePage.tsx         ✅ Perfil de loja (vendor)
-│   ├── ServiceProviderProfilePage.tsx ✅ Perfil de serviço
-│   ├── AdminDashboardPage.tsx       ✅ Dashboard admin
-│   ├── OrdersPage.tsx               ⏳ Pedidos
-│   ├── ServicesPage.tsx             ⏳ Serviços disponíveis
-│   ├── AppointmentsPage.tsx         ⏳ Agendamentos
-│   └── CheckoutPage.tsx             ⏳ Checkout
-├── components/
-│   ├── ui/                          ✅ shadcn/ui components
-│   └── PhotoUpload.tsx              ✅ Upload de fotos
-└── lib/
-    └── queryClient.ts               ✅ TanStack Query setup
-```
+#### ✅ users
+Campos principais:
+- `id`, `username`, `password`, `name`, `email`, `phone`
+- **NOVOS:**
+  - `birthDate` - Data de nascimento (verificação de idade)
+  - `block` - Bloco (ex: "A", "B", "0")
+  - `unit` - Apartamento (ex: "101", "00")
+  - `accountType` - "adult" ou "minor"
+  - `parentAccountId` - ID do responsável (para menores)
+  - `relationship` - Parentesco (filho, filha, etc)
+- `role` - resident, vendor, service_provider, delivery_person, staff, admin
+- `status` - pending, approved, rejected, blocked_until_18
 
-### Backend (Express + Node)
-```
-server/
-├── routes.ts                        ✅ Rotas API (CRUD completo)
-├── storage.ts                       ✅ In-memory storage (pronto para Postgres)
-├── auth.ts                          ✅ JWT + Bcrypt + Middlewares de role
-└── types.ts                         ✅ Extensões Express
-```
+#### ✅ condominiums
+- `id`, `name`, `address`, `city`, `state`, `zipCode`
+- `units`, `phone`, `email`, `description`, `image`
+- `status` - pending, approved, rejected
 
-### Database (Postgres + Drizzle)
-```
-shared/schema.ts                     ✅ Schema Drizzle com tabelas:
-- users (com role: resident|vendor|service_provider|admin)
-- condominiums (com status: pending|approved|rejected)
-- stores (lojas dos vendedores)
-- products (produtos das lojas)
-- service_providers (prestadores)
-- services (serviços oferecidos)
-```
+#### ✅ stores (Lojas)
+- `userId`, `name`, `description`, `image`, `category`
+- `status` - active, inactive
 
-## 🔐 Fluxo de Autenticação
+#### ✅ products (Produtos das Lojas)
+- `storeId`, `name`, `description`, `image`, `price`
+- `ingredients`, `available`
 
-1. **Início**: Usuário acessa `/` (não logado)
-2. **CondoSelectorPage**: Seleciona condomínio (com autocomplete)
-3. **CondoRegistrationPage**: Se novo, registra condomínio
-4. **UserRegistrationPage**: Registra usuário + escolhe role
-5. **Login**: Após registro, faz login
-6. **HomePage/AdminDashboard**: Redirecionado baseado em role
+#### ✅ service_providers (Prestadores)
+- `userId`, `name`, `description`, `serviceType`
+- `rating`
 
-## 🛠️ Tecnologias
+#### ✅ services (Serviços Oferecidos)
+- `providerId`, `name`, `description`, `price`, `duration`
+- `available`
+
+#### ✅ delivery_persons (Entregadores)
+- `userId`, `name`, `phone`, `block`, `unit`
+- `status` - online, offline
+- `rating`, `totalDeliveries`
+
+#### ✅ orders (Pedidos)
+- `condoId`, `storeId`, `residentId`, `deliveryPersonId`
+- `status` - pending, confirmed, preparing, ready, on_way, delivered, cancelled
+- `totalPrice`, `items` (JSON), `tip`
+
+#### 🆕 marketplace_items (Marketplace entre moradores)
+- `condoId`, `userId`, `title`, `description`, `images`
+- `category`, `type` (sale/donation/exchange), `price`
+- `block`, `unit`
+- `status` - available, sold, reserved, removed
+
+#### 🆕 lost_and_found (Achados & Perdidos)
+- `condoId`, `userId`, `type` (lost/found)
+- `title`, `description`, `images`, `category`
+- `locationFound`, `block`, `contactInfo`
+- `status` - active, resolved, expired
+
+#### 🆕 reports (Denúncias)
+- `condoId`, `reporterId`, `targetType`, `targetId`
+- `reason`, `description`, `evidence` (JSON)
+- `status` - pending, under_review, resolved, dismissed
+- `adminNotes`, `resolvedBy`
+
+---
+
+## 🎯 Funcionalidades Principais
+
+### 1. 🛒 Lojas
+- Categorias dinâmicas (Comida, Sobremesas, Roupas, Pets, Estética, etc)
+- Catálogo de produtos
+- Sistema de pedidos
+- Chat cliente ↔ loja
+- Avaliações e ratings
+- Promoções e cupons (futuro)
+
+### 2. 🛠️ Serviços
+- Categorias (Barbeiro, Manicure, Mecânico, Eletricista, etc)
+- Sistema de agendamentos
+- Chat cliente ↔ prestador
+- Avaliações e ratings
+
+### 3. 📦 Entregas Internas
+- Entregadores do próprio condomínio
+- Rastreamento de status:
+  - "Pedido em preparo"
+  - "Saiu para entrega"
+  - "Chegou no seu bloco"
+- Sistema de gorjetas
+- Mapa interno (opcional)
+
+### 4. 🏪 Marketplace entre Moradores
+- Vendas livres
+- Doações
+- Trocas
+- Categorias dinâmicas
+- Fotos + descrição + preço
+- Localização interna (bloco/apto)
+
+### 5. 🔍 Achados & Perdidos
+- Posts com foto + descrição
+- Local onde foi encontrado
+- Contato seguro
+- Status: ativo, resolvido
+
+### 6. 💬 Chat (Apenas Transações)
+- Cliente ↔ Loja
+- Cliente ↔ Entregador
+- Cliente ↔ Prestador de Serviço
+- **ZERO chat entre moradores** (evita conflitos)
+
+### 7. 🚨 Sistema de Denúncias
+**Adultos podem denunciar:**
+- Produtos impróprios
+- Má conduta
+- Fraude/golpe
+- Assédio
+- Conteúdo ofensivo
+- Problemas com entrega
+- Preço abusivo
+- Violações de regras
+
+**Menores:**
+- Apenas "Reportar ao Responsável"
+- Adulto decide se transforma em denúncia oficial
+
+**Painel Admin:**
+- Ver todas as denúncias
+- Investigar com evidências
+- Tomar ações (advertir, banir, etc)
+
+---
+
+## 🔐 Sistema de Conta Família
+
+### Como Funciona
+1. **Adulto cria conta normalmente** (18+)
+2. **Adulto vai em Perfil → Conta Família**
+3. **Adiciona dependentes menores:**
+   - Nome
+   - Data de nascimento (validada como <18)
+   - Avatar
+   - Grau de parentesco (filho, filha, dependente)
+
+### Controle Parental
+**Adulto vê TUDO:**
+- Histórico de navegação
+- Solicitações de compra
+- Notificações
+- Tentativas de acesso
+
+**Adulto aprova compras:**
+- Menor "Solicita" compra
+- Adulto recebe notificação
+- Adulto "Aprova" ou "Recusa"
+
+**Menores NÃO têm:**
+- Login próprio
+- Senha própria
+- Acesso independente
+
+---
+
+## 🎨 Design e Interface
+
+### Tema Visual
+- **Cores:** Verde (primário) + Branco (fundo) + Preto (texto)
+- **Estilo:** Minimalista, limpo, rápido
+
+### Menu Principal
+**2 botões grandes no centro:**
+- 🏪 Lojas
+- 🛠️ Serviços
+
+**Três pontinhos no topo (extras):**
+- 🏪 Marketplace
+- 🔍 Achados & Perdidos
+- 🔔 Notificações
+- 👤 Perfil
+
+**Avatar no canto superior direito**
+
+---
+
+## 🛠️ Stack Tecnológico
 
 ### Frontend
 - React 18 + TypeScript
@@ -104,132 +290,96 @@ shared/schema.ts                     ✅ Schema Drizzle com tabelas:
 - JWT (jsonwebtoken)
 - bcrypt (password hashing)
 - Helmet (segurança)
-- In-memory storage (convertível para Postgres)
 
 ### Database
-- PostgreSQL (Neon)
+- PostgreSQL (Neon) ✅ ATIVO
 - Drizzle ORM
 - Drizzle Kit (migrations)
 
-## ✅ Implementado
+### Integrações Futuras
+- Chat em tempo real (Pusher/Supabase/Firebase)
+- Push notifications
+- Upload de imagens (Cloudinary/UploadThing)
 
-### Autenticação
-- [x] Registro com validação Zod
-- [x] Login com JWT (1h expiry)
-- [x] Password hashing com bcrypt
-- [x] Middlewares: authMiddleware, adminMiddleware, vendorMiddleware, serviceProviderMiddleware
-- [x] Proteção de rotas por role
+---
 
-### Frontend
-- [x] CondoSelectorPage com autocomplete (estado, cidade, rua)
-- [x] CondoRegistrationPage com Google Maps
-- [x] UserRegistrationPage com seleção de role
-- [x] HomePage vazia (pronta para integração)
-- [x] StoreProfilePage com CRUD de produtos
-- [x] ServiceProviderProfilePage com CRUD de serviços
-- [x] AdminDashboardPage com tabs (overview, moradores, lojas, comunicados)
+## ✅ Status de Implementação
 
-### Backend
-- [x] POST /api/auth/register
-- [x] POST /api/auth/login
-- [x] GET /api/auth/me
-- [x] GET /api/condominiums (listar aprovados)
-- [x] GET /api/condominiums/:id
-- [x] POST /api/condominiums (criar/solicitar)
-- [x] GET /api/condominiums/:condoId/stores
-- [x] POST /api/stores (vendor)
-- [x] GET /api/stores/:id
-- [x] PATCH /api/stores/:id
-- [x] GET /api/stores/:storeId/products
-- [x] POST /api/products (vendor)
-- [x] PATCH /api/products/:id
-- [x] DELETE /api/products/:id
-- [x] GET /api/users/:userId/stores
-- [x] POST /api/payments/create-payment-intent
-- [x] POST /api/payments/create-pix-qr
-- [x] POST /api/upload
+### ✅ CONCLUÍDO
+- [x] Schema do banco de dados completo
+- [x] Tabelas: users, condominiums, stores, products, services
+- [x] Tabelas: delivery_persons, orders, appointments
+- [x] **NOVOS:** marketplace_items, lost_and_found, reports
+- [x] Campos de idade, bloco, apartamento, tipo de conta
+- [x] Sistema multi-condomínios
+- [x] Autenticação JWT
+- [x] Registro e login básico
 
-## ⏳ Próximos Passos
+### ⏳ EM DESENVOLVIMENTO
+- [ ] Verificação de idade (bloquear <18)
+- [ ] Sistema de Conta Família
+- [ ] Página Marketplace
+- [ ] Página Achados & Perdidos
+- [ ] Sistema de Entregas Internas
+- [ ] Sistema de Denúncias
+- [ ] Chat em tempo real
+- [ ] Atualização de design (verde e branco)
 
-### Curto Prazo (MVP)
-1. Integrar Postgres com Drizzle migrations
-2. Implementar upload de imagens (Cloudinary/UploadThing)
-3. Completar HomePage com API calls reais
-4. Testes de permissões para cada role
+### 📋 PENDENTE
+- [ ] Notificações push
+- [ ] Upload de imagens
+- [ ] Sistema de pagamentos
+- [ ] Avaliações e ratings
+- [ ] Analytics e métricas
 
-### Médio Prazo
-1. Pedidos (criar, listar, atualizar status)
-2. Agendamentos (criar, confirmar, cancelar)
-3. Comunicados (criar, listar, marcar como lido)
-4. Chat simples cliente↔︎vendor
-
-### Longo Prazo
-1. Pagamentos reais (Stripe + Pix)
-2. Notificações (push/email)
-3. Analytics para admin
-4. Rating/reviews
-
-## 🚀 Como Rodar
-
-```bash
-# Dev
-npm run dev
-
-# Build
-npm run build
-
-# Migrations
-npm run db:push
-```
-
-## 📝 Notas Importantes
-
-- **Sem comissão do app**: 100% vai para vendor
-- **Autocomplete**: Google Maps API (implementado no frontend)
-- **Upload**: Pronto para integração com serviço externo
-- **Permissões**: Middleware por role implementado
-- **Database**: Pronto para migrar de in-memory para Postgres
-- **Condomínio Padrão**: Acqua Sena (Canoas, RS) - primeira opção, não obrigatória
+---
 
 ## 🏢 Condomínios Cadastrados
 
-### ✅ Acqua Sena (Tenda)
-- **Endereço**: Rua Cairú, Bairro Fátima, Canoas - RS, 92320-260
-- **Status**: Aprovado (disponível para seleção)
-- **Tipo**: Residencial
-- **Unidades**: ~150
-- **Papel**: Primeiro condomínio oficial - serve como exemplo e para testes reais
+### ✅ Acqua Sena (Primeiro Servidor)
+- **Endereço:** Rua Cairú, Bairro Fátima, Canoas - RS, 92320-260
+- **Status:** Aprovado ✅
+- **Tipo:** Residencial
+- **Unidades:** ~150
+- **Papel:** Primeiro condomínio oficial - servidor principal
 
-## 🔑 Logins de Teste
+---
+
+## 🔑 Contas de Teste
 
 ### Administrador
-- **Username**: `admin`
-- **Password**: `admin123`
-- **Acesso**: Dashboard com estatísticas reais, gerenciamento de moradores, lojas e comunicados
-- **Funcionalidades**: Aprovar/rejeitar condomínios, excluir usuários, excluir lojas, visualizar estatísticas
+- Username: `admin`
+- Password: `admin123`
+- Acesso completo ao dashboard admin
 
-### Vendedor (Loja)
-- **Username**: `vendedor`
-- **Password**: `vendor123`
-- **Nome**: João Silva - Loja do João
-- **Loja**: "Loja do João - Lanches & Bebidas" (Alimentação)
-- **Produtos cadastrados**:
-  - X-Burger Completo - R$ 25,90
-  - Coca-Cola 2L - R$ 10,00
-  - Pizza Margherita - R$ 45,00
-- **Funcionalidades**: Gerenciar loja, criar/editar/deletar produtos, ver pedidos
+### Vendedor
+- Username: `vendedor1`
+- Password: `senha123`
+- Loja: "Loja do João"
 
-### Cliente/Morador
-- **Username**: `cliente`
-- **Password**: `cliente123`
-- **Nome**: Maria Santos
-- **Funcionalidades**: Visualizar lojas, comprar produtos, solicitar serviços, ler comunicados
+### Cliente
+- Username: `maria_silva`
+- Password: `senha123`
+- Moradora padrão
 
 ### Prestador de Serviço
-- **Username**: `prestador`
-- **Password**: `servico123`
-- **Nome**: Carlos Pereira - Eletricista
-- **Funcionalidades**: Criar perfil, listar serviços, gerenciar disponibilidade, receber agendamentos
+- Username: `carlos_servicos`
+- Password: `senha123`
+- Serviços: Eletricista
+
+---
+
+## 📝 Próximos Passos Críticos
+
+1. **Implementar verificação de idade no registro**
+2. **Criar sistema de Conta Família**
+3. **Desenvolver página Marketplace**
+4. **Desenvolver página Achados & Perdidos**
+5. **Implementar sistema de denúncias**
+6. **Configurar chat em tempo real**
+7. **Atualizar design para verde e branco**
+
+---
 
 ## 👥 Autores
 Desenvolvido com Replit

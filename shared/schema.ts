@@ -11,8 +11,14 @@ export const users = pgTable("users", {
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   phone: varchar("phone", { length: 20 }).notNull(),
-  role: varchar("role", { length: 20 }).notNull().default("resident"), // resident, vendor, service_provider, delivery_person, admin
-  status: varchar("status", { length: 20 }).notNull().default("pending"), // pending, approved, rejected
+  birthDate: varchar("birth_date", { length: 10 }), // YYYY-MM-DD format
+  block: varchar("block", { length: 20 }), // Bloco (ex: "A", "B", "0" para funcionários)
+  unit: varchar("unit", { length: 10 }), // Apartamento (ex: "101", "00" para porteiros)
+  accountType: varchar("account_type", { length: 20 }).notNull().default("adult"), // adult, minor
+  parentAccountId: varchar("parent_account_id"), // ID do adulto responsável (para menores)
+  relationship: varchar("relationship", { length: 50 }), // filho, filha, dependente, etc (para menores)
+  role: varchar("role", { length: 20 }).notNull().default("resident"), // resident, vendor, service_provider, delivery_person, staff, admin
+  status: varchar("status", { length: 20 }).notNull().default("pending"), // pending, approved, rejected, blocked_until_18
   condoId: varchar("condo_id"),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -195,6 +201,60 @@ export const ratings = pgTable("ratings", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// ✅ MARKETPLACE ITEMS TABLE (Vendas/Doações/Trocas entre moradores)
+export const marketplaceItems = pgTable("marketplace_items", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  condoId: varchar("condo_id").notNull(),
+  userId: varchar("user_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  images: jsonb("images").default([]), // array de URLs de imagens
+  category: varchar("category", { length: 50 }), // roupas, móveis, eletrônicos, etc
+  type: varchar("type", { length: 20 }).notNull(), // sale, donation, exchange
+  price: decimal("price", { precision: 10, scale: 2 }), // null para doações
+  block: varchar("block", { length: 20 }),
+  unit: varchar("unit", { length: 10 }),
+  status: varchar("status", { length: 20 }).notNull().default("available"), // available, sold, reserved, removed
+  views: integer("views").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// ✅ LOST AND FOUND TABLE (Achados & Perdidos)
+export const lostAndFound = pgTable("lost_and_found", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  condoId: varchar("condo_id").notNull(),
+  userId: varchar("user_id").notNull(), // quem achou/perdeu
+  type: varchar("type", { length: 20 }).notNull(), // lost, found
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  images: jsonb("images").default([]), // array de URLs
+  category: varchar("category", { length: 50 }), // chaves, documentos, pets, eletrônicos, etc
+  locationFound: text("location_found"), // onde foi encontrado (bloco, área comum, etc)
+  block: varchar("block", { length: 20 }),
+  contactInfo: text("contact_info"), // como contatar
+  status: varchar("status", { length: 20 }).notNull().default("active"), // active, resolved, expired
+  resolvedAt: timestamp("resolved_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// ✅ REPORTS TABLE (Denúncias)
+export const reports = pgTable("reports", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  condoId: varchar("condo_id").notNull(),
+  reporterId: varchar("reporter_id").notNull(), // quem denunciou
+  targetType: varchar("target_type", { length: 30 }).notNull(), // product, store, service, delivery_person, user, marketplace_item, lost_and_found, message
+  targetId: varchar("target_id").notNull(), // ID do item denunciado
+  reason: varchar("reason", { length: 50 }).notNull(), // inappropriate_product, misconduct, fraud, harassment, offensive_content, prohibited_content, delivery_issue, abusive_price, rule_violation, danger, minor_misuse
+  description: text("description").notNull(),
+  evidence: jsonb("evidence").default([]), // screenshots, fotos, etc
+  status: varchar("status", { length: 20 }).notNull().default("pending"), // pending, under_review, resolved, dismissed
+  adminNotes: text("admin_notes"),
+  resolvedBy: varchar("resolved_by"),
+  resolvedAt: timestamp("resolved_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // ✅ ZOD SCHEMAS
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
@@ -202,9 +262,31 @@ export const insertUserSchema = createInsertSchema(users).pick({
   name: true,
   email: true,
   phone: true,
+  birthDate: true,
+  block: true,
+  unit: true,
+  accountType: true,
+  parentAccountId: true,
+  relationship: true,
   role: true,
   status: true,
   condoId: true,
+});
+
+export const insertMarketplaceItemSchema = createInsertSchema(marketplaceItems).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertLostAndFoundSchema = createInsertSchema(lostAndFound).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertReportSchema = createInsertSchema(reports).omit({
+  id: true,
+  createdAt: true,
 });
 
 export const insertCondoSchema = createInsertSchema(condominiums).omit({
@@ -281,3 +363,12 @@ export type InsertOrder = z.infer<typeof insertOrderSchema>;
 
 export type Appointment = typeof appointments.$inferSelect;
 export type InsertAppointment = z.infer<typeof insertAppointmentSchema>;
+
+export type MarketplaceItem = typeof marketplaceItems.$inferSelect;
+export type InsertMarketplaceItem = z.infer<typeof insertMarketplaceItemSchema>;
+
+export type LostAndFoundItem = typeof lostAndFound.$inferSelect;
+export type InsertLostAndFoundItem = z.infer<typeof insertLostAndFoundSchema>;
+
+export type Report = typeof reports.$inferSelect;
+export type InsertReport = z.infer<typeof insertReportSchema>;
