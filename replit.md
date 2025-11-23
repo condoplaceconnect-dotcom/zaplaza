@@ -1,130 +1,197 @@
-# Condominium Marketplace App
+# CondoPlace - Condominium Marketplace
 
-## 🎯 Project Overview
-A hyperlocal delivery and services platform for condominiums. Residents register as customers, vendors (stores or service providers), or delivery drivers. Combines iFood-style product delivery with appointment scheduling.
+## 📋 Visão Geral
+App de marketplace hiperlocal para condomínios. Funciona como iFood interno com produtos, serviços e agendamentos. 100% da comissão vai para vendedores (0% do app).
 
-## 🏗️ Architecture
+## 🎯 Estrutura de Usuários e Permissões
+
+### 🟦 Cliente/Morador (resident)
+- Visualizar lojas do condomínio
+- Comprar produtos (carrinho + checkout)
+- Visualizar serviços
+- Solicitar/agendar serviços
+- Ler comunicados
+- Editar perfil
+
+### 🟥 Administrador (admin)
+- Registrar condomínio (com Google Maps autocomplete)
+- Gerenciar moradores (CRUD)
+- Gerenciar lojas e prestadores
+- Criar comunicados
+- Ver dashboard com métricas
+- Definir regras internas
+
+### 🟧 Vendedor (vendor)
+- Criar/editar produtos (nome, preço, descrição, ingredientes)
+- Upload de imagens
+- Gerenciar estoque (disponibilidade)
+- Acompanhar pedidos
+- Responder clientes (futuro)
+
+### 🟩 Prestador de Serviço (service_provider)
+- Criar perfil (imagem, descrição, categorias)
+- Listar serviços (nome, preço, duração)
+- Gerenciar disponibilidade
+- Receber/confirmar agendamentos
+- Responder clientes (futuro)
+
+## 🏗️ Arquitetura do Projeto
 
 ### Frontend (React + Vite)
-- **Pages**: Located in `client/src/pages/`
-- **Components**: Reusable UI components in `client/src/components/`
-- **Routing**: Wouter for client-side routing
-- **Code Splitting**: Implemented with React.lazy() and Suspense for each page
-- **Styling**: Tailwind CSS + Shadcn UI components
+```
+client/src/
+├── pages/
+│   ├── CondoSelectorPage.tsx        ✅ Seleção de condomínio
+│   ├── CondoRegistrationPage.tsx    ✅ Registro de condomínio (Google Maps)
+│   ├── UserRegistrationPage.tsx     ✅ Registro de usuário
+│   ├── HomePage.tsx                 ✅ Home com lojas e produtos
+│   ├── StoreProfilePage.tsx         ✅ Perfil de loja (vendor)
+│   ├── ServiceProviderProfilePage.tsx ✅ Perfil de serviço
+│   ├── AdminDashboardPage.tsx       ✅ Dashboard admin
+│   ├── OrdersPage.tsx               ⏳ Pedidos
+│   ├── ServicesPage.tsx             ⏳ Serviços disponíveis
+│   ├── AppointmentsPage.tsx         ⏳ Agendamentos
+│   └── CheckoutPage.tsx             ⏳ Checkout
+├── components/
+│   ├── ui/                          ✅ shadcn/ui components
+│   └── PhotoUpload.tsx              ✅ Upload de fotos
+└── lib/
+    └── queryClient.ts               ✅ TanStack Query setup
+```
 
-### Backend (Express.js)
-- **Routes**: API endpoints in `server/routes.ts`
-- **Storage**: In-memory storage (MemStorage) in `server/storage.ts`
-- **Auth**: JWT-based authentication with bcrypt hashing
-- **Security**: Helmet.js for security headers, CORS configured
+### Backend (Express + Node)
+```
+server/
+├── routes.ts                        ✅ Rotas API (CRUD completo)
+├── storage.ts                       ✅ In-memory storage (pronto para Postgres)
+├── auth.ts                          ✅ JWT + Bcrypt + Middlewares de role
+└── types.ts                         ✅ Extensões Express
+```
+
+### Database (Postgres + Drizzle)
+```
+shared/schema.ts                     ✅ Schema Drizzle com tabelas:
+- users (com role: resident|vendor|service_provider|admin)
+- condominiums (com status: pending|approved|rejected)
+- stores (lojas dos vendedores)
+- products (produtos das lojas)
+- service_providers (prestadores)
+- services (serviços oferecidos)
+```
+
+## 🔐 Fluxo de Autenticação
+
+1. **Início**: Usuário acessa `/` (não logado)
+2. **CondoSelectorPage**: Seleciona condomínio (com autocomplete)
+3. **CondoRegistrationPage**: Se novo, registra condomínio
+4. **UserRegistrationPage**: Registra usuário + escolhe role
+5. **Login**: Após registro, faz login
+6. **HomePage/AdminDashboard**: Redirecionado baseado em role
+
+## 🛠️ Tecnologias
+
+### Frontend
+- React 18 + TypeScript
+- Vite (bundler)
+- shadcn/ui (componentes)
+- TanStack Query v5 (data fetching)
+- wouter (routing)
+- react-hook-form + Zod (formulários)
+- Tailwind CSS (styling)
+
+### Backend
+- Express.js
+- JWT (jsonwebtoken)
+- bcrypt (password hashing)
+- Helmet (segurança)
+- In-memory storage (convertível para Postgres)
 
 ### Database
-- PostgreSQL with Drizzle ORM (integrated but not yet connected)
-- Schema in `shared/schema.ts`
+- PostgreSQL (Neon)
+- Drizzle ORM
+- Drizzle Kit (migrations)
 
-## 🔐 Security Features Implemented
+## ✅ Implementado
 
-### ✅ Authentication
-- JWT tokens with 1-hour expiry
-- Bcrypt password hashing (10 rounds)
-- Protected routes with `authMiddleware` and `adminMiddleware`
-- Secure token storage in sessionStorage (no localStorage)
+### Autenticação
+- [x] Registro com validação Zod
+- [x] Login com JWT (1h expiry)
+- [x] Password hashing com bcrypt
+- [x] Middlewares: authMiddleware, adminMiddleware, vendorMiddleware, serviceProviderMiddleware
+- [x] Proteção de rotas por role
 
-### ✅ Payment Security
-- **NO card data stored** on frontend
-- Stripe integration prepared (endpoints: `/api/payments/create-payment-intent`)
-- PIX QR Code support (`/api/payments/create-pix-qr`)
-- Webhook endpoint for Stripe events
+### Frontend
+- [x] CondoSelectorPage com autocomplete (estado, cidade, rua)
+- [x] CondoRegistrationPage com Google Maps
+- [x] UserRegistrationPage com seleção de role
+- [x] HomePage vazia (pronta para integração)
+- [x] StoreProfilePage com CRUD de produtos
+- [x] ServiceProviderProfilePage com CRUD de serviços
+- [x] AdminDashboardPage com tabs (overview, moradores, lojas, comunicados)
 
-### ✅ Upload Security
-- 5MB file size limit
-- MIME type validation (not relying on extensions)
-- Filename sanitization
-- Upload endpoints prepared for cloud storage (S3/Cloudinary)
+### Backend
+- [x] POST /api/auth/register
+- [x] POST /api/auth/login
+- [x] GET /api/auth/me
+- [x] GET /api/condominiums (listar aprovados)
+- [x] GET /api/condominiums/:id
+- [x] POST /api/condominiums (criar/solicitar)
+- [x] GET /api/condominiums/:condoId/stores
+- [x] POST /api/stores (vendor)
+- [x] GET /api/stores/:id
+- [x] PATCH /api/stores/:id
+- [x] GET /api/stores/:storeId/products
+- [x] POST /api/products (vendor)
+- [x] PATCH /api/products/:id
+- [x] DELETE /api/products/:id
+- [x] GET /api/users/:userId/stores
+- [x] POST /api/payments/create-payment-intent
+- [x] POST /api/payments/create-pix-qr
+- [x] POST /api/upload
 
-### ✅ Input Sanitization
-- XSS protection utility in `client/src/lib/sanitize.ts`
-- HTML escaping, URL validation, filename sanitization
-- All user inputs validated before processing
+## ⏳ Próximos Passos
 
-### ✅ Security Headers
-- Content Security Policy (CSP)
-- HSTS (1 year)
-- X-Frame-Options: DENY (anti-clickjacking)
-- X-Content-Type-Options: nosniff
-- CORS properly configured
+### Curto Prazo (MVP)
+1. Integrar Postgres com Drizzle migrations
+2. Implementar upload de imagens (Cloudinary/UploadThing)
+3. Completar HomePage com API calls reais
+4. Testes de permissões para cada role
 
-### ✅ Performance
-- Lazy loading of images with Intersection Observer (`LazyImage` component)
-- Code splitting: Each page loaded with React.lazy() and Suspense
-- React Query for data caching and optimization
-- Page loader skeleton while code splitting
+### Médio Prazo
+1. Pedidos (criar, listar, atualizar status)
+2. Agendamentos (criar, confirmar, cancelar)
+3. Comunicados (criar, listar, marcar como lido)
+4. Chat simples cliente↔︎vendor
 
-## 📋 User Types & Roles
-1. **Customer**: Browse products, book services, make purchases
-2. **Vendor**: Create store (22 categories) or service provider (23 types)
-3. **Delivery Driver**: Take orders, manage earnings
-4. **Admin**: Approve condos, manage payments, system oversight
-5. **Condominium Manager**: Register condo, manage facility
+### Longo Prazo
+1. Pagamentos reais (Stripe + Pix)
+2. Notificações (push/email)
+3. Analytics para admin
+4. Rating/reviews
 
-## 💳 Payment System
-- **Commission**: 0% - 100% to vendor
-- **Methods**: Card (Stripe), PIX (QR Code)
-- **Payment Page**: `/checkout`
-- **Admin Dashboard**: `/admin/payments`
+## 🚀 Como Rodar
 
-## 📁 Important Files
-- `client/src/App.tsx` - Main app with code splitting
-- `server/auth.ts` - JWT and authentication logic
-- `client/src/lib/sanitize.ts` - XSS protection utilities
-- `client/src/lib/auth.ts` - Frontend auth utilities
-- `client/src/components/LazyImage.tsx` - Lazy loading images
-- `server/app.ts` - Express setup with security headers
+```bash
+# Dev
+npm run dev
 
-## 🔧 Environment Variables Needed
-- `JWT_SECRET` - Secret key for JWT tokens (auto-generated for dev)
-- `STRIPE_SECRET_KEY` - When integrating Stripe
-- `STRIPE_WEBHOOK_SECRET` - For Stripe webhooks
-- `FRONTEND_URL` - For CORS (default: http://localhost:5000)
+# Build
+npm run build
 
-## 📝 Current Status
-- ✅ Full registration system with photo uploads
-- ✅ Vendor/Service provider split
-- ✅ Checkout with payment methods
-- ✅ Admin payments dashboard
-- ✅ JWT authentication
-- ✅ Security headers
-- ✅ Input sanitization
-- ✅ Code splitting + lazy loading
-- ⚠️ Database connection (ready to connect)
-- ⚠️ Stripe live integration (endpoints ready)
+# Migrations
+npm run db:push
+```
 
-## 🚀 Next Steps
-1. Connect PostgreSQL database
-2. Integrate Stripe with live credentials
-3. Deploy to production
-4. Implement email notifications
-5. Add analytics
+## 📝 Notas Importantes
 
-## 📱 Design Notes
-- iFood-inspired design (green primary, orange accent)
-- Mobile-first with bottom navigation
-- Dark mode support
-- Address privacy: Customers see condo/block/apt, vendors can toggle visibility
+- **Sem comissão do app**: 100% vai para vendor
+- **Autocomplete**: Google Maps API (implementado no frontend)
+- **Upload**: Pronto para integração com serviço externo
+- **Permissões**: Middleware por role implementado
+- **Database**: Pronto para migrar de in-memory para Postgres
 
-## 🔒 Security Checklist
-- [x] No card data on frontend
-- [x] JWT authentication
-- [x] Protected admin routes
-- [x] Input sanitization (XSS protection)
-- [x] Security headers (Helmet)
-- [x] Password hashing (bcrypt)
-- [x] CORS configured
-- [x] File upload validation
-- [x] Code splitting for performance
-- [x] Lazy image loading
+## 👥 Autores
+Desenvolvido com Replit
 
-## User Preferences
-- No app commission - vendors receive 100% of payments
-- Solicitation-based system for condo registration (admin approval required)
-- Address privacy controls for vendors/service providers
+## 📄 Licença
+MIT

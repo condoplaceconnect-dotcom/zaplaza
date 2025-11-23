@@ -1,7 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { authService, authMiddleware, adminMiddleware } from "./auth";
+import { authService, authMiddleware, adminMiddleware, vendorMiddleware, serviceProviderMiddleware } from "./auth";
 import { insertUserSchema, insertCondoSchema, insertStoreSchema, insertProductSchema, insertServiceProviderSchema, insertServiceSchema } from "@shared/schema";
 import "./types";
 
@@ -37,8 +37,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: "Credenciais inválidas" });
       }
 
-      const token = authService.generateToken(user, 'user');
-      res.json({ token, user: { id: user.id, username: user.username } });
+      const token = authService.generateToken(user, user.role as any);
+      res.json({ token, user: { id: user.id, username: user.username, role: user.role } });
     } catch (error) {
       console.error("[LOGIN ERROR]", error);
       res.status(500).json({ error: "Erro ao fazer login" });
@@ -68,7 +68,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         condoId: condoId || null,
       });
 
-      const token = authService.generateToken(newUser, 'user');
+      const token = authService.generateToken(newUser, newUser.role as any);
       res.status(201).json({ token, user: { id: newUser.id, username: newUser.username, role: newUser.role } });
     } catch (error) {
       console.error("[REGISTER ERROR]", error);
@@ -133,8 +133,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ✅ ROTA: Criar Loja (protegida)
-  app.post("/api/stores", authMiddleware, async (req: Request, res: Response) => {
+  // ✅ ROTA: Criar Loja (protegida - vendor)
+  app.post("/api/stores", vendorMiddleware, async (req: Request, res: Response) => {
     try {
       if (!req.user) {
         return res.status(401).json({ error: "Não autenticado" });
@@ -206,8 +206,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ✅ ROTA: Criar Produto (protegida)
-  app.post("/api/products", authMiddleware, async (req: Request, res: Response) => {
+  // ✅ ROTA: Criar Produto (protegida - vendor)
+  app.post("/api/products", vendorMiddleware, async (req: Request, res: Response) => {
     try {
       if (!req.user) {
         return res.status(401).json({ error: "Não autenticado" });
@@ -218,7 +218,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: validation.error.errors[0].message });
       }
 
-      // Verificar se usuário é dono da loja
       const store = await storage.getStore(req.body.storeId);
       if (!store || store.userId !== req.user.userId) {
         return res.status(403).json({ error: "Sem permissão" });
@@ -279,6 +278,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("[PRODUCT DELETE ERROR]", error);
       res.status(500).json({ error: "Erro ao deletar produto" });
+    }
+  });
+
+  // ✅ ROTA: Listar Lojas de um Usuário
+  app.get("/api/users/:userId/stores", authMiddleware, async (req: Request, res: Response) => {
+    try {
+      const stores = await storage.getStoresByUser(req.params.userId);
+      res.json(stores);
+    } catch (error) {
+      console.error("[USER STORES ERROR]", error);
+      res.status(500).json({ error: "Erro ao listar lojas" });
     }
   });
 

@@ -1,0 +1,198 @@
+Revisão Geral do App – CondoPlace
+
+Objetivo: garantir que todas as abas (cliente, administrador, vendedor e prestador de serviço) funcionem de forma independente, organizada e sem conflitos de permissão.
+
+1. Estrutura de Usuários e Permissões
+
+Cada tipo de usuário deve ter fluxos separados, telas exclusivas e permissões próprias:
+
+🟦 Cliente / Morador
+
+Visualizar lojas do condomínio.
+
+Comprar produtos.
+
+Visualizar prestadores de serviço.
+
+Solicitar serviços.
+
+Acessar avisos/comunicados do condomínio.
+
+Ver e editar perfil.
+
+🟥 Administrador (Condomínio)
+
+Registrar condomínio (com autocomplete do Google Maps).
+
+Gerenciar moradores (aprovar, remover, editar).
+
+Gerenciar lojas e prestadores cadastrados.
+
+Criar comunicados.
+
+Ver dashboard do condomínio.
+
+Definir regras internas (horários, serviços permitidos, etc).
+
+🟧 Vendedor (Lojas Internas do Condomínio)
+
+Criar/editar produtos.
+
+Fazer upload de imagens.
+
+Gerenciar estoque e valores.
+
+Acompanhar pedidos.
+
+Responder clientes.
+
+🟩 Prestador de Serviço
+
+Criar sua página (estrutura semelhante à loja).
+
+Listar serviços, preços e disponibilidade.
+
+Receber solicitações/agendamentos.
+
+Atualizar status dos serviços.
+
+2. Funcionalidades Gerais a Ajustar/Integrar
+🔍 Autocomplete de localização (Google Maps Places API)
+
+Registro do condomínio deve usar autocomplete de estado, cidade e rua.
+
+Sugestões conforme digitação.
+
+Preenchimento automático quando selecionar.
+
+🗃️ Backend / Rotas
+
+Precisam ser revisadas e finalizadas:
+
+Listar condomínios
+
+Criar/atualizar lojas
+
+Criar/atualizar produtos
+
+Criar/atualizar prestadores
+
+Listar serviços
+
+Gerenciar moradores e permissões
+
+Dashboard do admin
+
+Pedidos e agendamentos
+
+Autenticação separada para cada tipo de usuário
+
+Middleware de permissão (cliente/admin/vendedor/prestador)
+
+🛢️ Banco de dados (Postgres + Drizzle)
+
+Criar migrations completas:
+
+usuários
+
+condomínios
+
+lojas
+
+produtos
+
+serviços
+
+pedidos
+
+agendamentos
+
+permissões
+
+comunicados
+
+Criar relações claras (FKs) para evitar conflitos entre papéis.
+
+🖼️ Upload de Imagens
+
+Produtos
+
+Lojas
+
+Prestadores de serviço
+
+Foto do condomínio
+
+De preferência usar:
+
+UploadThing
+
+Cloudflare R2
+
+Firebase Storage
+(qual o Replit preferir.)
+
+3. Revisão de Telas / Fluxos
+Cliente:
+
+Aba de lojas → funcionando
+
+Aba de serviços → funcionando
+
+Aba de perfil → editar dados corretamente
+
+Aba de comunicados → listar e marcar como lidos
+
+Carrinho + pagamento → integrar corretamente
+
+Administrador:
+
+Registro do condomínio → completo com autocomplete.
+
+Aba de moradores → CRUD funcional.
+
+Aba de lojas → aprovar, editar, remover.
+
+Aba de serviços → idem.
+
+Comunicados → enviar, editar e remover.
+
+Painel → métricas básicas funcionando.
+
+Vendedor:
+
+Criar produtos → com upload.
+
+Editar produtos → alterar preço, estoque, fotos.
+
+Ver pedidos → com status.
+
+Perfil da loja → editar nome, descrição, imagem.
+
+Prestador:
+
+Criar página → imagem, descrição, categorias.
+
+Criar serviços → valores, duração, disponibilidade.
+
+Gerenciar agenda → confirmar/cancelar.
+
+Perfil → editar dados.
+
+4. O que ainda falta (resumido e direto)
+
+Rotas de backend (CRUD completo).
+
+Integração com Postgres/Drizzle.
+
+Upload de imagens.
+
+Página de prestador de serviço.
+
+Testes funcionais de cada tipo de usuário.
+
+Revisão final das permissões.
+
+5. O App já está pronto estruturalmente
+
+Agora é simplesmente completar backend, integrar banco, configurar uploads e testar cada aba.

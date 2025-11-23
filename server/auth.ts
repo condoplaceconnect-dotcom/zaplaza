@@ -3,32 +3,29 @@ import * as bcrypt from 'bcrypt';
 import { type User } from '@shared/schema';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-change-in-production';
-const TOKEN_EXPIRY = '1h'; // Token expira em 1 hora
+const TOKEN_EXPIRY = '1h';
 
 export interface JWTPayload {
   userId: string;
   username: string;
-  role: 'user' | 'vendor' | 'driver' | 'admin';
+  role: 'resident' | 'vendor' | 'service_provider' | 'admin';
 }
 
 export const authService = {
-  // Hash de password
   hashPassword: async (password: string): Promise<string> => {
     const saltRounds = 10;
     return bcrypt.hash(password, saltRounds);
   },
 
-  // Verificar password
   verifyPassword: async (password: string, hash: string): Promise<boolean> => {
     return bcrypt.compare(password, hash);
   },
 
-  // Gerar JWT token
-  generateToken: (user: User, role: 'user' | 'vendor' | 'driver' | 'admin' = 'user'): string => {
+  generateToken: (user: User, role?: 'resident' | 'vendor' | 'service_provider' | 'admin'): string => {
     const payload: JWTPayload = {
       userId: user.id,
       username: user.username,
-      role
+      role: (role || user.role || 'resident') as any
     };
 
     return jwt.sign(payload, JWT_SECRET, {
@@ -38,7 +35,6 @@ export const authService = {
     });
   },
 
-  // Verificar e decodificar JWT token
   verifyToken: (token: string): JWTPayload | null => {
     try {
       const payload = jwt.verify(token, JWT_SECRET, {
@@ -51,7 +47,6 @@ export const authService = {
     }
   },
 
-  // Extrair token do header Authorization
   getTokenFromHeader: (authHeader: string | undefined): string | null => {
     if (!authHeader) return null;
     
@@ -78,29 +73,36 @@ export const authMiddleware = (req: any, res: any, next: any) => {
     return res.status(401).json({ error: 'Token inválido ou expirado' });
   }
 
-  // Anexar payload ao request para uso posterior
   req.user = payload;
   next();
 };
 
-// Middleware para proteger rotas admin
+// Middleware para admin
 export const adminMiddleware = (req: any, res: any, next: any) => {
-  const authHeader = req.headers.authorization;
-  const token = authService.getTokenFromHeader(authHeader);
+  authMiddleware(req, res, () => {
+    if (req.user?.role !== 'admin') {
+      return res.status(403).json({ error: 'Acesso restrito a administradores' });
+    }
+    next();
+  });
+};
 
-  if (!token) {
-    return res.status(401).json({ error: 'Token não fornecido' });
-  }
+// Middleware para vendor
+export const vendorMiddleware = (req: any, res: any, next: any) => {
+  authMiddleware(req, res, () => {
+    if (req.user?.role !== 'vendor') {
+      return res.status(403).json({ error: 'Acesso restrito a vendedores' });
+    }
+    next();
+  });
+};
 
-  const payload = authService.verifyToken(token);
-  if (!payload) {
-    return res.status(401).json({ error: 'Token inválido ou expirado' });
-  }
-
-  if (payload.role !== 'admin') {
-    return res.status(403).json({ error: 'Acesso negado. Apenas administradores podem acessar.' });
-  }
-
-  req.user = payload;
-  next();
+// Middleware para prestador de serviço
+export const serviceProviderMiddleware = (req: any, res: any, next: any) => {
+  authMiddleware(req, res, () => {
+    if (req.user?.role !== 'service_provider') {
+      return res.status(403).json({ error: 'Acesso restrito a prestadores de serviço' });
+    }
+    next();
+  });
 };
