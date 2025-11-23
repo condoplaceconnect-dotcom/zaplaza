@@ -221,7 +221,7 @@ export default function AdminDashboardPage() {
                   </div>
                   <div>
                     <Label>Estado</Label>
-                    <Input placeholder="SP" maxLength="2" data-testid="input-state" />
+                    <Input placeholder="SP" maxLength={2} data-testid="input-state" />
                   </div>
                 </div>
                 <div>

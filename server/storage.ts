@@ -79,41 +79,23 @@ export class MemStorage implements IStorage {
     };
     this.users.set(adminUser.id, adminUser);
 
-    // Criar condomínio de teste
-    const testCondo: Condominium = {
-      id: "condo-001",
-      name: "Residencial Jardim das Flores",
-      address: "Rua das Flores, 100",
-      city: "São Paulo",
-      state: "SP",
-      zipCode: "01234-567",
-      units: 120,
-      phone: "(11) 1234-5678",
-      email: "contato@jardimflores.com.br",
-      description: "Condomínio residencial moderno com área de lazer completa",
+    // ✅ Criar condomínio oficial: Acqua Sena
+    const acquaSena: Condominium = {
+      id: "condo-acqua-sena",
+      name: "Condominio Acqua Sena",
+      address: "Rua Itamar de Mattos Maia, 476",
+      city: "Canoas",
+      state: "RS",
+      zipCode: "92320-260",
+      units: 0, // será preenchido depois
+      phone: null,
+      email: null,
+      description: "Condomínio residencial Acqua Sena - Servidor Primário CondoPlace",
       image: null,
       status: "approved",
       createdAt: new Date(),
     };
-    this.condominiums.set(testCondo.id, testCondo);
-
-    // Criar condomínio pendente de teste
-    const pendingCondo: Condominium = {
-      id: "condo-pending-001",
-      name: "Condomínio Vila Verde",
-      address: "Av. Verde, 200",
-      city: "São Paulo",
-      state: "SP",
-      zipCode: "01234-568",
-      units: 80,
-      phone: "(11) 9876-5432",
-      email: "contato@vilaverde.com.br",
-      description: "Novo condomínio com área verde",
-      image: null,
-      status: "pending",
-      createdAt: new Date(),
-    };
-    this.condominiums.set(pendingCondo.id, pendingCondo);
+    this.condominiums.set(acquaSena.id, acquaSena);
   }
 
   // ===== USERS =====
