@@ -116,7 +116,7 @@ export default async function runApp(
     res.status(status).json({ message });
   });
 
-  const PORT = process.env.PORT || 5000;
+  const PORT = parseInt(process.env.PORT || "5000", 10);
   server.listen(PORT, "0.0.0.0", async () => {
     log(`serving on port ${PORT}`);
     await setup(app, server);

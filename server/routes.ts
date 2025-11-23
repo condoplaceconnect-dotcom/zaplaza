@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { authService, authMiddleware, adminMiddleware } from "./auth";
 import { insertUserSchema } from "@shared/schema";
+import "./types"; // Carrega as extensões de tipos
 
 interface PaymentIntentRequest {
   amount: number;
