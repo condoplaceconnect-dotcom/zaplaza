@@ -14,6 +14,7 @@ CondoPlace é um **app mobile estilo "mini iFood + marketplace interno"** para c
 - Interface leve e minimalista
 - Mobile-first (preparado para APK Android)
 - Chat apenas para transações (sem chat entre moradores)
+- **Verificação de email** - Email de confirmação após registro (como Instagram/Facebook)
 
 ---
 
