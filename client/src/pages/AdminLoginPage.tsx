@@ -51,12 +51,16 @@ export default function AdminLoginPage() {
 
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
-      setLocation("/admin/dashboard");
-
+      
       toast({
         title: "Sucesso",
         description: "Login realizado com sucesso",
       });
+
+      // Recarregar página para atualizar estado de login
+      setTimeout(() => {
+        window.location.href = "/admin/dashboard";
+      }, 500);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Erro ao fazer login";
       setError(message);
