@@ -34,23 +34,23 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"], // Para Tailwind
-      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'"], // API calls
-      fontSrc: ["'self'"],
+      connectSrc: ["'self'", "http://localhost:*"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
       objectSrc: ["'none'"],
       upgradeInsecureRequests: []
     }
   },
   hsts: {
-    maxAge: 31536000, // 1 year
+    maxAge: 31536000,
     includeSubDomains: true,
     preload: true
   },
-  frameguard: { action: 'deny' }, // Prevenir clickjacking
-  noSniff: true, // Prevenir MIME sniffing
-  xssFilter: true // Proteger contra XSS
+  frameguard: { action: 'deny' },
+  noSniff: true,
+  xssFilter: true
 }));
 
 // ✅ CORS seguro
