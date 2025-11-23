@@ -126,6 +126,14 @@ export default function HomePage() {
               itemCount={cartItems.reduce((sum, item) => sum + item.quantity, 0)}
               onClick={() => setCartOpen(true)}
             />
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setLocation('/register')}
+              data-testid="button-register"
+            >
+              Cadastro
+            </Button>
             <ThemeToggle />
           </div>
         </div>
@@ -134,7 +142,7 @@ export default function HomePage() {
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-8">
         <HeroBanner banners={banners} />
 
-        <div className="flex gap-4 justify-center">
+        <div className="flex gap-4 justify-center flex-wrap">
           <Button
             size="lg"
             onClick={() => setLocation('/services')}
@@ -142,6 +150,15 @@ export default function HomePage() {
             className="flex-1 max-w-sm"
           >
             Buscar Serviços & Profissionais
+          </Button>
+          <Button
+            size="lg"
+            variant="outline"
+            onClick={() => setLocation('/register-condo')}
+            data-testid="button-register-condo"
+            className="flex-1 max-w-sm"
+          >
+            Registrar Condomínio
           </Button>
         </div>
 

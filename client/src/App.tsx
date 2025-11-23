@@ -13,6 +13,8 @@ import ProfilePage from "@/pages/ProfilePage";
 import VendorProfilePage from "@/pages/VendorProfilePage";
 import DeliveryProfilePage from "@/pages/DeliveryProfilePage";
 import SettingsPage from "@/pages/SettingsPage";
+import CondoRegistrationPage from "@/pages/CondoRegistrationPage";
+import UserRegistrationPage from "@/pages/UserRegistrationPage";
 
 function Router() {
   return (
@@ -26,6 +28,8 @@ function Router() {
       <Route path="/vendor/profile" component={VendorProfilePage} />
       <Route path="/delivery/profile" component={DeliveryProfilePage} />
       <Route path="/settings" component={SettingsPage} />
+      <Route path="/register-condo" component={CondoRegistrationPage} />
+      <Route path="/register" component={UserRegistrationPage} />
       <Route component={NotFound} />
     </Switch>
   );
