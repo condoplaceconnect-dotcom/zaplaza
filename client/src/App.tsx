@@ -20,6 +20,8 @@ const CondoRegistrationPage = lazy(() => import("@/pages/CondoRegistrationPage")
 const UserRegistrationPage = lazy(() => import("@/pages/UserRegistrationPage"));
 const CheckoutPage = lazy(() => import("@/pages/CheckoutPage"));
 const AdminPaymentsPage = lazy(() => import("@/pages/AdminPaymentsPage"));
+const CondoSelectorPage = lazy(() => import("@/pages/CondoSelectorPage"));
+const StoreProfilePage = lazy(() => import("@/pages/StoreProfilePage"));
 
 // Componente de carregamento
 function PageLoader() {
@@ -33,6 +35,23 @@ function PageLoader() {
 }
 
 function Router() {
+  const isLoggedIn = !!localStorage.getItem("token");
+
+  // Se não está logado, redireciona para seleção de condomínio
+  if (!isLoggedIn) {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <Switch>
+          <Route path="/" component={CondoSelectorPage} />
+          <Route path="/register-condo" component={CondoRegistrationPage} />
+          <Route path="/register" component={UserRegistrationPage} />
+          <Route component={NotFound} />
+        </Switch>
+      </Suspense>
+    );
+  }
+
+  // Se está logado, mostra todas as rotas
   return (
     <Suspense fallback={<PageLoader />}>
       <Switch>
@@ -41,8 +60,9 @@ function Router() {
         <Route path="/services" component={ServicesPage} />
         <Route path="/appointments" component={AppointmentsPage} />
         <Route path="/vendor" component={VendorDashboard} />
+        <Route path="/vendor/profile" component={StoreProfilePage} />
         <Route path="/profile" component={ProfilePage} />
-        <Route path="/vendor/profile" component={VendorProfilePage} />
+        <Route path="/vendor/profile-old" component={VendorProfilePage} />
         <Route path="/delivery/profile" component={DeliveryProfilePage} />
         <Route path="/settings" component={SettingsPage} />
         <Route path="/register-condo" component={CondoRegistrationPage} />
