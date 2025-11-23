@@ -1,23 +1,45 @@
-import { type User, type InsertUser, type Condominium, type InsertCondominium, type Store, type InsertStore, type Product, type InsertProduct } from "@shared/schema";
+import { type User, type InsertUser, type Condominium, type InsertCondominium, type Store, type InsertStore, type Product, type InsertProduct, type DeliveryPerson, type InsertDeliveryPerson, type Order, type InsertOrder } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
+  // Users
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+
+  // Condominiums
   getCondominium(id: string): Promise<Condominium | undefined>;
   listCondominiums(): Promise<Condominium[]>;
   createCondominium(condo: InsertCondominium): Promise<Condominium>;
+
+  // Stores
   getStore(id: string): Promise<Store | undefined>;
   getStoresByUser(userId: string): Promise<Store[]>;
   getStoresByCondo(condoId: string): Promise<Store[]>;
   createStore(store: InsertStore): Promise<Store>;
   updateStore(id: string, store: Partial<Store>): Promise<Store | undefined>;
+
+  // Products
   getProduct(id: string): Promise<Product | undefined>;
   getProductsByStore(storeId: string): Promise<Product[]>;
   createProduct(product: InsertProduct): Promise<Product>;
   updateProduct(id: string, product: Partial<Product>): Promise<Product | undefined>;
   deleteProduct(id: string): Promise<boolean>;
+
+  // Delivery Persons
+  getDeliveryPerson(id: string): Promise<DeliveryPerson | undefined>;
+  getDeliveryPersonsByUser(userId: string): Promise<DeliveryPerson[]>;
+  getDeliveryPersonsByCondo(condoId: string): Promise<DeliveryPerson[]>;
+  createDeliveryPerson(person: InsertDeliveryPerson): Promise<DeliveryPerson>;
+  updateDeliveryPerson(id: string, person: Partial<DeliveryPerson>): Promise<DeliveryPerson | undefined>;
+
+  // Orders
+  getOrder(id: string): Promise<Order | undefined>;
+  getOrdersByResident(residentId: string): Promise<Order[]>;
+  getOrdersByStore(storeId: string): Promise<Order[]>;
+  getOrdersByCondo(condoId: string): Promise<Order[]>;
+  createOrder(order: InsertOrder): Promise<Order>;
+  updateOrder(id: string, order: Partial<Order>): Promise<Order | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -25,14 +47,19 @@ export class MemStorage implements IStorage {
   private condominiums: Map<string, Condominium>;
   private stores: Map<string, Store>;
   private products: Map<string, Product>;
+  private deliveryPersons: Map<string, DeliveryPerson>;
+  private orders: Map<string, Order>;
 
   constructor() {
     this.users = new Map();
     this.condominiums = new Map();
     this.stores = new Map();
     this.products = new Map();
+    this.deliveryPersons = new Map();
+    this.orders = new Map();
   }
 
+  // ===== USERS =====
   async getUser(id: string): Promise<User | undefined> {
     return this.users.get(id);
   }
@@ -54,6 +81,7 @@ export class MemStorage implements IStorage {
     return user;
   }
 
+  // ===== CONDOMINIUMS =====
   async getCondominium(id: string): Promise<Condominium | undefined> {
     return this.condominiums.get(id);
   }
@@ -78,6 +106,7 @@ export class MemStorage implements IStorage {
     return condo;
   }
 
+  // ===== STORES =====
   async getStore(id: string): Promise<Store | undefined> {
     return this.stores.get(id);
   }
@@ -87,7 +116,8 @@ export class MemStorage implements IStorage {
   }
 
   async getStoresByCondo(condoId: string): Promise<Store[]> {
-    return Array.from(this.stores.values()).filter((s) => s.condoId === condoId);
+    // TODO: Join with storeCondominiums table
+    return Array.from(this.stores.values());
   }
 
   async createStore(insertStore: InsertStore): Promise<Store> {
@@ -115,6 +145,7 @@ export class MemStorage implements IStorage {
     return updated;
   }
 
+  // ===== PRODUCTS =====
   async getProduct(id: string): Promise<Product | undefined> {
     return this.products.get(id);
   }
@@ -150,6 +181,90 @@ export class MemStorage implements IStorage {
 
   async deleteProduct(id: string): Promise<boolean> {
     return this.products.delete(id);
+  }
+
+  // ===== DELIVERY PERSONS =====
+  async getDeliveryPerson(id: string): Promise<DeliveryPerson | undefined> {
+    return this.deliveryPersons.get(id);
+  }
+
+  async getDeliveryPersonsByUser(userId: string): Promise<DeliveryPerson[]> {
+    return Array.from(this.deliveryPersons.values()).filter((dp) => dp.userId === userId);
+  }
+
+  async getDeliveryPersonsByCondo(condoId: string): Promise<DeliveryPerson[]> {
+    // TODO: Join with deliveryPersonCondominiums table
+    return Array.from(this.deliveryPersons.values());
+  }
+
+  async createDeliveryPerson(insertPerson: InsertDeliveryPerson): Promise<DeliveryPerson> {
+    const id = randomUUID();
+    const person: DeliveryPerson = {
+      ...insertPerson,
+      id,
+      image: insertPerson.image || null,
+      phone: insertPerson.phone || null,
+      block: insertPerson.block || null,
+      unit: insertPerson.unit || null,
+      status: insertPerson.status || "offline",
+      rating: insertPerson.rating || null,
+      totalDeliveries: insertPerson.totalDeliveries || 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.deliveryPersons.set(id, person);
+    return person;
+  }
+
+  async updateDeliveryPerson(id: string, updates: Partial<DeliveryPerson>): Promise<DeliveryPerson | undefined> {
+    const person = this.deliveryPersons.get(id);
+    if (!person) return undefined;
+    const updated = { ...person, ...updates, updatedAt: new Date() };
+    this.deliveryPersons.set(id, updated);
+    return updated;
+  }
+
+  // ===== ORDERS =====
+  async getOrder(id: string): Promise<Order | undefined> {
+    return this.orders.get(id);
+  }
+
+  async getOrdersByResident(residentId: string): Promise<Order[]> {
+    return Array.from(this.orders.values()).filter((o) => o.residentId === residentId);
+  }
+
+  async getOrdersByStore(storeId: string): Promise<Order[]> {
+    return Array.from(this.orders.values()).filter((o) => o.storeId === storeId);
+  }
+
+  async getOrdersByCondo(condoId: string): Promise<Order[]> {
+    return Array.from(this.orders.values()).filter((o) => o.condoId === condoId);
+  }
+
+  async createOrder(insertOrder: InsertOrder): Promise<Order> {
+    const id = randomUUID();
+    const order: Order = {
+      ...insertOrder,
+      id,
+      status: insertOrder.status || "pending",
+      deliveryPersonId: insertOrder.deliveryPersonId || null,
+      notes: insertOrder.notes || null,
+      deliveryAddress: insertOrder.deliveryAddress || null,
+      tip: insertOrder.tip || null,
+      rating: insertOrder.rating || null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.orders.set(id, order);
+    return order;
+  }
+
+  async updateOrder(id: string, updates: Partial<Order>): Promise<Order | undefined> {
+    const order = this.orders.get(id);
+    if (!order) return undefined;
+    const updated = { ...order, ...updates, updatedAt: new Date() };
+    this.orders.set(id, updated);
+    return updated;
   }
 }
 

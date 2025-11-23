@@ -8,7 +8,7 @@ const TOKEN_EXPIRY = '1h';
 export interface JWTPayload {
   userId: string;
   username: string;
-  role: 'resident' | 'vendor' | 'service_provider' | 'admin';
+  role: 'resident' | 'vendor' | 'service_provider' | 'delivery_person' | 'admin';
 }
 
 export const authService = {
@@ -21,7 +21,7 @@ export const authService = {
     return bcrypt.compare(password, hash);
   },
 
-  generateToken: (user: User, role?: 'resident' | 'vendor' | 'service_provider' | 'admin'): string => {
+  generateToken: (user: User, role?: 'resident' | 'vendor' | 'service_provider' | 'delivery_person' | 'admin'): string => {
     const payload: JWTPayload = {
       userId: user.id,
       username: user.username,
@@ -102,6 +102,16 @@ export const serviceProviderMiddleware = (req: any, res: any, next: any) => {
   authMiddleware(req, res, () => {
     if (req.user?.role !== 'service_provider') {
       return res.status(403).json({ error: 'Acesso restrito a prestadores de serviço' });
+    }
+    next();
+  });
+};
+
+// Middleware para entregador
+export const deliveryPersonMiddleware = (req: any, res: any, next: any) => {
+  authMiddleware(req, res, () => {
+    if (req.user?.role !== 'delivery_person') {
+      return res.status(403).json({ error: 'Acesso restrito a entregadores' });
     }
     next();
   });

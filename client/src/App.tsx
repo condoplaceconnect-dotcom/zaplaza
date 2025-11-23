@@ -24,6 +24,7 @@ const CondoSelectorPage = lazy(() => import("@/pages/CondoSelectorPage"));
 const StoreProfilePage = lazy(() => import("@/pages/StoreProfilePage"));
 const ServiceProviderProfilePage = lazy(() => import("@/pages/ServiceProviderProfilePage"));
 const AdminDashboardPage = lazy(() => import("@/pages/AdminDashboardPage"));
+const DeliveryDashboardPage = lazy(() => import("@/pages/DeliveryDashboardPage"));
 
 // Componente de carregamento
 function PageLoader() {
@@ -65,6 +66,7 @@ function Router() {
         <Route path="/vendor/profile" component={StoreProfilePage} />
         <Route path="/service/profile" component={ServiceProviderProfilePage} />
         <Route path="/admin/dashboard" component={AdminDashboardPage} />
+        <Route path="/delivery/dashboard" component={DeliveryDashboardPage} />
         <Route path="/profile" component={ProfilePage} />
         <Route path="/vendor/profile-old" component={VendorProfilePage} />
         <Route path="/delivery/profile" component={DeliveryProfilePage} />

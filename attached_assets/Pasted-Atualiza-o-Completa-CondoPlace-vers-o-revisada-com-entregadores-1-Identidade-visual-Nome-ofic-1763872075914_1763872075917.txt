@@ -1,0 +1,256 @@
+Atualização Completa – CondoPlace (versão revisada com entregadores)
+1. Identidade visual
+
+Nome oficial do app: CondoPlace
+
+Cores:
+
+Verde → cabeçalhos, botões principais, ícones
+
+Branco → fundo
+
+Preto → textos
+
+Layout minimalista, intuitivo e com foco em velocidade (experiência estilo iFood, porém organizada por condomínios).
+
+2. Arquitetura Multi-Condomínio (“servidores”)
+
+Cada condomínio funciona como um servidor isolado, contendo:
+
+Suas lojas
+
+Seus prestadores de serviço
+
+Seus entregadores
+
+Seus moradores
+
+Seus comunicados
+
+Seus pedidos
+
+Nada aparece em outro condomínio.
+
+Lojas e prestadores podem se cadastrar em mais de um condomínio
+
+A loja/serviço aparece somente no condomínio selecionado.
+
+Deve existir uma opção: “Adicionar esta loja a outro condomínio”.
+
+3. Tipos de usuário e suas abas
+🟦 1. Morador (Cliente)
+
+Ver lojas por categorias
+
+Ver prestadores por categorias
+
+Comprar produtos
+
+Solicitar serviços
+
+Ver comunicados
+
+Ver entregadores disponíveis
+
+Acompanhar status da entrega
+
+Perfil próprio
+
+🟧 2. Vendedor (Lojas)
+
+Criar/editar produtos
+
+Uploads de imagem
+
+Gerenciar pedidos
+
+Selecionar entregador para retirada (quando aplicável)
+
+Cadastrar loja em mais condomínios
+
+🟩 3. Prestador de Serviço
+
+Criar página
+
+Criar serviços com valores e horário
+
+Receber solicitações e confirmar
+
+Pode se cadastrar em múltiplos condomínios
+
+Perfil separado
+
+🟥 4. Administrador (Condomínio)
+
+Cadastro do condomínio (com Google Maps autocomplete)
+
+Gerenciar moradores
+
+Autorizar lojas, prestadores e entregadores
+
+Criar comunicados
+
+Painel interno
+
+🟨 5. Entregador do Condomínio
+
+Novo papel incluído.
+Esses entregadores são moradores ou trabalhadores internos responsáveis por fazer “tele” dentro do condomínio.
+
+Aba exclusiva para entregadores (permissões separadas):
+
+Criar perfil com foto, nome, bloco e telefone
+
+Mostrar disponibilidade: online/offline
+
+Receber pedidos de entrega
+
+Aceitar, recusar e marcar como concluído
+
+Histórico de entregas
+
+Notificações em tempo real
+
+Pode ser vinculado a um ou mais condomínios
+
+Fluxo (cliente → loja → entregador):
+
+Cliente faz o pedido na loja
+
+Loja prepara o pedido
+
+Loja escolhe um entregador disponível ou o sistema atribui automaticamente (opcional)
+
+Entregador recebe notificação
+
+Entregador retira na loja
+
+Entregador entrega na unidade
+
+Cliente confirma recebimento
+
+Melhorias sugeridas para os entregadores:
+
+Ranking interno (baseado em avaliações)
+
+Notificações push
+
+Indicação de “entregador mais rápido / mais bem avaliado”
+
+Gorjeta opcional na finalização da entrega
+
+Mapinha simples do condomínio (não precisa ser GPS, apenas referência: bloco A, bloco B, etc.)
+
+4. Organização das Abas do App
+Abas principais do morador:
+
+Lojas (com produtos, categorias e filtros)
+
+Serviços (com categorias e agendamento)
+
+Entregadores (lista e disponibilidade)
+
+Pedidos (acompanhar status)
+
+Perfil
+
+5. Backend Necessário
+Rotas:
+
+CRUD condomínios
+
+CRUD lojas
+
+CRUD produtos
+
+CRUD prestadores
+
+CRUD serviços
+
+CRUD entregadores
+
+CRUD pedidos
+
+CRUD agendamentos
+
+CRUD comunicados
+
+Sistema de atribuição de entregador
+
+Middleware de permissão (cliente, vendedor, prestador, admin, entregador)
+
+Login separado por tipo de usuário
+
+6. Banco de Dados (Postgres + Drizzle)
+Migrations necessárias:
+
+usuarios (role: morador, admin, vendedor, prestador, entregador)
+
+condominios
+
+lojas
+
+loja_condominio (para vincular loja a múltiplos condomínios)
+
+produtos
+
+prestadores
+
+prestador_condominio (para múltiplos condomínios)
+
+servicos
+
+entregadores
+
+entregador_condominio
+
+pedidos
+
+agendamentos
+
+comunicados
+
+7. Upload de Imagem
+
+Produtos
+
+Lojas
+
+Prestadores
+
+Entregadores
+
+Condomínio (capa)
+
+8. Melhoria da Experiência Geral do CondoPlace
+Para moradores
+
+Favoritar lojas e prestadores
+
+Histórico de pedidos
+
+Cupons internos por condomínio
+
+Avaliação de produto, loja, prestador e entregador
+
+Para vendedores
+
+Destaques de produtos
+
+Promoções
+
+Dashboard simples
+
+Para prestadores
+
+Agenda visual
+
+Mensagens rápidas
+
+Para entregadores
+
+Mapa simplificado dos blocos
+
+Status online/offline
+
+Feedback do cliente
