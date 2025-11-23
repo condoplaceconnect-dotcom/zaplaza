@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { authService, authMiddleware, adminMiddleware, vendorMiddleware, serviceProviderMiddleware, deliveryPersonMiddleware } from "./auth";
 import { insertUserSchema, insertCondoSchema, insertStoreSchema, insertProductSchema, insertServiceProviderSchema, insertServiceSchema, insertDeliveryPersonSchema, insertOrderSchema } from "@shared/schema";
+import { registerAdminRoutes } from "./admin-routes";
 import "./types";
 
 interface PaymentIntentRequest {
@@ -428,6 +429,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(400).json({ error: "Erro no upload" });
     }
   });
+
+  // ✅ Register admin routes
+  registerAdminRoutes(app);
 
   const httpServer = createServer(app);
   return httpServer;

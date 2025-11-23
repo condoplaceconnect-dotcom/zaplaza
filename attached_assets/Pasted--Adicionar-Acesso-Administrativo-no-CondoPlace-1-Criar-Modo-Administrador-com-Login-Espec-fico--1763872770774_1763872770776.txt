@@ -1,0 +1,133 @@
+✅ Adicionar Acesso Administrativo no CondoPlace
+1. Criar “Modo Administrador” com Login Específico
+
+Será criado um fluxo de login separado para o administrador, com permissões exclusivas.
+
+Requisitos:
+
+O admin deve acessar por um caminho exclusivo, exemplo:
+/admin ou condoplace.app/admin
+
+Tela de login deve validar:
+
+email
+
+senha
+
+role = admin
+
+Caso não seja admin, redirecionar automaticamente.
+
+Banco de dados
+
+Na tabela usuarios, confirmar que existe o campo:
+
+role: "morador" | "vendedor" | "prestador" | "entregador" | "admin"
+
+✅ 2. Painel Administrativo (Dashboard Admin)
+
+Após login, o admin cai em uma página exclusiva com as seguintes abas:
+
+📌 1. Solicitações pendentes
+
+Aprovação de moradores
+
+Aprovação de lojas
+
+Aprovação de prestadores de serviço
+
+Aprovação de entregadores
+
+Aprovação de novos vínculos (loja solicitar entrar em outro condomínio)
+
+Botões:
+
+Aprovar
+
+Rejeitar
+
+Ver detalhes
+
+📌 2. Cadastro e edição do condomínio
+
+Dados do condomínio
+
+Endereço com autocomplete Google Maps
+
+Foto de capa
+
+📌 3. Gerenciar moradores
+
+Lista completa
+
+Editar / remover
+
+Resetar senha
+
+Atribuir cargos especiais (por exemplo, moderador interno futuramente)
+
+📌 4. Gerenciar lojas
+
+Lista
+
+Status: ativo / pendente / bloqueado
+
+Botões: editar / remover
+
+📌 5. Gerenciar prestadores e entregadores
+
+Dados completos
+
+Gerenciar disponibilidade
+
+Aprovar entrada em mais condomínios
+
+📌 6. Comunicados
+
+Criar comunicado
+
+Editar
+
+Remover
+
+✅ 3. Botão para entrar como Admin dentro do próprio app
+
+Caso tu queira acessar pelo mesmo app instalado, também dá para ativar:
+
+⚠️ Modo oculto para administradores (tipo comando secreto) – Opcional
+
+Na tela de login normal, existe um botão pequeno:
+“Entrar como Administrador”
+
+Ou, se quiser deixar estiloso tipo “app corporativo”:
+Ao tocar 5 vezes no logo → abrir a tela de login admin.
+(O Replit pode implementar isso fácil.)
+
+✅ 4. Rotas Backend para Aprovação
+
+Precisa acrescentar no servidor as rotas:
+
+Solicitações de usuários:
+GET /admin/solicitacoes
+POST /admin/aprovar/:id
+POST /admin/rejeitar/:id
+
+Solicitações de loja e prestador:
+GET /admin/solicitacoes/lojas
+GET /admin/solicitacoes/prestadores
+GET /admin/solicitacoes/entregadores
+POST /admin/aprovar-loja/:id
+POST /admin/aprovar-prestador/:id
+POST /admin/aprovar-entregador/:id
+
+✅ 5. Segurança mínima
+
+Middleware: bloquear qualquer usuário que não seja admin ao acessar rotas /admin
+
+Tokens exclusivos para admins
+
+Logs simples de quem aprovou/rejeitou
+
+🎯 Resumo simples para mandar ao Replit
+
+Criar um fluxo completo de acesso admin (login separado, rota /admin) com painel contendo: solicitações pendentes, gerenciamento de moradores, lojas, prestadores e entregadores, cadastro do condomínio e comunicados. Criar sistema de aprovação/rejeição e rotas específicas do backend, além de middleware para bloquear quem não for admin. Permitir que o admin entre pelo navegador ou pelo app via botão “Entrar como Admin”.

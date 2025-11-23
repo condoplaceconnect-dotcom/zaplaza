@@ -7,6 +7,8 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  listUsersByRole(role: string): Promise<User[]>;
+  updateUser(id: string, user: Partial<User>): Promise<User | undefined>;
 
   // Condominiums
   getCondominium(id: string): Promise<Condominium | undefined>;
@@ -134,6 +136,18 @@ export class MemStorage implements IStorage {
     };
     this.users.set(id, user);
     return user;
+  }
+
+  async listUsersByRole(role: string): Promise<User[]> {
+    return Array.from(this.users.values()).filter((u) => u.role === role);
+  }
+
+  async updateUser(id: string, updates: Partial<User>): Promise<User | undefined> {
+    const user = this.users.get(id);
+    if (!user) return undefined;
+    const updated = { ...user, ...updates };
+    this.users.set(id, updated);
+    return updated;
   }
 
   // ===== CONDOMINIUMS =====

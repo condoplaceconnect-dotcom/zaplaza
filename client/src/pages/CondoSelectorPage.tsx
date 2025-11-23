@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Plus, Search } from "lucide-react";
+import { AlertCircle, Plus, Search, LogIn } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Condominium {
@@ -66,9 +66,20 @@ export default function CondoSelectorPage() {
   return (
     <div className="min-h-screen bg-background py-8">
       <div className="max-w-2xl mx-auto px-4">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Bem-vindo ao CondoPlace</h1>
-          <p className="text-muted-foreground">Selecione seu condomínio para continuar</p>
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold mb-2">Bem-vindo ao CondoPlace</h1>
+            <p className="text-muted-foreground">Selecione seu condomínio para continuar</p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setLocation("/admin/login")}
+            data-testid="button-admin-login"
+            className="text-xs"
+          >
+            Admin
+          </Button>
         </div>
 
         <Card className="p-6 mb-6">

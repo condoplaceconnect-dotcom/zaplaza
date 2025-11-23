@@ -24,6 +24,7 @@ const CondoSelectorPage = lazy(() => import("@/pages/CondoSelectorPage"));
 const StoreProfilePage = lazy(() => import("@/pages/StoreProfilePage"));
 const ServiceProviderProfilePage = lazy(() => import("@/pages/ServiceProviderProfilePage"));
 const AdminDashboardPage = lazy(() => import("@/pages/AdminDashboardPage"));
+const AdminLoginPage = lazy(() => import("@/pages/AdminLoginPage"));
 const DeliveryDashboardPage = lazy(() => import("@/pages/DeliveryDashboardPage"));
 
 // Componente de carregamento
@@ -46,6 +47,7 @@ function Router() {
       <Suspense fallback={<PageLoader />}>
         <Switch>
           <Route path="/" component={CondoSelectorPage} />
+          <Route path="/admin/login" component={AdminLoginPage} />
           <Route path="/register-condo" component={CondoRegistrationPage} />
           <Route path="/register" component={UserRegistrationPage} />
           <Route component={NotFound} />
