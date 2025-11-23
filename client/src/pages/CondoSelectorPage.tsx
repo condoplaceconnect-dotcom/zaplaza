@@ -67,7 +67,7 @@ export default function CondoSelectorPage() {
     <div className="min-h-screen bg-background py-8">
       <div className="max-w-2xl mx-auto px-4">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Bem-vindo ao CondomínioMarket</h1>
+          <h1 className="text-3xl font-bold mb-2">Bem-vindo ao CondoPlace</h1>
           <p className="text-muted-foreground">Selecione seu condomínio para continuar</p>
         </div>
 
