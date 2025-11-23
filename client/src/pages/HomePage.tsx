@@ -10,6 +10,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import BottomNav from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
+import { User } from "lucide-react";
 
 import heroBannerImg from '@assets/generated_images/marketplace_hero_banner.png';
 import brigadeiroImg from '@assets/generated_images/brigadeiro_dessert_product_photo.png';
@@ -110,6 +111,14 @@ export default function HomePage() {
           </div>
           <SearchBar value={search} onChange={setSearch} />
           <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setLocation('/profile')}
+              data-testid="button-profile"
+            >
+              <User className="w-5 h-5" />
+            </Button>
             <CartButton
               itemCount={cartItems.reduce((sum, item) => sum + item.quantity, 0)}
               onClick={() => setCartOpen(true)}

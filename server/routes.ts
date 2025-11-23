@@ -211,6 +211,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ✅ USER PROFILE UPDATE (próprio usuário)
+  app.patch("/api/users/:id", authMiddleware, async (req: Request, res: Response) => {
+    try {
+      if (!req.user) return res.status(401).json({ error: "Não autenticado" });
+      
+      // Verificar se está tentando atualizar seu próprio perfil
+      if (req.user.userId !== req.params.id) {
+        return res.status(403).json({ error: "Você só pode atualizar seu próprio perfil" });
+      }
+
+      // Permitir atualizar apenas alguns campos
+      const { name, email, phone } = req.body;
+      const updated = await storage.updateUser(req.params.id, { name, email, phone });
+      
+      if (!updated) {
+        return res.status(404).json({ error: "Usuário não encontrado" });
+      }
+      
+      const { password, ...rest } = updated;
+      res.json(rest);
+    } catch (error) {
+      console.error("[USER UPDATE PROFILE ERROR]", error);
+      res.status(500).json({ error: "Erro ao atualizar perfil" });
+    }
+  });
+
   // ✅ CONDOMINIUM ROUTES
   app.get("/api/condominiums", async (req: Request, res: Response) => {
     try {
