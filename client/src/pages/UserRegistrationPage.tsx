@@ -12,11 +12,43 @@ import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 type UserType = 'customer' | 'vendor' | 'delivery';
+type VendorType = 'store' | 'service' | null;
+
+const STORE_CATEGORIES = [
+  'Doces e Confeitaria',
+  'Alimentos e Mercearia',
+  'Bebidas',
+  'Roupas e Moda',
+  'Farmacêuticos',
+  'Eletrônicos',
+  'Livros e Papelaria',
+  'Beleza e Higiene',
+  'Brinquedos',
+  'Artigos Esportivos',
+  'Itens para Casa',
+  'Flores e Plantas'
+];
+
+const SERVICE_TYPES = [
+  'Serviços Gerais',
+  'Estética e Beleza',
+  'Serviços de Manutenção',
+  'Costureira',
+  'Limpeza',
+  'Encanador',
+  'Eletricista',
+  'Pintor',
+  'Personal Trainer',
+  'Aulas e Consultoria',
+  'Reparo de Eletrônicos',
+  'Jardinage'
+];
 
 export default function UserRegistrationPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [userType, setUserType] = useState<UserType>('customer');
+  const [vendorType, setVendorType] = useState<VendorType>(null);
   const [photo, setPhoto] = useState('');
 
   // TODO: Remover dados mock quando integrar com backend
@@ -34,6 +66,7 @@ export default function UserRegistrationPage() {
     block: '',
     apartment: '',
     storeName: '',
+    storeCategory: '',
     serviceType: '',
     addressPrivacy: false,
     password: '',
@@ -60,6 +93,48 @@ export default function UserRegistrationPage() {
     setLocation('/');
   };
 
+  // Renderizar abas de vendor tipo
+  const renderVendorTypeSelection = () => {
+    if (userType !== 'vendor') return null;
+
+    return (
+      <Card className="p-6 mb-6 bg-secondary/50">
+        <h2 className="text-lg font-semibold mb-4">Tipo de Cadastro</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Button
+            type="button"
+            variant={vendorType === 'store' ? 'default' : 'outline'}
+            onClick={() => {
+              setVendorType('store');
+              setFormData({ ...formData, serviceType: '' });
+            }}
+            className="h-24 flex flex-col items-center justify-center"
+            data-testid="button-vendor-store"
+          >
+            <div className="text-2xl mb-2">🏪</div>
+            <span>Loja</span>
+            <span className="text-xs text-muted-foreground mt-1">Vender produtos</span>
+          </Button>
+
+          <Button
+            type="button"
+            variant={vendorType === 'service' ? 'default' : 'outline'}
+            onClick={() => {
+              setVendorType('service');
+              setFormData({ ...formData, storeCategory: '' });
+            }}
+            className="h-24 flex flex-col items-center justify-center"
+            data-testid="button-vendor-service"
+          >
+            <div className="text-2xl mb-2">🔧</div>
+            <span>Prestador de Serviço</span>
+            <span className="text-xs text-muted-foreground mt-1">Oferecer serviços</span>
+          </Button>
+        </div>
+      </Card>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 bg-card border-b">
@@ -77,7 +152,10 @@ export default function UserRegistrationPage() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-6">
-        <Tabs value={userType} onValueChange={(v) => setUserType(v as UserType)} className="w-full">
+        <Tabs value={userType} onValueChange={(v) => {
+          setUserType(v as UserType);
+          setVendorType(null);
+        }} className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="customer" data-testid="tab-customer">Cliente</TabsTrigger>
             <TabsTrigger value="vendor" data-testid="tab-vendor">Vendedor</TabsTrigger>
@@ -219,178 +297,224 @@ export default function UserRegistrationPage() {
             </TabsContent>
 
             <TabsContent value="vendor" className="space-y-6">
-              <Card className="p-6 space-y-6">
-                <div>
-                  <h2 className="text-lg font-semibold mb-4">Foto da Loja</h2>
-                  <PhotoUpload
-                    currentPhoto={photo}
-                    name={formData.storeName || 'Minha Loja'}
-                    onPhotoChange={setPhoto}
-                  />
-                </div>
+              {renderVendorTypeSelection()}
 
-                <div className="space-y-4">
-                  <h2 className="text-lg font-semibold">Informações Pessoais</h2>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="vendor-name">Nome Completo *</Label>
-                    <Input
-                      id="vendor-name"
-                      placeholder="Maria Santos"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      required
-                      data-testid="input-vendor-name"
+              {vendorType && (
+                <Card className="p-6 space-y-6">
+                  <div>
+                    <h2 className="text-lg font-semibold mb-4">
+                      {vendorType === 'store' ? 'Foto da Loja' : 'Foto de Perfil'}
+                    </h2>
+                    <PhotoUpload
+                      currentPhoto={photo}
+                      name={formData.storeName || (vendorType === 'store' ? 'Minha Loja' : 'Meu Serviço')}
+                      onPhotoChange={setPhoto}
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-4">
+                    <h2 className="text-lg font-semibold">Informações Pessoais</h2>
+                    
                     <div className="space-y-2">
-                      <Label htmlFor="vendor-email">Email *</Label>
+                      <Label htmlFor="vendor-name">Nome Completo *</Label>
                       <Input
-                        id="vendor-email"
-                        type="email"
-                        placeholder="maria@email.com"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        id="vendor-name"
+                        placeholder="Maria Santos"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         required
-                        data-testid="input-vendor-email"
+                        data-testid="input-vendor-name"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="vendor-email">Email *</Label>
+                        <Input
+                          id="vendor-email"
+                          type="email"
+                          placeholder="maria@email.com"
+                          value={formData.email}
+                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          required
+                          data-testid="input-vendor-email"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="vendor-phone">Telefone *</Label>
+                        <Input
+                          id="vendor-phone"
+                          placeholder="(11) 98765-4321"
+                          value={formData.phone}
+                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                          required
+                          data-testid="input-vendor-phone"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {vendorType === 'store' && (
+                    <div className="space-y-4">
+                      <h2 className="text-lg font-semibold">Informações da Loja</h2>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="store-name">Nome da Loja *</Label>
+                        <Input
+                          id="store-name"
+                          placeholder="Doces da Maria"
+                          value={formData.storeName}
+                          onChange={(e) => setFormData({ ...formData, storeName: e.target.value })}
+                          required
+                          data-testid="input-store-name"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="store-category">Categoria da Loja *</Label>
+                        <Select value={formData.storeCategory} onValueChange={(v) => setFormData({ ...formData, storeCategory: v })}>
+                          <SelectTrigger data-testid="select-store-category">
+                            <SelectValue placeholder="Selecione a categoria" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {STORE_CATEGORIES.map(cat => (
+                              <SelectItem key={cat} value={cat} data-testid={`option-category-${cat}`}>
+                                {cat}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  )}
+
+                  {vendorType === 'service' && (
+                    <div className="space-y-4">
+                      <h2 className="text-lg font-semibold">Informações do Serviço</h2>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="service-provider-name">Nome do Negócio/Empresa *</Label>
+                        <Input
+                          id="service-provider-name"
+                          placeholder="Studio da Beleza"
+                          value={formData.storeName}
+                          onChange={(e) => setFormData({ ...formData, storeName: e.target.value })}
+                          required
+                          data-testid="input-service-provider-name"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="service-type">Tipo de Serviço *</Label>
+                        <Select value={formData.serviceType} onValueChange={(v) => setFormData({ ...formData, serviceType: v })}>
+                          <SelectTrigger data-testid="select-service-type">
+                            <SelectValue placeholder="Selecione o tipo de serviço" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {SERVICE_TYPES.map(svc => (
+                              <SelectItem key={svc} value={svc} data-testid={`option-service-${svc}`}>
+                                {svc}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="space-y-4">
+                    <h2 className="text-lg font-semibold">Endereço</h2>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="vendor-condo">Condomínio *</Label>
+                      <Select value={formData.condo} onValueChange={(v) => setFormData({ ...formData, condo: v })}>
+                        <SelectTrigger data-testid="select-vendor-condo">
+                          <SelectValue placeholder="Selecione seu condomínio" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {condos.map(c => (
+                            <SelectItem key={c} value={c} data-testid={`option-vendor-condo-${c}`}>
+                              {c}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="vendor-block">Bloco *</Label>
+                        <Input
+                          id="vendor-block"
+                          placeholder="A"
+                          value={formData.block}
+                          onChange={(e) => setFormData({ ...formData, block: e.target.value })}
+                          required
+                          data-testid="input-vendor-block"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="vendor-apartment">Apartamento *</Label>
+                        <Input
+                          id="vendor-apartment"
+                          placeholder="405"
+                          value={formData.apartment}
+                          onChange={(e) => setFormData({ ...formData, apartment: e.target.value })}
+                          required
+                          data-testid="input-vendor-apartment"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 p-4 bg-secondary rounded-lg">
+                      <Switch
+                        checked={formData.addressPrivacy}
+                        onCheckedChange={(checked) => setFormData({ ...formData, addressPrivacy: checked })}
+                        data-testid="switch-address-privacy"
+                      />
+                      <div>
+                        <p className="font-medium">Mostrar endereço publicamente</p>
+                        <p className="text-sm text-muted-foreground">
+                          {formData.addressPrivacy ? 'Seu endereço será visível para clientes' : 'Seu endereço será privado'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h2 className="text-lg font-semibold">Segurança</h2>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="vendor-password">Senha *</Label>
+                      <Input
+                        id="vendor-password"
+                        type="password"
+                        placeholder="Mínimo 8 caracteres"
+                        value={formData.password}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        required
+                        minLength={8}
+                        data-testid="input-vendor-password"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="vendor-phone">Telefone *</Label>
+                      <Label htmlFor="vendor-confirm-password">Confirmar Senha *</Label>
                       <Input
-                        id="vendor-phone"
-                        placeholder="(11) 98765-4321"
-                        value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        id="vendor-confirm-password"
+                        type="password"
+                        placeholder="Repita sua senha"
+                        value={formData.confirmPassword}
+                        onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                         required
-                        data-testid="input-vendor-phone"
+                        data-testid="input-vendor-confirm-password"
                       />
                     </div>
                   </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h2 className="text-lg font-semibold">Informações da Loja</h2>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="store-name">Nome da Loja *</Label>
-                    <Input
-                      id="store-name"
-                      placeholder="Doces da Maria"
-                      value={formData.storeName}
-                      onChange={(e) => setFormData({ ...formData, storeName: e.target.value })}
-                      required
-                      data-testid="input-store-name"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="service-type">Categoria *</Label>
-                    <Input
-                      id="service-type"
-                      placeholder="Ex: Sobremesas, Lanches, Roupas..."
-                      value={formData.serviceType}
-                      onChange={(e) => setFormData({ ...formData, serviceType: e.target.value })}
-                      required
-                      data-testid="input-service-type"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h2 className="text-lg font-semibold">Endereço</h2>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="vendor-condo">Condomínio *</Label>
-                    <Select value={formData.condo} onValueChange={(v) => setFormData({ ...formData, condo: v })}>
-                      <SelectTrigger data-testid="select-vendor-condo">
-                        <SelectValue placeholder="Selecione seu condomínio" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {condos.map(c => (
-                          <SelectItem key={c} value={c} data-testid={`option-vendor-condo-${c}`}>
-                            {c}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="vendor-block">Bloco *</Label>
-                      <Input
-                        id="vendor-block"
-                        placeholder="A"
-                        value={formData.block}
-                        onChange={(e) => setFormData({ ...formData, block: e.target.value })}
-                        required
-                        data-testid="input-vendor-block"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="vendor-apartment">Apartamento *</Label>
-                      <Input
-                        id="vendor-apartment"
-                        placeholder="405"
-                        value={formData.apartment}
-                        onChange={(e) => setFormData({ ...formData, apartment: e.target.value })}
-                        required
-                        data-testid="input-vendor-apartment"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 p-4 bg-secondary rounded-lg">
-                    <Switch
-                      checked={formData.addressPrivacy}
-                      onCheckedChange={(checked) => setFormData({ ...formData, addressPrivacy: checked })}
-                      data-testid="switch-address-privacy"
-                    />
-                    <div>
-                      <p className="font-medium">Mostrar endereço publicamente</p>
-                      <p className="text-sm text-muted-foreground">
-                        {formData.addressPrivacy ? 'Seu endereço será visível para clientes' : 'Seu endereço será privado'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h2 className="text-lg font-semibold">Segurança</h2>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="vendor-password">Senha *</Label>
-                    <Input
-                      id="vendor-password"
-                      type="password"
-                      placeholder="Mínimo 8 caracteres"
-                      value={formData.password}
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      required
-                      minLength={8}
-                      data-testid="input-vendor-password"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="vendor-confirm-password">Confirmar Senha *</Label>
-                    <Input
-                      id="vendor-confirm-password"
-                      type="password"
-                      placeholder="Repita sua senha"
-                      value={formData.confirmPassword}
-                      onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                      required
-                      data-testid="input-vendor-confirm-password"
-                    />
-                  </div>
-                </div>
-              </Card>
+                </Card>
+              )}
             </TabsContent>
 
             <TabsContent value="delivery" className="space-y-6">
@@ -540,19 +664,21 @@ export default function UserRegistrationPage() {
               </Card>
             </TabsContent>
 
-            <div className="flex gap-2 mt-6">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setLocation('/')}
-                data-testid="button-cancel"
-              >
-                Cancelar
-              </Button>
-              <Button type="submit" data-testid="button-register">
-                Criar Conta
-              </Button>
-            </div>
+            {(userType === 'customer' || (userType === 'vendor' && vendorType) || userType === 'delivery') && (
+              <div className="flex gap-2 mt-6">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setLocation('/')}
+                  data-testid="button-cancel"
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit" data-testid="button-register">
+                  Criar Conta
+                </Button>
+              </div>
+            )}
           </form>
         </Tabs>
       </main>
