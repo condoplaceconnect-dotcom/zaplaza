@@ -787,6 +787,115 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ✅ MARKETPLACE ROUTES
+  app.get("/api/marketplace", authMiddleware, async (req: Request, res: Response) => {
+    try {
+      const user = await storage.getUser(req.user!.userId);
+      if (!user || !user.condoId) {
+        return res.status(400).json({ error: "Usuário não vinculado a um condomínio" });
+      }
+
+      const items = await storage.getMarketplaceItemsByCondo(user.condoId);
+      res.json(items);
+    } catch (error) {
+      console.error("[MARKETPLACE GET ERROR]", error);
+      res.status(500).json({ error: "Erro ao buscar itens do marketplace" });
+    }
+  });
+
+  app.post("/api/marketplace", authMiddleware, async (req: Request, res: Response) => {
+    try {
+      const userId = req.user!.userId;
+      const { title, description, category, type, price, images } = req.body;
+
+      if (!title || !type) {
+        return res.status(400).json({ error: "Título e tipo são obrigatórios" });
+      }
+
+      // Validar tipo
+      if (!['sale', 'donation', 'exchange'].includes(type)) {
+        return res.status(400).json({ error: "Tipo inválido. Use: sale, donation ou exchange" });
+      }
+
+      // Validar preço para vendas
+      if (type === 'sale' && !price) {
+        return res.status(400).json({ error: "Preço é obrigatório para vendas" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user || !user.condoId) {
+        return res.status(400).json({ error: "Usuário não vinculado a um condomínio" });
+      }
+
+      const item = await storage.createMarketplaceItem({
+        condoId: user.condoId,
+        userId,
+        title,
+        description: description || null,
+        category: category || null,
+        type,
+        price: type === 'sale' ? price : null,
+        images: images || [],
+        block: user.block || null,
+        unit: user.unit || null,
+        status: "available",
+        views: 0,
+      });
+
+      res.json(item);
+    } catch (error) {
+      console.error("[MARKETPLACE CREATE ERROR]", error);
+      res.status(500).json({ error: "Erro ao criar item no marketplace" });
+    }
+  });
+
+  app.patch("/api/marketplace/:id", authMiddleware, async (req: Request, res: Response) => {
+    try {
+      const userId = req.user!.userId;
+      const itemId = req.params.id;
+      const { title, description, category, price, status, images } = req.body;
+
+      // Verificar se o item pertence ao usuário
+      const item = await storage.getMarketplaceItem(itemId);
+      if (!item || item.userId !== userId) {
+        return res.status(404).json({ error: "Item não encontrado ou você não tem permissão" });
+      }
+
+      const updates: any = {};
+      if (title) updates.title = title;
+      if (description !== undefined) updates.description = description;
+      if (category !== undefined) updates.category = category;
+      if (price !== undefined) updates.price = price;
+      if (status) updates.status = status;
+      if (images !== undefined) updates.images = images;
+
+      const updated = await storage.updateMarketplaceItem(itemId, updates);
+      res.json(updated);
+    } catch (error) {
+      console.error("[MARKETPLACE UPDATE ERROR]", error);
+      res.status(500).json({ error: "Erro ao atualizar item" });
+    }
+  });
+
+  app.delete("/api/marketplace/:id", authMiddleware, async (req: Request, res: Response) => {
+    try {
+      const userId = req.user!.userId;
+      const itemId = req.params.id;
+
+      // Verificar se o item pertence ao usuário
+      const item = await storage.getMarketplaceItem(itemId);
+      if (!item || item.userId !== userId) {
+        return res.status(404).json({ error: "Item não encontrado ou você não tem permissão" });
+      }
+
+      await storage.deleteMarketplaceItem(itemId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("[MARKETPLACE DELETE ERROR]", error);
+      res.status(500).json({ error: "Erro ao remover item" });
+    }
+  });
+
   // ✅ Register admin routes
   registerAdminRoutes(app);
 
