@@ -256,22 +256,47 @@ export const reports = pgTable("reports", {
 });
 
 // ✅ ZOD SCHEMAS
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-  name: true,
-  email: true,
-  phone: true,
-  birthDate: true,
-  block: true,
-  unit: true,
-  accountType: true,
-  parentAccountId: true,
-  relationship: true,
-  role: true,
-  status: true,
-  condoId: true,
-});
+export const insertUserSchema = createInsertSchema(users)
+  .pick({
+    username: true,
+    password: true,
+    name: true,
+    email: true,
+    phone: true,
+    birthDate: true,
+    block: true,
+    unit: true,
+    accountType: true,
+    parentAccountId: true,
+    relationship: true,
+    role: true,
+    status: true,
+    condoId: true,
+  })
+  .extend({
+    // Validação customizada para data de nascimento
+    birthDate: z.string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Data deve estar no formato YYYY-MM-DD")
+      .refine((date) => {
+        const dateObj = new Date(date);
+        return !isNaN(dateObj.getTime());
+      }, "Data de nascimento inválida")
+      .refine((date) => {
+        const dateObj = new Date(date);
+        const today = new Date();
+        return dateObj <= today;
+      }, "Data de nascimento não pode ser no futuro")
+      .refine((date) => {
+        const dateObj = new Date(date);
+        const today = new Date();
+        const age = today.getFullYear() - dateObj.getFullYear();
+        return age >= 0 && age <= 120;
+      }, "Idade deve estar entre 0 e 120 anos"),
+    
+    // Validação para bloco e unidade
+    block: z.string().min(1, "Bloco é obrigatório").max(20, "Bloco muito longo"),
+    unit: z.string().min(1, "Unidade/Apartamento é obrigatório").max(10, "Unidade muito longa"),
+  });
 
 export const insertMarketplaceItemSchema = createInsertSchema(marketplaceItems).omit({
   id: true,

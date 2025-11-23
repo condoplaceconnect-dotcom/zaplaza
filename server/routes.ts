@@ -30,6 +30,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const isPasswordValid = await authService.verifyPassword(password, user.password);
       if (!isPasswordValid) return res.status(401).json({ error: "Credenciais inválidas" });
 
+      // Bloquear login de menores de 18 anos usando função helper
+      if (authService.isUserBlocked(user)) {
+        return res.status(403).json(authService.getBlockedMinorMessage());
+      }
+
       const token = authService.generateToken(user, user.role as any);
       res.json({ 
         token, 
@@ -49,19 +54,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/auth/register", async (req: Request, res: Response) => {
     try {
-      const { name, email, phone, username, password, role, condoId } = req.body;
+      const { name, email, phone, username, password, birthDate, block, unit, role, condoId } = req.body;
 
       // Validação dos campos obrigatórios
-      if (!name || !email || !phone || !username || !password) {
+      if (!name || !email || !phone || !username || !password || !birthDate || !block || !unit) {
         return res.status(400).json({ error: "Todos os campos obrigatórios devem ser preenchidos" });
       }
 
-      const validation = insertUserSchema.safeParse({ name, email, phone, username, password, role, condoId });
-      if (!validation.success) return res.status(400).json({ error: validation.error.errors[0].message });
+      // Validação com Zod Schema
+      const validation = insertUserSchema.safeParse({ 
+        name, 
+        email, 
+        phone, 
+        username, 
+        password, 
+        birthDate, 
+        block, 
+        unit, 
+        role, 
+        condoId 
+      });
+      
+      if (!validation.success) {
+        const firstError = validation.error.errors[0];
+        return res.status(400).json({ error: firstError.message });
+      }
 
       // Verificar se username já existe
       const existingUser = await storage.getUserByUsername(username);
       if (existingUser) return res.status(400).json({ error: "Username já está em uso" });
+
+      // Calcular idade a partir da data de nascimento (já validada pelo Zod)
+      const birthDateObj = new Date(birthDate);
+      const today = new Date();
+      let age = today.getFullYear() - birthDateObj.getFullYear();
+      const monthDiff = today.getMonth() - birthDateObj.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDateObj.getDate())) {
+        age--;
+      }
+
+      // Determinar status e accountType baseado na idade
+      let status = "pending";
+      let accountType = "adult";
+      
+      if (age < 18) {
+        status = "blocked_until_18";
+        accountType = "minor";
+      }
 
       const hashedPassword = await authService.hashPassword(password);
       const newUser = await storage.createUser({
@@ -70,12 +109,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         phone,
         username,
         password: hashedPassword,
+        birthDate,
+        block,
+        unit,
+        accountType,
         role: role || "resident",
-        status: "pending", // Novos usuários aguardam aprovação do admin
+        status,
         condoId: condoId || null,
       });
 
-      // Fazer login automático mesmo com status pending (usuário verá tela de aprovação)
+      // Se for menor de 18, não fazer login automático
+      if (age < 18) {
+        return res.status(403).json(authService.getBlockedMinorMessage());
+      }
+
+      // Fazer login automático apenas para maiores de 18 (status pending aguardando aprovação do admin)
       const token = authService.generateToken(newUser, newUser.role as any);
       res.status(201).json({ 
         token, 

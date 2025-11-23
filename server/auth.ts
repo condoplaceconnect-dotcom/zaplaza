@@ -56,7 +56,19 @@ export const authService = {
     }
     
     return parts[1];
-  }
+  },
+
+  // Verificar se usuário está bloqueado (menor de 18 anos)
+  isUserBlocked: (user: User): boolean => {
+    return user.status === "blocked_until_18";
+  },
+
+  // Mensagem padrão para menores bloqueados
+  getBlockedMinorMessage: () => ({
+    error: "Você precisa ter 18 anos ou mais para acessar a plataforma. Entre em contato com um responsável para criar uma conta família.",
+    accountType: "minor",
+    requiresParentAccount: true
+  })
 };
 
 // Middleware para proteger rotas

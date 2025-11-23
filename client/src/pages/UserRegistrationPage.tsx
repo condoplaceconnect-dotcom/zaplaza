@@ -36,6 +36,9 @@ export default function UserRegistrationPage() {
     username: "",
     password: "",
     confirmPassword: "",
+    birthDate: "",
+    block: "",
+    unit: "",
     storeName: "",
     storeCategory: "",
     serviceType: "",
@@ -49,7 +52,7 @@ export default function UserRegistrationPage() {
     e.preventDefault();
     
     // Validações obrigatórias
-    if (!formData.name || !formData.email || !formData.phone || !formData.username || !formData.password) {
+    if (!formData.name || !formData.email || !formData.phone || !formData.username || !formData.password || !formData.birthDate || !formData.block || !formData.unit) {
       toast({ title: "Erro", description: "Todos os campos obrigatórios devem ser preenchidos", variant: "destructive" });
       return;
     }
@@ -96,6 +99,9 @@ export default function UserRegistrationPage() {
           phone: formData.phone,
           username: formData.username,
           password: formData.password,
+          birthDate: formData.birthDate,
+          block: formData.block,
+          unit: formData.unit,
           role: userType,
           condoId: selectedCondoId,
         }),
@@ -230,6 +236,46 @@ export default function UserRegistrationPage() {
                   required
                   data-testid="input-phone"
                 />
+              </div>
+
+              <div>
+                <Label htmlFor="birthDate">Data de Nascimento *</Label>
+                <Input
+                  id="birthDate"
+                  name="birthDate"
+                  type="date"
+                  value={formData.birthDate}
+                  onChange={handleChange}
+                  required
+                  data-testid="input-birthdate"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="block">Bloco *</Label>
+                  <Input
+                    id="block"
+                    name="block"
+                    placeholder="Ex: A, B, C"
+                    value={formData.block}
+                    onChange={handleChange}
+                    required
+                    data-testid="input-block"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="unit">Apartamento *</Label>
+                  <Input
+                    id="unit"
+                    name="unit"
+                    placeholder="Ex: 101, 205"
+                    value={formData.unit}
+                    onChange={handleChange}
+                    required
+                    data-testid="input-unit"
+                  />
+                </div>
               </div>
             </Card>
 
