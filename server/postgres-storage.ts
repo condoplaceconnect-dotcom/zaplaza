@@ -448,4 +448,50 @@ export class PostgresStorage implements IStorage {
       .returning();
     return updated;
   }
+
+  // ===== MARKETPLACE ITEMS =====
+  async getMarketplaceItem(id: string): Promise<MarketplaceItem | undefined> {
+    return await db.query.marketplaceItems.findFirst({
+      where: eq(schema.marketplaceItems.id, id),
+    });
+  }
+
+  async getMarketplaceItemsByCondo(condoId: string): Promise<MarketplaceItem[]> {
+    return await db.query.marketplaceItems.findMany({
+      where: eq(schema.marketplaceItems.condoId, condoId),
+    });
+  }
+
+  async getMarketplaceItemsByUser(userId: string): Promise<MarketplaceItem[]> {
+    return await db.query.marketplaceItems.findMany({
+      where: eq(schema.marketplaceItems.userId, userId),
+    });
+  }
+
+  async createMarketplaceItem(item: InsertMarketplaceItem): Promise<MarketplaceItem> {
+    const [created] = await db
+      .insert(schema.marketplaceItems)
+      .values(item)
+      .returning();
+    return created;
+  }
+
+  async updateMarketplaceItem(
+    id: string,
+    item: Partial<MarketplaceItem>
+  ): Promise<MarketplaceItem | undefined> {
+    const [updated] = await db
+      .update(schema.marketplaceItems)
+      .set(item)
+      .where(eq(schema.marketplaceItems.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteMarketplaceItem(id: string): Promise<boolean> {
+    const result = await db
+      .delete(schema.marketplaceItems)
+      .where(eq(schema.marketplaceItems.id, id));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
 }

@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Condominium, type InsertCondominium, type Store, type InsertStore, type Product, type InsertProduct, type DeliveryPerson, type InsertDeliveryPerson, type Order, type InsertOrder } from "@shared/schema";
+import { type User, type InsertUser, type Condominium, type InsertCondominium, type Store, type InsertStore, type Product, type InsertProduct, type DeliveryPerson, type InsertDeliveryPerson, type Order, type InsertOrder, type MarketplaceItem, type InsertMarketplaceItem } from "@shared/schema";
 import { randomUUID } from "crypto";
 import * as bcrypt from "bcrypt";
 import { PostgresStorage } from "./postgres-storage";
@@ -50,6 +50,14 @@ export interface IStorage {
   getOrdersByCondo(condoId: string): Promise<Order[]>;
   createOrder(order: InsertOrder): Promise<Order>;
   updateOrder(id: string, order: Partial<Order>): Promise<Order | undefined>;
+
+  // Marketplace Items
+  getMarketplaceItem(id: string): Promise<MarketplaceItem | undefined>;
+  getMarketplaceItemsByCondo(condoId: string): Promise<MarketplaceItem[]>;
+  getMarketplaceItemsByUser(userId: string): Promise<MarketplaceItem[]>;
+  createMarketplaceItem(item: InsertMarketplaceItem): Promise<MarketplaceItem>;
+  updateMarketplaceItem(id: string, item: Partial<MarketplaceItem>): Promise<MarketplaceItem | undefined>;
+  deleteMarketplaceItem(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
