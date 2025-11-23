@@ -7,10 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Plus, Edit, Trash2, Filter, X } from "lucide-react";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Plus, Edit, Trash2, Filter } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 type MarketplaceItem = {
   id: string;
@@ -30,18 +33,47 @@ type MarketplaceItem = {
   updatedAt: Date;
 };
 
+// Schema de validação (baseado no insertMarketplaceItemSchema do backend)
+const marketplaceFormSchema = z
+  .object({
+    title: z.string().min(1, "Título é obrigatório").max(200, "Título muito longo"),
+    description: z.string().max(2000, "Descrição muito longa").optional(),
+    category: z.string().max(100, "Categoria muito longa").optional(),
+    type: z.enum(["sale", "donation", "exchange"], { required_error: "Tipo é obrigatório" }),
+    price: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      // Se for venda, preço é obrigatório
+      if (data.type === "sale") {
+        return !!data.price && parseFloat(data.price) > 0;
+      }
+      return true;
+    },
+    {
+      message: "Preço é obrigatório para vendas",
+      path: ["price"],
+    }
+  );
+
+type MarketplaceFormValues = z.infer<typeof marketplaceFormSchema>;
+
 export default function MarketplacePage() {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MarketplaceItem | null>(null);
   const [filterType, setFilterType] = useState<string>("all");
   const [filterCategory, setFilterCategory] = useState<string>("all");
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    category: "",
-    type: "sale" as "sale" | "donation" | "exchange",
-    price: "",
+
+  const form = useForm<MarketplaceFormValues>({
+    resolver: zodResolver(marketplaceFormSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      category: "",
+      type: "sale",
+      price: "",
+    },
   });
 
   const { data: items, isLoading } = useQuery<MarketplaceItem[]>({
@@ -49,13 +81,13 @@ export default function MarketplacePage() {
   });
 
   const addItemMutation = useMutation({
-    mutationFn: async (data: typeof formData) => {
+    mutationFn: async (data: MarketplaceFormValues) => {
       return await apiRequest("POST", "/api/marketplace", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/marketplace"] });
       setIsDialogOpen(false);
-      resetForm();
+      form.reset();
       toast({
         title: "Sucesso",
         description: "Item adicionado ao marketplace",
@@ -71,14 +103,14 @@ export default function MarketplacePage() {
   });
 
   const updateItemMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<typeof formData> }) => {
+    mutationFn: async ({ id, data }: { id: string; data: Partial<MarketplaceFormValues> }) => {
       return await apiRequest("PATCH", `/api/marketplace/${id}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/marketplace"] });
       setEditingItem(null);
       setIsDialogOpen(false);
-      resetForm();
+      form.reset();
       toast({
         title: "Sucesso",
         description: "Item atualizado",
@@ -113,32 +145,20 @@ export default function MarketplacePage() {
     },
   });
 
-  const resetForm = () => {
-    setFormData({
-      title: "",
-      description: "",
-      category: "",
-      type: "sale",
-      price: "",
-    });
-    setEditingItem(null);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = (data: MarketplaceFormValues) => {
     if (editingItem) {
       updateItemMutation.mutate({
         id: editingItem.id,
-        data: formData,
+        data,
       });
     } else {
-      addItemMutation.mutate(formData);
+      addItemMutation.mutate(data);
     }
   };
 
   const handleEdit = (item: MarketplaceItem) => {
     setEditingItem(item);
-    setFormData({
+    form.reset({
       title: item.title,
       description: item.description || "",
       category: item.category || "",
@@ -155,7 +175,14 @@ export default function MarketplacePage() {
   };
 
   const handleAddNew = () => {
-    resetForm();
+    setEditingItem(null);
+    form.reset({
+      title: "",
+      description: "",
+      category: "",
+      type: "sale",
+      price: "",
+    });
     setIsDialogOpen(true);
   };
 
@@ -195,6 +222,8 @@ export default function MarketplacePage() {
     }
   };
 
+  const watchType = form.watch("type");
+
   return (
     <div className="container mx-auto p-4 max-w-6xl">
       <div className="flex justify-between items-center mb-6">
@@ -219,7 +248,9 @@ export default function MarketplacePage() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="filter-type">Tipo</Label>
+              <label htmlFor="filter-type" className="text-sm font-medium">
+                Tipo
+              </label>
               <Select value={filterType} onValueChange={setFilterType}>
                 <SelectTrigger id="filter-type" data-testid="filter-type">
                   <SelectValue />
@@ -233,7 +264,9 @@ export default function MarketplacePage() {
               </Select>
             </div>
             <div>
-              <Label htmlFor="filter-category">Categoria</Label>
+              <label htmlFor="filter-category" className="text-sm font-medium">
+                Categoria
+              </label>
               <Select value={filterCategory} onValueChange={setFilterCategory}>
                 <SelectTrigger id="filter-category" data-testid="filter-category">
                   <SelectValue />
@@ -331,89 +364,106 @@ export default function MarketplacePage() {
           <DialogHeader>
             <DialogTitle>{editingItem ? "Editar Item" : "Adicionar Item"}</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit}>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="title">Título *</Label>
-                <Input
-                  id="title"
-                  data-testid="input-title"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  required
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Título *</FormLabel>
+                    <FormControl>
+                      <Input {...field} data-testid="input-title" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Descrição</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} data-testid="input-description" rows={3} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tipo *</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger data-testid="select-type">
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="sale">Venda</SelectItem>
+                        <SelectItem value="donation">Doação</SelectItem>
+                        <SelectItem value="exchange">Troca</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Categoria</FormLabel>
+                    <FormControl>
+                      <Input {...field} data-testid="input-category" placeholder="Ex: Roupas, Móveis, Eletrônicos..." />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {watchType === "sale" && (
+                <FormField
+                  control={form.control}
+                  name="price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Preço (R$) *</FormLabel>
+                      <FormControl>
+                        <Input {...field} data-testid="input-price" type="number" step="0.01" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div>
-                <Label htmlFor="description">Descrição</Label>
-                <Textarea
-                  id="description"
-                  data-testid="input-description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  rows={3}
-                />
-              </div>
-              <div>
-                <Label htmlFor="type">Tipo *</Label>
-                <Select
-                  value={formData.type}
-                  onValueChange={(value: any) => setFormData({ ...formData, type: value })}
-                >
-                  <SelectTrigger id="type" data-testid="select-type">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="sale">Venda</SelectItem>
-                    <SelectItem value="donation">Doação</SelectItem>
-                    <SelectItem value="exchange">Troca</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="category">Categoria</Label>
-                <Input
-                  id="category"
-                  data-testid="input-category"
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  placeholder="Ex: Roupas, Móveis, Eletrônicos..."
-                />
-              </div>
-              {formData.type === "sale" && (
-                <div>
-                  <Label htmlFor="price">Preço (R$) *</Label>
-                  <Input
-                    id="price"
-                    data-testid="input-price"
-                    type="number"
-                    step="0.01"
-                    value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    required={formData.type === "sale"}
-                  />
-                </div>
               )}
-            </div>
-            <DialogFooter className="mt-6">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setIsDialogOpen(false);
-                  resetForm();
-                }}
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                data-testid="button-submit-item"
-                disabled={addItemMutation.isPending || updateItemMutation.isPending}
-              >
-                {editingItem ? "Atualizar" : "Adicionar"}
-              </Button>
-            </DialogFooter>
-          </form>
+
+              <DialogFooter className="mt-6">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setIsDialogOpen(false);
+                    form.reset();
+                  }}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit" data-testid="button-submit-item" disabled={form.formState.isSubmitting}>
+                  {editingItem ? "Atualizar" : "Adicionar"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
     </div>

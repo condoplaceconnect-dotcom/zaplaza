@@ -2,7 +2,7 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { authService, authMiddleware, adminMiddleware, vendorMiddleware, serviceProviderMiddleware, deliveryPersonMiddleware } from "./auth";
-import { insertUserSchema, insertCondoSchema, insertStoreSchema, insertProductSchema, insertServiceProviderSchema, insertServiceSchema, insertDeliveryPersonSchema, insertOrderSchema } from "@shared/schema";
+import { insertUserSchema, insertCondoSchema, insertStoreSchema, insertProductSchema, insertServiceProviderSchema, insertServiceSchema, insertDeliveryPersonSchema, insertOrderSchema, insertMarketplaceItemSchema, updateMarketplaceItemSchema } from "@shared/schema";
 import { registerAdminRoutes } from "./admin-routes";
 import "./types";
 
@@ -806,40 +806,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/marketplace", authMiddleware, async (req: Request, res: Response) => {
     try {
       const userId = req.user!.userId;
-      const { title, description, category, type, price, images } = req.body;
-
-      if (!title || !type) {
-        return res.status(400).json({ error: "Título e tipo são obrigatórios" });
-      }
-
-      // Validar tipo
-      if (!['sale', 'donation', 'exchange'].includes(type)) {
-        return res.status(400).json({ error: "Tipo inválido. Use: sale, donation ou exchange" });
-      }
-
-      // Validar preço para vendas
-      if (type === 'sale' && !price) {
-        return res.status(400).json({ error: "Preço é obrigatório para vendas" });
-      }
-
       const user = await storage.getUser(userId);
+      
       if (!user || !user.condoId) {
         return res.status(400).json({ error: "Usuário não vinculado a um condomínio" });
       }
 
-      const item = await storage.createMarketplaceItem({
+      // Validar com Zod schema
+      const validation = insertMarketplaceItemSchema.safeParse({
+        ...req.body,
         condoId: user.condoId,
         userId,
-        title,
-        description: description || null,
-        category: category || null,
-        type,
-        price: type === 'sale' ? price : null,
-        images: images || [],
         block: user.block || null,
         unit: user.unit || null,
         status: "available",
         views: 0,
+      });
+
+      if (!validation.success) {
+        const errors = validation.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(", ");
+        return res.status(400).json({ error: errors });
+      }
+
+      const data = validation.data;
+      
+      // Converter price de string para numeric se for venda
+      const item = await storage.createMarketplaceItem({
+        ...data,
+        price: data.type === 'sale' && data.price ? data.price : null,
       });
 
       res.json(item);
@@ -853,7 +847,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user!.userId;
       const itemId = req.params.id;
-      const { title, description, category, price, status, images } = req.body;
 
       // Verificar se o item pertence ao usuário
       const item = await storage.getMarketplaceItem(itemId);
@@ -861,15 +854,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Item não encontrado ou você não tem permissão" });
       }
 
-      const updates: any = {};
-      if (title) updates.title = title;
-      if (description !== undefined) updates.description = description;
-      if (category !== undefined) updates.category = category;
-      if (price !== undefined) updates.price = price;
-      if (status) updates.status = status;
-      if (images !== undefined) updates.images = images;
+      // Validar com Zod schema (apenas campos permitidos)
+      const validation = updateMarketplaceItemSchema.safeParse(req.body);
 
-      const updated = await storage.updateMarketplaceItem(itemId, updates);
+      if (!validation.success) {
+        const errors = validation.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(", ");
+        return res.status(400).json({ error: errors });
+      }
+
+      const data = validation.data;
+
+      // Whitelist explícita - NUNCA permitir alterar condoId, userId, views, createdAt
+      const safeUpdates: any = {};
+      if (data.title !== undefined) safeUpdates.title = data.title;
+      if (data.description !== undefined) safeUpdates.description = data.description;
+      if (data.category !== undefined) safeUpdates.category = data.category;
+      if (data.price !== undefined) safeUpdates.price = data.price;
+      if (data.status !== undefined) safeUpdates.status = data.status;
+      if (data.images !== undefined) safeUpdates.images = data.images;
+
+      const updated = await storage.updateMarketplaceItem(itemId, safeUpdates);
       res.json(updated);
     } catch (error) {
       console.error("[MARKETPLACE UPDATE ERROR]", error);

@@ -298,11 +298,61 @@ export const insertUserSchema = createInsertSchema(users)
     unit: z.string().min(1, "Unidade/Apartamento é obrigatório").max(10, "Unidade muito longa"),
   });
 
-export const insertMarketplaceItemSchema = createInsertSchema(marketplaceItems).omit({
+// Schema base gerado pelo Drizzle
+const baseInsertMarketplaceItemSchema = createInsertSchema(marketplaceItems).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
 });
+
+// Schema para inserção com validações customizadas
+export const insertMarketplaceItemSchema = baseInsertMarketplaceItemSchema
+  .extend({
+    title: z.string().min(1, "Título é obrigatório").max(200, "Título muito longo"),
+    type: z.enum(["sale", "donation", "exchange"], { required_error: "Tipo é obrigatório" }),
+    price: z.string().nullable().optional(),
+    category: z.string().max(100, "Categoria muito longa").nullable().optional(),
+    description: z.string().max(2000, "Descrição muito longa").nullable().optional(),
+    images: z.array(z.string()).nullable().optional(),
+  })
+  .refine(
+    (data) => {
+      // Se for venda, preço é obrigatório
+      if (data.type === "sale") {
+        return !!data.price && parseFloat(data.price) > 0;
+      }
+      return true;
+    },
+    {
+      message: "Preço é obrigatório para vendas",
+      path: ["price"],
+    }
+  );
+
+// Schema para atualização (todos os campos opcionais, exceto tipo)
+export const updateMarketplaceItemSchema = z
+  .object({
+    title: z.string().min(1, "Título é obrigatório").max(200, "Título muito longo").optional(),
+    description: z.string().max(2000, "Descrição muito longa").nullable().optional(),
+    category: z.string().max(100, "Categoria muito longa").nullable().optional(),
+    price: z.string().nullable().optional(),
+    status: z.enum(["available", "sold", "reserved", "removed"]).optional(),
+    images: z.array(z.string()).nullable().optional(),
+  })
+  .refine(
+    (data) => {
+      // Se houver preço, deve ser válido
+      if (data.price !== undefined && data.price !== null) {
+        const numPrice = parseFloat(data.price);
+        return !isNaN(numPrice) && numPrice >= 0;
+      }
+      return true;
+    },
+    {
+      message: "Preço inválido",
+      path: ["price"],
+    }
+  );
 
 export const insertLostAndFoundSchema = createInsertSchema(lostAndFound).omit({
   id: true,
