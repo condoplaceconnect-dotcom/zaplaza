@@ -1,0 +1,55 @@
+✅ Solicitação ao Replit — Atualização dos condomínios do app CondoPlace (VERSÃO FINAL)
+1. Excluir todos os condomínios de teste
+
+Remover completamente do banco de dados:
+
+CondominioTeste01
+
+CondominioDemo
+
+Qualquer outro usado apenas para desenvolvimento
+
+A base de condomínios deve permanecer limpa, contendo apenas o primeiro condomínio oficial a seguir.
+
+2. Adicionar o primeiro condomínio oficial (não é servidor padrão)
+
+Adicionar o condomínio real apenas para facilitar o acesso dos primeiros usuários, sem torná-lo padrão ou obrigatório para novos cadastros.
+
+🏢 Condomínio Oficial: Acqua Sena (Construtora Tenda)
+
+Nome: Condomínio Acqua Sena
+Construtora: Tenda
+Tipo: Residencial
+Cidade: Canoas
+Estado: RS
+Bairro: Fátima
+Endereço: Rua Cairú, Bairro Fátima, Canoas – RS
+País: Brasil
+
+🔎 Observação: Não solicitar e-mail ou telefone nesse cadastro, pois condomínio não é um perfil — é uma entidade administrativa.
+
+Objetivo desse cadastro
+
+Servir como primeiro condomínio real, pronto para que moradores e prestadores já possam entrar.
+
+Permitir testes reais com usuários verdadeiros, sem usar ambientes de teste.
+
+Não definir como servidor padrão — apenas deixá-lo disponível como uma das opções de condomínio.
+
+3. Comportamento esperado no app
+
+Usuários podem selecionar o Acqua Sena na lista de condomínios ao criar conta.
+
+Administradores do Condomínio têm acesso ao painel admin para aprovar moradores, lojistas, prestadores, entregadores etc.
+
+Outros condomínios poderão ser adicionados posteriormente pelo painel admin global.
+
+O app não deve auto-redirecionar ninguém para o Acqua Sena — ele é só o primeiro disponível, não padrão.
+
+4. Permissões e vinculação
+
+Moradores só enxergam e interagem com serviços dentro do condomínio onde foram aprovados.
+
+Lojas e prestadores de serviço podem se cadastrar no Acqua Sena por enquanto, mas no futuro podem ser habilitados para atuar em mais de um condomínio.
+
+Entregadores têm aba própria e também precisam ser aprovados pelo admin do Acqua Sena.

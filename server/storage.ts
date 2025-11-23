@@ -83,14 +83,14 @@ export class MemStorage implements IStorage {
     const acquaSena: Condominium = {
       id: "condo-acqua-sena",
       name: "Condominio Acqua Sena",
-      address: "Rua Itamar de Mattos Maia, 476",
+      address: "Rua Cairú, Bairro Fátima",
       city: "Canoas",
       state: "RS",
       zipCode: "92320-260",
-      units: 0, // será preenchido depois
+      units: 150,
       phone: null,
       email: null,
-      description: "Condomínio residencial Acqua Sena - Servidor Primário CondoPlace",
+      description: "Condomínio residencial de luxo Acqua Sena - Construtora Tenda",
       image: null,
       status: "approved",
       createdAt: new Date(),

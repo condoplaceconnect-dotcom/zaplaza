@@ -189,6 +189,18 @@ npm run db:push
 - **Upload**: Pronto para integração com serviço externo
 - **Permissões**: Middleware por role implementado
 - **Database**: Pronto para migrar de in-memory para Postgres
+- **Condomínio Padrão**: Acqua Sena (Canoas, RS) - primeira opção, não obrigatória
+
+## 🏢 Condomínios Cadastrados
+
+### ✅ Acqua Sena (Tenda)
+- **Endereço**: Rua Cairú, Bairro Fátima, Canoas - RS, 92320-260
+- **Status**: Aprovado (disponível para seleção)
+- **Tipo**: Residencial
+- **Unidades**: ~150
+- **Papel**: Primeiro condomínio oficial - serve como exemplo e para testes reais
+- **Admin Login**: username: `admin`, password: `admin123`
+- **Admin Access**: `/admin/login` → Dashboard com 6 abas (Visão Geral, Solicitações, Condomínio, Moradores, Lojas, Comunicados)
 
 ## 👥 Autores
 Desenvolvido com Replit
