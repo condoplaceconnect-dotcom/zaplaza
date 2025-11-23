@@ -1,4 +1,4 @@
-import { Home, ShoppingBag, Calendar, Store } from "lucide-react";
+import { Home, ShoppingBag, Calendar, User } from "lucide-react";
 import { useLocation } from "wouter";
 
 interface BottomNavProps {
@@ -12,7 +12,7 @@ export default function BottomNav({ onNavigate }: BottomNavProps) {
     { path: '/', icon: Home, label: 'Início', testId: 'home' },
     { path: '/orders', icon: ShoppingBag, label: 'Pedidos', testId: 'orders' },
     { path: '/appointments', icon: Calendar, label: 'Agenda', testId: 'appointments' },
-    { path: '/vendor', icon: Store, label: 'Vender', testId: 'vendor' }
+    { path: '/profile', icon: User, label: 'Perfil', testId: 'profile' }
   ];
 
   return (

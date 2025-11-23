@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import ThemeToggle from "@/components/ThemeToggle";
 import BottomNav from "@/components/BottomNav";
 import { useLocation } from "wouter";
-import { ArrowLeft, Plus, Store } from "lucide-react";
+import { ArrowLeft, Plus, Store, User } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Card } from "@/components/ui/card";
 
@@ -94,7 +94,17 @@ export default function VendorDashboard() {
             <Store className="w-5 h-5" />
             <h1 className="text-xl font-bold">Painel do Vendedor</h1>
           </div>
-          <ThemeToggle />
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setLocation('/vendor/profile')}
+              data-testid="button-vendor-profile"
+            >
+              <User className="w-5 h-5" />
+            </Button>
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 
