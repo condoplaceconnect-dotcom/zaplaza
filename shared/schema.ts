@@ -8,7 +8,11 @@ export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  phone: varchar("phone", { length: 20 }).notNull(),
   role: varchar("role", { length: 20 }).notNull().default("resident"), // resident, vendor, service_provider, delivery_person, admin
+  status: varchar("status", { length: 20 }).notNull().default("pending"), // pending, approved, rejected
   condoId: varchar("condo_id"),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -195,7 +199,11 @@ export const ratings = pgTable("ratings", {
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
+  name: true,
+  email: true,
+  phone: true,
   role: true,
+  status: true,
   condoId: true,
 });
 

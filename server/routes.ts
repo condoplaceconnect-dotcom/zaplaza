@@ -31,7 +31,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!isPasswordValid) return res.status(401).json({ error: "Credenciais inválidas" });
 
       const token = authService.generateToken(user, user.role as any);
-      res.json({ token, user: { id: user.id, username: user.username, role: user.role } });
+      res.json({ 
+        token, 
+        user: { 
+          id: user.id, 
+          username: user.username, 
+          role: user.role,
+          status: user.status, // Incluir status para gatekeeping
+          condoId: user.condoId // Incluir condoId se já selecionado
+        } 
+      });
     } catch (error) {
       console.error("[LOGIN ERROR]", error);
       res.status(500).json({ error: "Erro ao fazer login" });
@@ -40,24 +49,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/auth/register", async (req: Request, res: Response) => {
     try {
-      const { username, password, role, condoId } = req.body;
+      const { name, email, phone, username, password, role, condoId } = req.body;
 
-      const validation = insertUserSchema.safeParse({ username, password, role, condoId });
+      // Validação dos campos obrigatórios
+      if (!name || !email || !phone || !username || !password) {
+        return res.status(400).json({ error: "Todos os campos obrigatórios devem ser preenchidos" });
+      }
+
+      const validation = insertUserSchema.safeParse({ name, email, phone, username, password, role, condoId });
       if (!validation.success) return res.status(400).json({ error: validation.error.errors[0].message });
 
+      // Verificar se username já existe
       const existingUser = await storage.getUserByUsername(username);
       if (existingUser) return res.status(400).json({ error: "Username já está em uso" });
 
       const hashedPassword = await authService.hashPassword(password);
       const newUser = await storage.createUser({
+        name,
+        email,
+        phone,
         username,
         password: hashedPassword,
         role: role || "resident",
+        status: "pending", // Novos usuários aguardam aprovação do admin
         condoId: condoId || null,
       });
 
+      // Fazer login automático mesmo com status pending (usuário verá tela de aprovação)
       const token = authService.generateToken(newUser, newUser.role as any);
-      res.status(201).json({ token, user: { id: newUser.id, username: newUser.username, role: newUser.role } });
+      res.status(201).json({ 
+        token, 
+        user: { 
+          id: newUser.id, 
+          username: newUser.username, 
+          role: newUser.role,
+          status: newUser.status 
+        } 
+      });
     } catch (error) {
       console.error("[REGISTER ERROR]", error);
       res.status(500).json({ error: "Erro ao registrar" });

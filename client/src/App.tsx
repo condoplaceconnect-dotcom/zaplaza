@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -48,11 +48,89 @@ function ResetPage() {
 }
 
 function Router() {
-  const isLoggedIn = !!localStorage.getItem("token");
-  const selectedCondoId = localStorage.getItem("selectedCondoId");
+  const [authChecked, setAuthChecked] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Começa false, só true após validar
+  const [selectedCondoId, setSelectedCondoId] = useState<string | null>(null);
+  const [userStatus, setUserStatus] = useState("pending");
+
+  // Validar auth state via /api/auth/me no boot
+  useEffect(() => {
+    const validateAuth = async () => {
+      const token = localStorage.getItem("token");
+      
+      if (!token) {
+        // Sem token, garantir tudo limpo
+        setIsLoggedIn(false);
+        setSelectedCondoId(null);
+        setUserStatus("pending");
+        setAuthChecked(true);
+        return;
+      }
+
+      try {
+        // Buscar dados frescos do backend
+        const response = await fetch("/api/auth/me", {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          // Token inválido ou expirado - limpar tudo
+          localStorage.clear();
+          setIsLoggedIn(false);
+          setSelectedCondoId(null);
+          setUserStatus("pending");
+          setAuthChecked(true);
+          return;
+        }
+
+        const { user } = await response.json();
+        
+        // Atualizar localStorage com dados frescos
+        localStorage.setItem("user", JSON.stringify({
+          id: user.id,
+          username: user.username,
+          role: user.role,
+          status: user.status || "pending"
+        }));
+
+        // Atualizar estado
+        setUserStatus(user.status || "pending");
+        setIsLoggedIn(true);
+        
+        // Se usuário não está aprovado, NÃO salvar selectedCondoId
+        if (user.status !== "approved") {
+          localStorage.removeItem("selectedCondoId");
+          setSelectedCondoId(null);
+        } else if (user.condoId) {
+          // Se usuário está aprovado E tem condoId, atualizar
+          localStorage.setItem("selectedCondoId", user.condoId);
+          setSelectedCondoId(user.condoId);
+        }
+        
+      } catch (error) {
+        console.error("Erro ao validar auth:", error);
+        // Em caso de ERRO (rede, parsing, etc), limpar tudo como token inválido
+        localStorage.clear();
+        setIsLoggedIn(false);
+        setSelectedCondoId(null);
+        setUserStatus("pending");
+      } finally {
+        setAuthChecked(true);
+      }
+    };
+
+    validateAuth();
+  }, []);
 
   // 🔍 DEBUG
-  console.log("🔍 Router State:", { isLoggedIn, selectedCondoId });
+  console.log("🔍 Router State:", { isLoggedIn, selectedCondoId, userStatus, authChecked });
+
+  // Aguardar validação antes de renderizar
+  if (!authChecked) {
+    return <PageLoader />;
+  }
 
   // ❌ NÃO está logado → TELA INICIAL (LandingPage)
   if (!isLoggedIn) {
@@ -70,7 +148,16 @@ function Router() {
     );
   }
 
-  // ✅ Está logado MAS NÃO tem condomínio → SELECIONADOR DE CONDOMÍNIO
+  // ⏳ Está logado MAS status pending → AGUARDANDO APROVAÇÃO (BLOQUEIA TODAS AS ROTAS!)
+  if (userStatus === "pending") {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <PendingApprovalPage />
+      </Suspense>
+    );
+  }
+
+  // ✅ Está logado, aprovado MAS NÃO tem condomínio → SELECIONADOR DE CONDOMÍNIO
   if (!selectedCondoId) {
     return (
       <Suspense fallback={<PageLoader />}>
@@ -87,7 +174,7 @@ function Router() {
     );
   }
 
-  // ✅ Está logado E tem condomínio → ACESSO COMPLETO
+  // ✅ Está logado, tem condomínio E está aprovado → ACESSO COMPLETO
   return (
     <Suspense fallback={<PageLoader />}>
       <Switch>

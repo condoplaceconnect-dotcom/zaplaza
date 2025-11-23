@@ -73,7 +73,11 @@ export class MemStorage implements IStorage {
       id: "admin-001",
       username: "admin",
       password: adminPassword,
+      name: "Administrador",
+      email: "admin@condoplace.com",
+      phone: "+55 51 99999-9999",
       role: "admin",
+      status: "approved",
       condoId: null,
       createdAt: new Date(),
     };
@@ -113,6 +117,7 @@ export class MemStorage implements IStorage {
       ...insertUser, 
       id,
       role: insertUser.role || "resident",
+      status: insertUser.status || "pending", // Default pending, admin aprova depois
       condoId: insertUser.condoId || null,
       createdAt: new Date(),
     };

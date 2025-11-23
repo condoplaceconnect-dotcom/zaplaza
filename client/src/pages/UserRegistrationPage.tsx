@@ -30,6 +30,9 @@ export default function UserRegistrationPage() {
   const selectedCondoId = localStorage.getItem("selectedCondoId");
 
   const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
     username: "",
     password: "",
     confirmPassword: "",
@@ -45,8 +48,23 @@ export default function UserRegistrationPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.username || !formData.password) {
-      toast({ title: "Erro", description: "Username e senha são obrigatórios", variant: "destructive" });
+    // Validações obrigatórias
+    if (!formData.name || !formData.email || !formData.phone || !formData.username || !formData.password) {
+      toast({ title: "Erro", description: "Todos os campos obrigatórios devem ser preenchidos", variant: "destructive" });
+      return;
+    }
+
+    // Validação de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast({ title: "Erro", description: "Email inválido", variant: "destructive" });
+      return;
+    }
+
+    // Validação de telefone (mínimo 10 dígitos)
+    const phoneDigits = formData.phone.replace(/\D/g, '');
+    if (phoneDigits.length < 10) {
+      toast({ title: "Erro", description: "Telefone deve ter no mínimo 10 dígitos", variant: "destructive" });
       return;
     }
 
@@ -73,6 +91,9 @@ export default function UserRegistrationPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
           username: formData.username,
           password: formData.password,
           role: userType,
@@ -87,7 +108,12 @@ export default function UserRegistrationPage() {
 
       const { token, user } = await registerRes.json();
       localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("user", JSON.stringify({ 
+        id: user.id, 
+        username: user.username, 
+        role: user.role,
+        status: user.status || "approved" 
+      }));
 
       // 2. Se vendor, criar loja
       if (userType === 'vendor') {
@@ -110,18 +136,15 @@ export default function UserRegistrationPage() {
         }
       }
 
-      toast({ title: "Sucesso!", description: "Conta criada com sucesso" });
+      toast({ 
+        title: "Conta criada com sucesso!", 
+        description: "Aguardando aprovação do administrador do condomínio..." 
+      });
       
-      // Redirect por role
+      // Redirecionar para tela de aprovação pendente
       setTimeout(() => {
-        if (userType === 'vendor') {
-          window.location.href = "/vendor/profile";
-        } else if (userType === 'delivery_person') {
-          window.location.href = "/delivery/dashboard";
-        } else {
-          window.location.href = "/";
-        }
-      }, 500);
+        window.location.href = "/";
+      }, 1500);
 
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Erro desconhecido";
@@ -164,6 +187,52 @@ export default function UserRegistrationPage() {
           </TabsList>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* PERSONAL INFO */}
+            <Card className="p-6 space-y-4">
+              <h2 className="text-lg font-semibold">Dados Pessoais</h2>
+              
+              <div>
+                <Label htmlFor="name">Nome Completo *</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  placeholder="Seu nome completo"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                  data-testid="input-name"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="email">E-mail *</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="seu@email.com"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  data-testid="input-email"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="phone">Telefone *</Label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  placeholder="(51) 99999-9999"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  required
+                  data-testid="input-phone"
+                />
+              </div>
+            </Card>
+
             {/* CREDENTIALS */}
             <Card className="p-6 space-y-4">
               <h2 className="text-lg font-semibold">Credenciais de Acesso</h2>

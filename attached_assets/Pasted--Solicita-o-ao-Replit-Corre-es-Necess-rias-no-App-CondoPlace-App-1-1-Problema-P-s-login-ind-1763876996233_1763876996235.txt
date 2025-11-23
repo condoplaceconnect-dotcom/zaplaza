@@ -1,0 +1,80 @@
+✅ Solicitação ao Replit — Correções Necessárias no App CondoPlace (App 1)
+1. Problema: Pós-login indo direto para a Home
+
+Após login/cadastro, o app está automaticamente direcionando o usuário para a Home mesmo sem condomínio selecionado.
+
+✔ Comportamento correto:
+
+Depois do login, o app não pode ir para a Home.
+
+O fluxo correto é:
+
+Login → Verificação se tem condomínio selecionado → Tela obrigatória de “Selecionar Condomínio ou Registrar Condomínio”
+
+Ou seja:
+
+Se o usuário já tem um condomínio aprovado → Redirecionar para Home do condomínio dele.
+
+Se o usuário não tem um condomínio selecionado → Redirecionar para tela inicial de seleção.
+
+Se o usuário solicitou registro e está aguardando aprovação → Redirecionar para tela “Aguardando aprovação do administrador”.
+
+Nunca mostrar a Home antes disso.
+
+2. Problema: Ainda aparece a opção de “Cadastrar Condomínio” no topo da Home
+
+O seletor “Selecione o condomínio” e o botão de cadastro não devem aparecer na Home.
+
+✔ Comportamento correto:
+
+Na Home, o header deve mostrar apenas o nome do condomínio atualmente selecionado e aprovado.
+
+A opção “Registrar condomínio” deve ficar apenas na primeira tela (antes do usuário entrar em qualquer condomínio).
+
+3. Problema: Formulário de cadastro não exige e-mail ou telefone
+
+O cadastro do usuário está liberando criar conta sem e-mail e sem telefone.
+
+Isso quebra:
+
+verificação de conta
+
+fluxo de aprovação
+
+segurança
+
+comunicação com o usuário
+
+✔ Correção obrigatória:
+
+Campos obrigatórios no cadastro (morador, vendedor, prestador, entregador):
+
+Nome
+
+E-mail (obrigatório)
+
+Telefone (obrigatório)
+
+Senha
+
+Para vendedores, entregadores e prestadores — pode pedir CPF/CNPJ ou opcional.
+
+Depois de cadastrar → enviar e-mail de verificação e bloquear acesso até confirmar.
+
+📌 Resumo do que precisa ser corrigido imediatamente
+
+❌ Remover acesso à Home após login quando não há condomínio selecionado
+
+✔ Redirecionar sempre para a tela “Selecionar Condomínio ou Registrar Condomínio”
+
+❌ Tirar o botão de “Registrar condomínio” da Home
+
+✔ Exigir e-mail e telefone no cadastro
+
+✔ Criar verificação de e-mail antes de liberar solicitação ao condomínio
+
+✔ Garantir que Home só abre quando existe:
+
+condomínio selecionado
+
+e aprovado

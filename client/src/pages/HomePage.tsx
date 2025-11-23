@@ -1,10 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import HeroBanner from "@/components/HeroBanner";
 import CategoryChips from "@/components/CategoryChips";
 import ProductCard from "@/components/ProductCard";
 import StoreCard from "@/components/StoreCard";
 import SearchBar from "@/components/SearchBar";
-import CondoSelector from "@/components/CondoSelector";
 import CartButton from "@/components/CartButton";
 import CartDrawer from "@/components/CartDrawer";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -26,13 +25,20 @@ export default function HomePage() {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
-  const [selectedCondo, setSelectedCondo] = useState<{ id: string; name: string } | null>(null);
+  const [condoName, setCondoName] = useState<string>("Carregando...");
   
   const [cartItems, setCartItems] = useState<Array<{ id: string; name: string; price: number; quantity: number; image: string }>>([]);
 
-  const condos = [
-    // Adicione seus condominios aqui após o cadastro
-  ];
+  // Buscar nome do condomínio
+  useEffect(() => {
+    const selectedCondoId = localStorage.getItem("selectedCondoId");
+    if (selectedCondoId) {
+      fetch(`/api/condominiums/${selectedCondoId}`)
+        .then(res => res.json())
+        .then(data => setCondoName(data.name))
+        .catch(() => setCondoName("Condomínio"));
+    }
+  }, []);
 
   const banners = [
     {
@@ -99,25 +105,15 @@ export default function HomePage() {
     <div className="min-h-screen bg-background pb-20 md:pb-0">
       <header className="sticky top-0 z-40 bg-card border-b">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
-          <CondoSelector
-            condos={condos}
-            selectedCondo={selectedCondo}
-            onSelectCondo={setSelectedCondo}
-          />
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-bold text-primary" data-testid="text-condo-name">{condoName}</h1>
+          </div>
           <SearchBar value={search} onChange={setSearch} />
           <div className="flex gap-2">
             <CartButton
               itemCount={cartItems.reduce((sum, item) => sum + item.quantity, 0)}
               onClick={() => setCartOpen(true)}
             />
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setLocation('/register')}
-              data-testid="button-register"
-            >
-              Cadastro
-            </Button>
             <ThemeToggle />
           </div>
         </div>
@@ -134,15 +130,6 @@ export default function HomePage() {
             className="flex-1 max-w-sm"
           >
             Buscar Serviços & Profissionais
-          </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            onClick={() => setLocation('/register-condo')}
-            data-testid="button-register-condo"
-            className="flex-1 max-w-sm"
-          >
-            Registrar Condomínio
           </Button>
         </div>
 
