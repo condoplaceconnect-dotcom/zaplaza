@@ -22,7 +22,7 @@ export default function ServicesPage() {
   const [, setLocation] = useLocation();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedCondo, setSelectedCondo] = useState({ id: '1', name: 'Residencial Jardim das Flores' });
+  const [selectedCondo, setSelectedCondo] = useState<{ id: string; name: string } | null>(null);
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const [cartCount] = useState(3);
   const { toast } = useToast();

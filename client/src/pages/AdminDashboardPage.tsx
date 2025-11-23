@@ -212,7 +212,7 @@ export default function AdminDashboardPage() {
               <div className="space-y-4">
                 <div>
                   <Label>Nome do Condomínio</Label>
-                  <Input placeholder="Ex: Residencial Jardim das Flores" data-testid="input-condo-name" />
+                  <Input placeholder="Ex: Condominio Acqua Sena" data-testid="input-condo-name" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>

@@ -26,7 +26,7 @@ export default function HomePage() {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
-  const [selectedCondo, setSelectedCondo] = useState({ id: '1', name: 'Residencial Jardim das Flores' });
+  const [selectedCondo, setSelectedCondo] = useState<{ id: string; name: string } | null>(null);
   
   const [cartItems, setCartItems] = useState<Array<{ id: string; name: string; price: number; quantity: number; image: string }>>([]);
 
