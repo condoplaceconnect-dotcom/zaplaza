@@ -40,9 +40,19 @@ function PageLoader() {
   );
 }
 
+// Reset page para limpar localStorage
+function ResetPage() {
+  localStorage.clear();
+  window.location.href = "/";
+  return <PageLoader />;
+}
+
 function Router() {
   const isLoggedIn = !!localStorage.getItem("token");
   const selectedCondoId = localStorage.getItem("selectedCondoId");
+
+  // 🔍 DEBUG
+  console.log("🔍 Router State:", { isLoggedIn, selectedCondoId });
 
   // ❌ NÃO está logado → TELA INICIAL (LandingPage)
   if (!isLoggedIn) {
@@ -81,6 +91,7 @@ function Router() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Switch>
+        <Route path="/reset" component={ResetPage} />
         <Route path="/" component={HomePage} />
         <Route path="/orders" component={OrdersPage} />
         <Route path="/services" component={ServicesPage} />
