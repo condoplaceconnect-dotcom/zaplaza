@@ -110,6 +110,107 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ✅ ADMIN STATS & MANAGEMENT ROUTES
+  app.get("/api/admin/stats", adminMiddleware, async (req: Request, res: Response) => {
+    try {
+      // Buscar admin completo para pegar condoId
+      const admin = await storage.getUser(req.user!.userId);
+      if (!admin) return res.status(404).json({ error: "Admin não encontrado" });
+      
+      const condoId = admin.condoId || "condo-acqua-sena"; // Fallback para o único condo
+      const users = await storage.listUsersByCondo(condoId);
+      const stores = await storage.getStoresByCondo(condoId);
+      const orders = await storage.getOrdersByCondo(condoId);
+      
+      const residents = users.filter(u => u.role === "resident").length;
+      const services = users.filter(u => u.role === "service_provider").length;
+      const todayOrders = orders.filter(o => {
+        const today = new Date().toDateString();
+        return new Date(o.createdAt!).toDateString() === today;
+      }).length;
+
+      res.json({
+        residents,
+        stores: stores.length,
+        services,
+        todayOrders
+      });
+    } catch (error) {
+      console.error("[ADMIN STATS ERROR]", error);
+      res.status(500).json({ error: "Erro ao buscar estatísticas" });
+    }
+  });
+
+  app.get("/api/admin/users", adminMiddleware, async (req: Request, res: Response) => {
+    try {
+      const admin = await storage.getUser(req.user!.userId);
+      if (!admin) return res.status(404).json({ error: "Admin não encontrado" });
+      
+      const condoId = admin.condoId || "condo-acqua-sena";
+      const users = await storage.listUsersByCondo(condoId);
+      // Remover passwords
+      const sanitizedUsers = users.map(({ password, ...rest }) => rest);
+      res.json(sanitizedUsers);
+    } catch (error) {
+      console.error("[ADMIN USERS LIST ERROR]", error);
+      res.status(500).json({ error: "Erro ao listar usuários" });
+    }
+  });
+
+  app.delete("/api/admin/users/:id", adminMiddleware, async (req: Request, res: Response) => {
+    try {
+      const success = await storage.deleteUser(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Usuário não encontrado" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error("[ADMIN DELETE USER ERROR]", error);
+      res.status(500).json({ error: "Erro ao deletar usuário" });
+    }
+  });
+
+  app.get("/api/admin/stores", adminMiddleware, async (req: Request, res: Response) => {
+    try {
+      const admin = await storage.getUser(req.user!.userId);
+      if (!admin) return res.status(404).json({ error: "Admin não encontrado" });
+      
+      const condoId = admin.condoId || "condo-acqua-sena";
+      const stores = await storage.getStoresByCondo(condoId);
+      res.json(stores);
+    } catch (error) {
+      console.error("[ADMIN STORES LIST ERROR]", error);
+      res.status(500).json({ error: "Erro ao listar lojas" });
+    }
+  });
+
+  app.delete("/api/admin/stores/:id", adminMiddleware, async (req: Request, res: Response) => {
+    try {
+      const success = await storage.deleteStore(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Loja não encontrada" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error("[ADMIN DELETE STORE ERROR]", error);
+      res.status(500).json({ error: "Erro ao deletar loja" });
+    }
+  });
+
+  app.patch("/api/admin/users/:id", adminMiddleware, async (req: Request, res: Response) => {
+    try {
+      const updated = await storage.updateUser(req.params.id, req.body);
+      if (!updated) {
+        return res.status(404).json({ error: "Usuário não encontrado" });
+      }
+      const { password, ...rest } = updated;
+      res.json(rest);
+    } catch (error) {
+      console.error("[ADMIN UPDATE USER ERROR]", error);
+      res.status(500).json({ error: "Erro ao atualizar usuário" });
+    }
+  });
+
   // ✅ CONDOMINIUM ROUTES
   app.get("/api/condominiums", async (req: Request, res: Response) => {
     try {

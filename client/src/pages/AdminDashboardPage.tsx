@@ -40,6 +40,13 @@ interface Store {
   status: string;
 }
 
+interface Stats {
+  residents: number;
+  stores: number;
+  services: number;
+  todayOrders: number;
+}
+
 export default function AdminDashboardPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -47,6 +54,18 @@ export default function AdminDashboardPage() {
 
   const { data: pendingCondos = [] } = useQuery<Condominium[]>({
     queryKey: ["/api/condominiums/pending/list"],
+  });
+
+  const { data: stats } = useQuery<Stats>({
+    queryKey: ["/api/admin/stats"],
+  });
+
+  const { data: users = [], refetch: refetchUsers } = useQuery<User[]>({
+    queryKey: ["/api/admin/users"],
+  });
+
+  const { data: stores = [], refetch: refetchStores } = useQuery<Store[]>({
+    queryKey: ["/api/admin/stores"],
   });
 
   const approveMutation = useMutation({
@@ -76,6 +95,38 @@ export default function AdminDashboardPage() {
     },
     onSuccess: () => {
       toast({ title: "Sucesso", description: "Condomínio rejeitado" });
+    },
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error("Erro ao excluir usuário");
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Sucesso", description: "Usuário excluído" });
+      refetchUsers();
+    },
+  });
+
+  const deleteStoreMutation = useMutation({
+    mutationFn: async (storeId: string) => {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`/api/admin/stores/${storeId}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error("Erro ao excluir loja");
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Sucesso", description: "Loja excluída" });
+      refetchStores();
     },
   });
 
@@ -132,19 +183,19 @@ export default function AdminDashboardPage() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <Card className="p-6">
                 <h3 className="text-sm font-medium text-muted-foreground">Moradores</h3>
-                <p className="text-3xl font-bold mt-2">145</p>
+                <p className="text-3xl font-bold mt-2">{stats?.residents || 0}</p>
               </Card>
               <Card className="p-6">
                 <h3 className="text-sm font-medium text-muted-foreground">Lojas Ativas</h3>
-                <p className="text-3xl font-bold mt-2">12</p>
+                <p className="text-3xl font-bold mt-2">{stats?.stores || 0}</p>
               </Card>
               <Card className="p-6">
                 <h3 className="text-sm font-medium text-muted-foreground">Serviços</h3>
-                <p className="text-3xl font-bold mt-2">8</p>
+                <p className="text-3xl font-bold mt-2">{stats?.services || 0}</p>
               </Card>
               <Card className="p-6">
                 <h3 className="text-sm font-medium text-muted-foreground">Pedidos Hoje</h3>
-                <p className="text-3xl font-bold mt-2">24</p>
+                <p className="text-3xl font-bold mt-2">{stats?.todayOrders || 0}</p>
               </Card>
             </div>
           </TabsContent>
@@ -251,24 +302,44 @@ export default function AdminDashboardPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b">
+                      <th className="text-left p-2">Nome</th>
                       <th className="text-left p-2">Username</th>
                       <th className="text-left p-2">Email</th>
+                      <th className="text-left p-2">Status</th>
                       <th className="text-left p-2">Ações</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr className="border-b hover:bg-muted/50">
-                      <td className="p-2">morador1</td>
-                      <td className="p-2">morador@example.com</td>
-                      <td className="p-2">
-                        <Button size="sm" variant="outline" data-testid="button-edit-resident">
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button size="sm" variant="destructive" data-testid="button-delete-resident">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </td>
-                    </tr>
+                    {users.map((user) => (
+                      <tr key={user.id} className="border-b hover:bg-muted/50">
+                        <td className="p-2">{(user as any).name || '-'}</td>
+                        <td className="p-2">{user.username}</td>
+                        <td className="p-2">{(user as any).email || '-'}</td>
+                        <td className="p-2">
+                          <Badge variant={(user as any).status === 'approved' ? 'default' : 'secondary'}>
+                            {(user as any).status || 'pending'}
+                          </Badge>
+                        </td>
+                        <td className="p-2 flex gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="destructive" 
+                            onClick={() => deleteUserMutation.mutate(user.id)}
+                            disabled={deleteUserMutation.isPending}
+                            data-testid={`button-delete-user-${user.id}`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                    {users.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="p-4 text-center text-muted-foreground">
+                          Nenhum morador cadastrado
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -290,21 +361,35 @@ export default function AdminDashboardPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr className="border-b hover:bg-muted/50">
-                      <td className="p-2">Padaria do João</td>
-                      <td className="p-2">Alimentos</td>
-                      <td className="p-2">
-                        <Badge variant="default">Ativo</Badge>
-                      </td>
-                      <td className="p-2">
-                        <Button size="sm" variant="outline" data-testid="button-edit-store">
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button size="sm" variant="destructive" data-testid="button-delete-store">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </td>
-                    </tr>
+                    {stores.map((store) => (
+                      <tr key={store.id} className="border-b hover:bg-muted/50">
+                        <td className="p-2">{store.name}</td>
+                        <td className="p-2">{store.category}</td>
+                        <td className="p-2">
+                          <Badge variant={store.status === 'active' ? 'default' : 'secondary'}>
+                            {store.status}
+                          </Badge>
+                        </td>
+                        <td className="p-2 flex gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="destructive" 
+                            onClick={() => deleteStoreMutation.mutate(store.id)}
+                            disabled={deleteStoreMutation.isPending}
+                            data-testid={`button-delete-store-${store.id}`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                    {stores.length === 0 && (
+                      <tr>
+                        <td colSpan={4} className="p-4 text-center text-muted-foreground">
+                          Nenhuma loja cadastrada
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>

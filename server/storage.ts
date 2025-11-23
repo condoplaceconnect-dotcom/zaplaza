@@ -8,7 +8,9 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   listUsersByRole(role: string): Promise<User[]>;
+  listUsersByCondo(condoId: string): Promise<User[]>;
   updateUser(id: string, user: Partial<User>): Promise<User | undefined>;
+  deleteUser(id: string): Promise<boolean>;
 
   // Condominiums
   getCondominium(id: string): Promise<Condominium | undefined>;
@@ -23,6 +25,7 @@ export interface IStorage {
   getStoresByCondo(condoId: string): Promise<Store[]>;
   createStore(store: InsertStore): Promise<Store>;
   updateStore(id: string, store: Partial<Store>): Promise<Store | undefined>;
+  deleteStore(id: string): Promise<boolean>;
 
   // Products
   getProduct(id: string): Promise<Product | undefined>;
@@ -78,7 +81,7 @@ export class MemStorage implements IStorage {
       phone: "+55 51 99999-9999",
       role: "admin",
       status: "approved",
-      condoId: null,
+      condoId: "condo-acqua-sena", // Admin vinculado ao condomínio
       createdAt: new Date(),
     };
     this.users.set(adminUser.id, adminUser);
@@ -100,6 +103,115 @@ export class MemStorage implements IStorage {
       createdAt: new Date(),
     };
     this.condominiums.set(acquaSena.id, acquaSena);
+
+    // ✅ Criar usuário VENDEDOR com senha "vendor123"
+    const vendorPassword = await bcrypt.hash("vendor123", 10);
+    const vendorUser: User = {
+      id: "vendor-001",
+      username: "vendedor",
+      password: vendorPassword,
+      name: "João Silva - Loja do João",
+      email: "vendedor@condoplace.com",
+      phone: "+55 51 98888-8888",
+      role: "vendor",
+      status: "approved",
+      condoId: "condo-acqua-sena",
+      createdAt: new Date(),
+    };
+    this.users.set(vendorUser.id, vendorUser);
+
+    // ✅ Criar LOJA do vendedor
+    const store: Store = {
+      id: "store-001",
+      name: "Loja do João - Lanches & Bebidas",
+      category: "Alimentação",
+      userId: "vendor-001",
+      condoId: "condo-acqua-sena",
+      image: null,
+      phone: "+55 51 98888-8888",
+      email: "lojadojoao@condoplace.com",
+      description: "Lanches, bebidas e petiscos para entrega no condomínio",
+      status: "active",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.stores.set(store.id, store);
+
+    // ✅ Criar PRODUTOS da loja
+    const products: Product[] = [
+      {
+        id: "prod-001",
+        name: "X-Burger Completo",
+        price: 25.90,
+        storeId: "store-001",
+        image: null,
+        description: "Hambúrguer artesanal com queijo, alface, tomate, bacon e molho especial",
+        category: "Lanches",
+        ingredients: "Pão, carne 180g, queijo, alface, tomate, bacon, molho especial",
+        available: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: "prod-002",
+        name: "Coca-Cola 2L",
+        price: 10.00,
+        storeId: "store-001",
+        image: null,
+        description: "Refrigerante Coca-Cola 2 litros gelada",
+        category: "Bebidas",
+        ingredients: null,
+        available: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: "prod-003",
+        name: "Pizza Margherita",
+        price: 45.00,
+        storeId: "store-001",
+        image: null,
+        description: "Pizza tradicional com molho de tomate, mussarela e manjericão",
+        category: "Pizzas",
+        ingredients: "Massa artesanal, molho de tomate, mussarela, manjericão",
+        available: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ];
+    products.forEach(p => this.products.set(p.id, p));
+
+    // ✅ Criar usuário CLIENTE/MORADOR com senha "cliente123"
+    const clientPassword = await bcrypt.hash("cliente123", 10);
+    const clientUser: User = {
+      id: "client-001",
+      username: "cliente",
+      password: clientPassword,
+      name: "Maria Santos",
+      email: "maria@condoplace.com",
+      phone: "+55 51 97777-7777",
+      role: "resident",
+      status: "approved",
+      condoId: "condo-acqua-sena",
+      createdAt: new Date(),
+    };
+    this.users.set(clientUser.id, clientUser);
+
+    // ✅ Criar usuário PRESTADOR DE SERVIÇO com senha "servico123"
+    const servicePassword = await bcrypt.hash("servico123", 10);
+    const serviceUser: User = {
+      id: "service-001",
+      username: "prestador",
+      password: servicePassword,
+      name: "Carlos Pereira - Eletricista",
+      email: "carlos@condoplace.com",
+      phone: "+55 51 96666-6666",
+      role: "service_provider",
+      status: "approved",
+      condoId: "condo-acqua-sena",
+      createdAt: new Date(),
+    };
+    this.users.set(serviceUser.id, serviceUser);
   }
 
   // ===== USERS =====
@@ -129,12 +241,20 @@ export class MemStorage implements IStorage {
     return Array.from(this.users.values()).filter((u) => u.role === role);
   }
 
+  async listUsersByCondo(condoId: string): Promise<User[]> {
+    return Array.from(this.users.values()).filter((u) => u.condoId === condoId);
+  }
+
   async updateUser(id: string, updates: Partial<User>): Promise<User | undefined> {
     const user = this.users.get(id);
     if (!user) return undefined;
     const updated = { ...user, ...updates };
     this.users.set(id, updated);
     return updated;
+  }
+
+  async deleteUser(id: string): Promise<boolean> {
+    return this.users.delete(id);
   }
 
   // ===== CONDOMINIUMS =====
@@ -210,6 +330,10 @@ export class MemStorage implements IStorage {
     const updated = { ...store, ...updates, updatedAt: new Date() };
     this.stores.set(id, updated);
     return updated;
+  }
+
+  async deleteStore(id: string): Promise<boolean> {
+    return this.stores.delete(id);
   }
 
   // ===== PRODUCTS =====
