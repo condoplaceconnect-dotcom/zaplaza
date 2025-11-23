@@ -199,8 +199,37 @@ npm run db:push
 - **Tipo**: Residencial
 - **Unidades**: ~150
 - **Papel**: Primeiro condomínio oficial - serve como exemplo e para testes reais
-- **Admin Login**: username: `admin`, password: `admin123`
-- **Admin Access**: `/admin/login` → Dashboard com 6 abas (Visão Geral, Solicitações, Condomínio, Moradores, Lojas, Comunicados)
+
+## 🔑 Logins de Teste
+
+### Administrador
+- **Username**: `admin`
+- **Password**: `admin123`
+- **Acesso**: Dashboard com estatísticas reais, gerenciamento de moradores, lojas e comunicados
+- **Funcionalidades**: Aprovar/rejeitar condomínios, excluir usuários, excluir lojas, visualizar estatísticas
+
+### Vendedor (Loja)
+- **Username**: `vendedor`
+- **Password**: `vendor123`
+- **Nome**: João Silva - Loja do João
+- **Loja**: "Loja do João - Lanches & Bebidas" (Alimentação)
+- **Produtos cadastrados**:
+  - X-Burger Completo - R$ 25,90
+  - Coca-Cola 2L - R$ 10,00
+  - Pizza Margherita - R$ 45,00
+- **Funcionalidades**: Gerenciar loja, criar/editar/deletar produtos, ver pedidos
+
+### Cliente/Morador
+- **Username**: `cliente`
+- **Password**: `cliente123`
+- **Nome**: Maria Santos
+- **Funcionalidades**: Visualizar lojas, comprar produtos, solicitar serviços, ler comunicados
+
+### Prestador de Serviço
+- **Username**: `prestador`
+- **Password**: `servico123`
+- **Nome**: Carlos Pereira - Eletricista
+- **Funcionalidades**: Criar perfil, listar serviços, gerenciar disponibilidade, receber agendamentos
 
 ## 👥 Autores
 Desenvolvido com Replit
