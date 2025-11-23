@@ -10,7 +10,9 @@ export interface IStorage {
   // Condominiums
   getCondominium(id: string): Promise<Condominium | undefined>;
   listCondominiums(): Promise<Condominium[]>;
+  listPendingCondominiums(): Promise<Condominium[]>;
   createCondominium(condo: InsertCondominium): Promise<Condominium>;
+  updateCondominium(id: string, condo: Partial<Condominium>): Promise<Condominium | undefined>;
 
   // Stores
   getStore(id: string): Promise<Store | undefined>;
@@ -88,6 +90,18 @@ export class MemStorage implements IStorage {
 
   async listCondominiums(): Promise<Condominium[]> {
     return Array.from(this.condominiums.values()).filter((c) => c.status === "approved");
+  }
+
+  async listPendingCondominiums(): Promise<Condominium[]> {
+    return Array.from(this.condominiums.values()).filter((c) => c.status === "pending");
+  }
+
+  async updateCondominium(id: string, updates: Partial<Condominium>): Promise<Condominium | undefined> {
+    const condo = this.condominiums.get(id);
+    if (!condo) return undefined;
+    const updated = { ...condo, ...updates };
+    this.condominiums.set(id, updated);
+    return updated;
   }
 
   async createCondominium(insertCondo: InsertCondominium): Promise<Condominium> {

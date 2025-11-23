@@ -102,6 +102,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/condominiums/pending/list", adminMiddleware, async (req: Request, res: Response) => {
+    try {
+      const pendingCondos = await storage.listPendingCondominiums();
+      res.json(pendingCondos);
+    } catch (error) {
+      console.error("[PENDING CONDOS LIST ERROR]", error);
+      res.status(500).json({ error: "Erro ao listar condomínios pendentes" });
+    }
+  });
+
+  app.patch("/api/condominiums/:id", adminMiddleware, async (req: Request, res: Response) => {
+    try {
+      const { status } = req.body;
+      if (!["approved", "rejected", "pending"].includes(status)) {
+        return res.status(400).json({ error: "Status inválido" });
+      }
+
+      const updated = await storage.updateCondominium(req.params.id, { status });
+      if (!updated) return res.status(404).json({ error: "Condomínio não encontrado" });
+      
+      res.json(updated);
+    } catch (error) {
+      console.error("[CONDO UPDATE ERROR]", error);
+      res.status(500).json({ error: "Erro ao atualizar condomínio" });
+    }
+  });
+
   // ✅ STORE ROUTES
   app.get("/api/condominiums/:condoId/stores", async (req: Request, res: Response) => {
     try {
