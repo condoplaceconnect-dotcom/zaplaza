@@ -163,30 +163,38 @@ export default function HomePage() {
               <p className="text-sm text-muted-foreground mt-2">Seja o primeiro vendedor! Clique em "Cadastro" para registrar sua loja</p>
             </div>
           ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {stores.map(store => (
-              <StoreCard
-                key={store.id}
-                {...store}
-                onClick={(id) => console.log('Navigate to store:', id)}
-              />
-            ))}
-          </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {stores.map(store => (
+                <StoreCard
+                  key={store.id}
+                  {...store}
+                  onClick={(id) => console.log('Navigate to store:', id)}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         <div>
           <h2 className="text-2xl font-bold mb-4">
             {selectedCategory ? selectedCategory : 'Todos os Produtos'}
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filteredProducts.map(product => (
-              <ProductCard
-                key={product.id}
-                {...product}
-                onAddToCart={addToCart}
-              />
-            ))}
-          </div>
+          {filteredProducts.length === 0 ? (
+            <div className="text-center py-12 bg-card rounded-lg border">
+              <p className="text-muted-foreground">Nenhum produto cadastrado ainda</p>
+              <p className="text-sm text-muted-foreground mt-2">Os produtos aparecerão aqui quando lojas começarem a vender</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filteredProducts.map(product => (
+                <ProductCard
+                  key={product.id}
+                  {...product}
+                  onAddToCart={addToCart}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </main>
 
