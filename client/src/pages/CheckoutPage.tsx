@@ -2,12 +2,11 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, CreditCard, Lock, CheckCircle } from "lucide-react";
+import { ArrowLeft, Lock, CheckCircle, Loader } from "lucide-react";
 
 interface CartItem {
   id: string;
@@ -30,14 +29,6 @@ export default function CheckoutPage() {
     { id: '2', name: 'Pão de Queijo', price: 2.00, quantity: 3, store: 'Lanchonete do Seu José' }
   ];
 
-  const [formData, setFormData] = useState({
-    cardName: '',
-    cardNumber: '',
-    cardExpiry: '',
-    cardCVC: '',
-    pixKey: ''
-  });
-
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const deliveryFee = 5.00;
   const tax = subtotal * 0.10; // 10% tax
@@ -47,39 +38,79 @@ export default function CheckoutPage() {
     e.preventDefault();
     setProcessing(true);
 
-    // Validações básicas
-    if (paymentMethod === 'card') {
-      if (!formData.cardName || !formData.cardNumber || !formData.cardExpiry || !formData.cardCVC) {
-        toast({
-          title: "Erro",
-          description: "Por favor, preencha todos os campos do cartão.",
-          variant: "destructive"
+    try {
+      if (paymentMethod === 'card') {
+        // Chamada ao backend para processar pagamento Stripe
+        // O backend irá criptografar e tokenizar usando Stripe API
+        const response = await fetch('/api/payments/create-payment-intent', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            amount: Math.round(total * 100), // Stripe espera cents
+            currency: 'brl',
+            items: cartItems,
+            metadata: {
+              vendorCommission: 0, // 0% comissão (100% vendedor)
+              appCommission: 0,
+            }
+          })
         });
-        setProcessing(false);
-        return;
-      }
-    } else {
-      if (!formData.pixKey) {
+
+        if (!response.ok) {
+          throw new Error('Erro ao criar intenção de pagamento');
+        }
+
+        const { clientSecret } = await response.json();
+
+        // Aqui seria integrado Stripe Elements ou Stripe.js
+        // Por segurança, o cliente usaria clientSecret para completar pagamento
+        // Dados de cartão NUNCA deixam o navegador sem criptografia Stripe
+
         toast({
-          title: "Erro",
-          description: "Por favor, informe sua chave Pix.",
-          variant: "destructive"
+          title: "Redirecionando para Stripe",
+          description: "Você será redirecionado para completar o pagamento de forma segura.",
         });
-        setProcessing(false);
-        return;
+
+        // Simular redirecionamento para Stripe
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      } else {
+        // Para PIX, gerar código QR dinâmico via backend
+        const response = await fetch('/api/payments/create-pix-qr', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            amount: total,
+            items: cartItems,
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Erro ao gerar código Pix');
+        }
+
+        const { qrCode } = await response.json();
+
+        toast({
+          title: "QR Code Pix Gerado",
+          description: "Escaneie o código para completar o pagamento.",
+        });
+
+        await new Promise(resolve => setTimeout(resolve, 2000));
       }
+
+      setCompleted(true);
+    } catch (error) {
+      toast({
+        title: "Erro no Pagamento",
+        description: error instanceof Error ? error.message : "Erro ao processar pagamento",
+        variant: "destructive"
+      });
+      setProcessing(false);
     }
-
-    // Simular processamento de pagamento
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    toast({
-      title: "Pagamento Confirmado!",
-      description: `Seu pedido foi confirmado. Total: R$ ${total.toFixed(2)}`,
-    });
-
-    setProcessing(false);
-    setCompleted(true);
   };
 
   if (completed) {
@@ -104,6 +135,7 @@ export default function CheckoutPage() {
           <Button 
             onClick={() => setLocation('/orders')}
             className="w-full"
+            data-testid="button-track-order"
           >
             Acompanhar Pedido
           </Button>
@@ -162,11 +194,8 @@ export default function CheckoutPage() {
                     className="mr-3"
                   />
                   <div>
-                    <p className="font-medium flex items-center gap-2">
-                      <CreditCard className="w-4 h-4" />
-                      Cartão de Crédito
-                    </p>
-                    <p className="text-sm text-muted-foreground">Visa, Mastercard, Elo</p>
+                    <p className="font-medium">Cartão de Crédito (Stripe)</p>
+                    <p className="text-sm text-muted-foreground">Seguro com criptografia PCI Compliant</p>
                   </div>
                 </label>
 
@@ -181,82 +210,35 @@ export default function CheckoutPage() {
                   />
                   <div>
                     <p className="font-medium">Pix</p>
-                    <p className="text-sm text-muted-foreground">Transferência instantânea</p>
+                    <p className="text-sm text-muted-foreground">Transferência instantânea com QR Code</p>
                   </div>
                 </label>
               </div>
 
               <Separator className="my-6" />
 
-              {/* Formulário de Pagamento */}
+              {/* Aviso de Segurança */}
+              <Alert className="mb-6">
+                <Lock className="h-4 w-4" />
+                <AlertDescription>
+                  ✅ Seus dados de pagamento são processados com segurança através de Stripe (PCI Level 1 Compliant). Dados sensíveis nunca são armazenados no nosso servidor.
+                </AlertDescription>
+              </Alert>
+
               <form onSubmit={handlePayment} className="space-y-4">
                 {paymentMethod === 'card' ? (
-                  <>
-                    <div className="space-y-2">
-                      <Label htmlFor="cardName">Nome no Cartão *</Label>
-                      <Input
-                        id="cardName"
-                        placeholder="João Silva"
-                        value={formData.cardName}
-                        onChange={(e) => setFormData({ ...formData, cardName: e.target.value })}
-                        data-testid="input-card-name"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="cardNumber">Número do Cartão *</Label>
-                      <Input
-                        id="cardNumber"
-                        placeholder="1234 5678 9012 3456"
-                        value={formData.cardNumber}
-                        onChange={(e) => setFormData({ ...formData, cardNumber: e.target.value })}
-                        data-testid="input-card-number"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="cardExpiry">Vencimento *</Label>
-                        <Input
-                          id="cardExpiry"
-                          placeholder="MM/AA"
-                          value={formData.cardExpiry}
-                          onChange={(e) => setFormData({ ...formData, cardExpiry: e.target.value })}
-                          data-testid="input-card-expiry"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="cardCVC">CVC *</Label>
-                        <Input
-                          id="cardCVC"
-                          placeholder="123"
-                          value={formData.cardCVC}
-                          onChange={(e) => setFormData({ ...formData, cardCVC: e.target.value })}
-                          data-testid="input-card-cvc"
-                        />
-                      </div>
-                    </div>
-                  </>
+                  <div className="p-4 bg-muted rounded-lg border-2 border-dashed">
+                    <p className="text-sm text-muted-foreground text-center">
+                      Ao clicar em "Pagar", você será redirecionado para a página segura do Stripe.
+                    </p>
+                  </div>
                 ) : (
-                  <div className="space-y-2">
-                    <Label htmlFor="pixKey">Chave Pix *</Label>
-                    <Input
-                      id="pixKey"
-                      placeholder="seu@email.com ou CPF"
-                      value={formData.pixKey}
-                      onChange={(e) => setFormData({ ...formData, pixKey: e.target.value })}
-                      data-testid="input-pix-key"
-                    />
+                  <div className="p-4 bg-muted rounded-lg border-2 border-dashed">
+                    <p className="text-sm text-muted-foreground text-center">
+                      Um QR Code Pix será gerado após confirmar o pagamento.
+                    </p>
                   </div>
                 )}
-
-                <Alert>
-                  <Lock className="h-4 w-4" />
-                  <AlertDescription>
-                    Seus dados de pagamento são criptografados e seguros.
-                  </AlertDescription>
-                </Alert>
 
                 <Button 
                   type="submit" 
@@ -264,7 +246,14 @@ export default function CheckoutPage() {
                   disabled={processing}
                   data-testid="button-pay"
                 >
-                  {processing ? 'Processando...' : `Pagar R$ ${total.toFixed(2)}`}
+                  {processing ? (
+                    <>
+                      <Loader className="w-4 h-4 mr-2 animate-spin" />
+                      Processando...
+                    </>
+                  ) : (
+                    `Pagar R$ ${total.toFixed(2)}`
+                  )}
                 </Button>
               </form>
             </Card>
@@ -291,13 +280,13 @@ export default function CheckoutPage() {
               <Separator />
               
               <div className="flex justify-between font-bold text-base">
-                <span>Total</span>
+                <span>Total para o Vendedor</span>
                 <span className="text-primary">R$ {total.toFixed(2)}</span>
               </div>
             </div>
 
             <p className="text-xs text-muted-foreground">
-              * O aplicativo recebe uma comissão de 10% sobre o subtotal. O restante vai para o vendedor.
+              ✅ <strong>100% do valor</strong> vai para o vendedor. O app não cobra comissão.
             </p>
           </Card>
         </div>

@@ -13,7 +13,6 @@ interface Transaction {
   vendorName: string;
   orderId: string;
   orderValue: number;
-  appCommission: number;
   vendorEarnings: number;
   status: 'completed' | 'pending' | 'paid';
   date: Date;
@@ -38,8 +37,7 @@ export default function AdminPaymentsPage() {
       vendorName: 'Doces da Maria',
       orderId: 'PED-001',
       orderValue: 35.00,
-      appCommission: 3.50,
-      vendorEarnings: 31.50,
+      vendorEarnings: 35.00,
       status: 'completed',
       date: new Date(Date.now() - 1 * 60 * 60 * 1000)
     },
@@ -48,8 +46,7 @@ export default function AdminPaymentsPage() {
       vendorName: 'Lanchonete do Seu José',
       orderId: 'PED-002',
       orderValue: 28.50,
-      appCommission: 2.85,
-      vendorEarnings: 25.65,
+      vendorEarnings: 28.50,
       status: 'completed',
       date: new Date(Date.now() - 3 * 60 * 60 * 1000)
     },
@@ -58,8 +55,7 @@ export default function AdminPaymentsPage() {
       vendorName: 'Studio da Beleza',
       orderId: 'APT-001',
       orderValue: 150.00,
-      appCommission: 15.00,
-      vendorEarnings: 135.00,
+      vendorEarnings: 150.00,
       status: 'completed',
       date: new Date(Date.now() - 5 * 60 * 60 * 1000)
     }
@@ -96,7 +92,7 @@ export default function AdminPaymentsPage() {
   ]);
 
   const totalRevenue = transactions.reduce((sum, t) => sum + t.orderValue, 0);
-  const totalAppCommission = transactions.reduce((sum, t) => sum + t.appCommission, 0);
+  const totalVendorPayments = transactions.reduce((sum, t) => sum + t.vendorEarnings, 0);
   const totalPendingPayments = vendorPayments.reduce((sum, v) => sum + v.pendingPayment, 0);
 
   return (
@@ -111,11 +107,18 @@ export default function AdminPaymentsPage() {
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <h1 className="text-xl font-bold">Gerenciar Pagamentos e Comissões</h1>
+          <h1 className="text-xl font-bold">Gerenciar Pagamentos</h1>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-6">
+        <Alert className="mb-6 border-green-200 bg-green-50 dark:bg-green-950 dark:border-green-800">
+          <AlertDescription className="text-green-900 dark:text-green-200">
+            ✅ <strong>Política de Pagamento: 100% para Vendedores</strong><br/>
+            O aplicativo não cobra comissão. 100% do valor de cada transação é repassado ao vendedor.
+          </AlertDescription>
+        </Alert>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <StatsCard 
             icon={DollarSign} 
@@ -125,8 +128,8 @@ export default function AdminPaymentsPage() {
           />
           <StatsCard 
             icon={TrendingUp} 
-            label="Comissão do App (10%)" 
-            value={`R$ ${totalAppCommission.toFixed(2)}`}
+            label="Repassado a Vendedores" 
+            value={`R$ ${totalVendorPayments.toFixed(2)}`}
             iconColor="text-primary"
           />
           <StatsCard 
@@ -150,13 +153,13 @@ export default function AdminPaymentsPage() {
           <TabsContent value="transactions" className="mt-6 space-y-4">
             <Alert>
               <AlertDescription>
-                Comissão do aplicativo: <strong>10%</strong> sobre o valor total de cada transação.
+                <strong>100% do valor</strong> de cada transação vai para o vendedor. O aplicativo não retém comissão.
               </AlertDescription>
             </Alert>
 
             {transactions.map(transaction => (
               <Card key={transaction.id} className="p-4" data-testid={`card-transaction-${transaction.id}`}>
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
                   <div>
                     <p className="font-semibold" data-testid={`text-vendor-${transaction.id}`}>
                       {transaction.vendorName}
@@ -165,23 +168,18 @@ export default function AdminPaymentsPage() {
                   </div>
                   
                   <div className="text-right">
-                    <p className="text-sm text-muted-foreground">Valor do Pedido</p>
+                    <p className="text-sm text-muted-foreground">Valor da Transação</p>
                     <p className="font-semibold">R$ {transaction.orderValue.toFixed(2)}</p>
                   </div>
 
                   <div className="text-right">
-                    <p className="text-sm text-muted-foreground">Comissão App</p>
-                    <p className="font-semibold text-primary">R$ {transaction.appCommission.toFixed(2)}</p>
-                  </div>
-
-                  <div className="text-right">
-                    <p className="text-sm text-muted-foreground">Para Vendedor</p>
+                    <p className="text-sm text-muted-foreground">Para Vendedor (100%)</p>
                     <p className="font-semibold text-green-600">R$ {transaction.vendorEarnings.toFixed(2)}</p>
                   </div>
 
                   <div className="text-right">
                     <Badge variant={transaction.status === 'completed' ? 'default' : 'secondary'}>
-                      {transaction.status === 'completed' ? 'Concluído' : 'Pendente'}
+                      {transaction.status === 'completed' ? 'Concluído' : transaction.status === 'pending' ? 'Pendente' : 'Pago'}
                     </Badge>
                   </div>
                 </div>
