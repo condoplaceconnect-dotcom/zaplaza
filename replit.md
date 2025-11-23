@@ -321,15 +321,24 @@ Campos principais:
   - Menores (<18) bloqueados no registro E login
   - Funções helper centralizadas (isUserBlocked, getBlockedMinorMessage)
   - Proteção em todas as rotas de autenticação
+- [x] **Sistema de Conta Família completo:**
+  - Adultos podem adicionar/editar/remover dependentes menores
+  - Rotas backend: GET/POST/PATCH/DELETE /api/family/dependents
+  - Página frontend /family com interface completa
+  - Validação de idade (<18) no backend
+  - Dependentes criados com status "blocked_until_18"
+  - Campos herdados do responsável (bloco, apartamento, condoId)
+  - Link no menu de perfil
+  - Testes E2E completos e aprovados
 
 ### ⏳ EM DESENVOLVIMENTO
-- [ ] Sistema de Conta Família
 - [ ] Página Marketplace
 - [ ] Página Achados & Perdidos
 - [ ] Sistema de Entregas Internas
 - [ ] Sistema de Denúncias
 - [ ] Chat em tempo real
 - [ ] Atualização de design (verde e branco)
+- [ ] Sistema de aprovação de compras para menores (integrado com Conta Família)
 
 ### 📋 PENDENTE
 - [ ] Notificações push
