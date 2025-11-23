@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { BarChart3, Users, Home, Store, LogOut, Check, X } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
 
 interface Condominium {
   id: string;
@@ -29,13 +28,27 @@ export default function AdminDashboardPage() {
   });
 
   const approveMutation = useMutation({
-    mutationFn: (condoId: string) => 
-      apiRequest(`/api/condominiums/${condoId}`, { method: "PATCH", body: { status: "approved" } }),
+    mutationFn: async (condoId: string) => {
+      const response = await fetch(`/api/condominiums/${condoId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "approved" }),
+      });
+      if (!response.ok) throw new Error("Erro ao aprovar");
+      return response.json();
+    },
   });
 
   const rejectMutation = useMutation({
-    mutationFn: (condoId: string) => 
-      apiRequest(`/api/condominiums/${condoId}`, { method: "PATCH", body: { status: "rejected" } }),
+    mutationFn: async (condoId: string) => {
+      const response = await fetch(`/api/condominiums/${condoId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "rejected" }),
+      });
+      if (!response.ok) throw new Error("Erro ao rejeitar");
+      return response.json();
+    },
   });
 
   const handleLogout = () => {

@@ -1,5 +1,6 @@
 import { type User, type InsertUser, type Condominium, type InsertCondominium, type Store, type InsertStore, type Product, type InsertProduct, type DeliveryPerson, type InsertDeliveryPerson, type Order, type InsertOrder } from "@shared/schema";
 import { randomUUID } from "crypto";
+import * as bcrypt from "bcrypt";
 
 export interface IStorage {
   // Users
@@ -59,6 +60,58 @@ export class MemStorage implements IStorage {
     this.products = new Map();
     this.deliveryPersons = new Map();
     this.orders = new Map();
+
+    // Criar usuário admin de teste
+    this.initializeTestData();
+  }
+
+  private async initializeTestData() {
+    const adminPassword = await bcrypt.hash("admin123", 10);
+    const adminUser: User = {
+      id: "admin-001",
+      username: "admin",
+      password: adminPassword,
+      role: "admin",
+      condoId: null,
+      createdAt: new Date(),
+    };
+    this.users.set(adminUser.id, adminUser);
+
+    // Criar condomínio de teste
+    const testCondo: Condominium = {
+      id: "condo-001",
+      name: "Residencial Jardim das Flores",
+      address: "Rua das Flores, 100",
+      city: "São Paulo",
+      state: "SP",
+      zipCode: "01234-567",
+      units: 120,
+      phone: "(11) 1234-5678",
+      email: "contato@jardimflores.com.br",
+      description: "Condomínio residencial moderno com área de lazer completa",
+      image: null,
+      status: "approved",
+      createdAt: new Date(),
+    };
+    this.condominiums.set(testCondo.id, testCondo);
+
+    // Criar condomínio pendente de teste
+    const pendingCondo: Condominium = {
+      id: "condo-pending-001",
+      name: "Condomínio Vila Verde",
+      address: "Av. Verde, 200",
+      city: "São Paulo",
+      state: "SP",
+      zipCode: "01234-568",
+      units: 80,
+      phone: "(11) 9876-5432",
+      email: "contato@vilaverde.com.br",
+      description: "Novo condomínio com área verde",
+      image: null,
+      status: "pending",
+      createdAt: new Date(),
+    };
+    this.condominiums.set(pendingCondo.id, pendingCondo);
   }
 
   // ===== USERS =====
@@ -130,7 +183,6 @@ export class MemStorage implements IStorage {
   }
 
   async getStoresByCondo(condoId: string): Promise<Store[]> {
-    // TODO: Join with storeCondominiums table
     return Array.from(this.stores.values());
   }
 
@@ -207,7 +259,6 @@ export class MemStorage implements IStorage {
   }
 
   async getDeliveryPersonsByCondo(condoId: string): Promise<DeliveryPerson[]> {
-    // TODO: Join with deliveryPersonCondominiums table
     return Array.from(this.deliveryPersons.values());
   }
 
