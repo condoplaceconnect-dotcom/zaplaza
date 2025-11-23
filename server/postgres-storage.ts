@@ -228,6 +228,12 @@ export class PostgresStorage implements IStorage {
     return result.rowCount ? result.rowCount > 0 : false;
   }
 
+  async getDependentsByParentId(parentId: string): Promise<User[]> {
+    return await db.query.users.findMany({
+      where: eq(schema.users.parentAccountId, parentId),
+    });
+  }
+
   // ===== CONDOMINIUMS =====
   async getCondominium(id: string): Promise<Condominium | undefined> {
     return await db.query.condominiums.findFirst({

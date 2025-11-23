@@ -647,6 +647,146 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ✅ FAMILY ACCOUNT ROUTES
+  app.get("/api/family/dependents", authMiddleware, async (req: Request, res: Response) => {
+    try {
+      const userId = req.user!.userId;
+      const dependents = await storage.getDependentsByParentId(userId);
+      res.json(dependents.map(dep => ({
+        id: dep.id,
+        name: dep.name,
+        birthDate: dep.birthDate,
+        accountType: dep.accountType,
+        relationship: dep.relationship,
+        status: dep.status
+      })));
+    } catch (error) {
+      console.error("[FAMILY DEPENDENTS ERROR]", error);
+      res.status(500).json({ error: "Erro ao buscar dependentes" });
+    }
+  });
+
+  app.post("/api/family/dependents", authMiddleware, async (req: Request, res: Response) => {
+    try {
+      const userId = req.user!.userId;
+      const { name, birthDate, relationship } = req.body;
+
+      if (!name || !birthDate || !relationship) {
+        return res.status(400).json({ error: "Nome, data de nascimento e parentesco são obrigatórios" });
+      }
+
+      // Validar data de nascimento
+      const birthDateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (!birthDateRegex.test(birthDate)) {
+        return res.status(400).json({ error: "Data de nascimento inválida. Use formato YYYY-MM-DD" });
+      }
+
+      const birthDateObj = new Date(birthDate);
+      if (isNaN(birthDateObj.getTime())) {
+        return res.status(400).json({ error: "Data de nascimento inválida" });
+      }
+
+      // Calcular idade
+      const today = new Date();
+      let age = today.getFullYear() - birthDateObj.getFullYear();
+      const monthDiff = today.getMonth() - birthDateObj.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDateObj.getDate())) {
+        age--;
+      }
+
+      // Verificar se é menor de 18
+      if (age >= 18) {
+        return res.status(400).json({ error: "Dependentes devem ter menos de 18 anos" });
+      }
+
+      // Buscar dados do responsável (adulto)
+      const parent = await storage.getUser(userId);
+      if (!parent) {
+        return res.status(404).json({ error: "Usuário responsável não encontrado" });
+      }
+
+      // Criar dependente
+      const dependent = await storage.createUser({
+        name,
+        birthDate,
+        relationship,
+        parentAccountId: userId,
+        accountType: "minor",
+        username: `${parent.username}_${name.toLowerCase().replace(/\s+/g, '_')}`,
+        password: await authService.hashPassword("temp_password_" + Date.now()),
+        email: `${parent.email.split('@')[0]}_${name.toLowerCase().replace(/\s+/g, '_')}@temp.condoplace.com`,
+        phone: parent.phone,
+        block: parent.block || "",
+        unit: parent.unit || "",
+        role: "resident",
+        status: "blocked_until_18",
+        condoId: parent.condoId || undefined,
+      });
+
+      res.json({
+        id: dependent.id,
+        name: dependent.name,
+        birthDate: dependent.birthDate,
+        accountType: dependent.accountType,
+        relationship: dependent.relationship,
+        status: dependent.status
+      });
+    } catch (error) {
+      console.error("[ADD DEPENDENT ERROR]", error);
+      res.status(500).json({ error: "Erro ao adicionar dependente" });
+    }
+  });
+
+  app.patch("/api/family/dependents/:id", authMiddleware, async (req: Request, res: Response) => {
+    try {
+      const userId = req.user!.userId;
+      const dependentId = req.params.id;
+      const { name, relationship } = req.body;
+
+      // Verificar se o dependente pertence ao usuário
+      const dependent = await storage.getUser(dependentId);
+      if (!dependent || dependent.parentAccountId !== userId) {
+        return res.status(404).json({ error: "Dependente não encontrado" });
+      }
+
+      const updates: any = {};
+      if (name) updates.name = name;
+      if (relationship) updates.relationship = relationship;
+
+      const updated = await storage.updateUser(dependentId, updates);
+      res.json({
+        id: updated!.id,
+        name: updated!.name,
+        birthDate: updated!.birthDate,
+        accountType: updated!.accountType,
+        relationship: updated!.relationship,
+        status: updated!.status
+      });
+    } catch (error) {
+      console.error("[UPDATE DEPENDENT ERROR]", error);
+      res.status(500).json({ error: "Erro ao atualizar dependente" });
+    }
+  });
+
+  app.delete("/api/family/dependents/:id", authMiddleware, async (req: Request, res: Response) => {
+    try {
+      const userId = req.user!.userId;
+      const dependentId = req.params.id;
+
+      // Verificar se o dependente pertence ao usuário
+      const dependent = await storage.getUser(dependentId);
+      if (!dependent || dependent.parentAccountId !== userId) {
+        return res.status(404).json({ error: "Dependente não encontrado" });
+      }
+
+      await storage.deleteUser(dependentId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("[DELETE DEPENDENT ERROR]", error);
+      res.status(500).json({ error: "Erro ao remover dependente" });
+    }
+  });
+
   // ✅ Register admin routes
   registerAdminRoutes(app);
 

@@ -12,6 +12,7 @@ export interface IStorage {
   listUsersByCondo(condoId: string): Promise<User[]>;
   updateUser(id: string, user: Partial<User>): Promise<User | undefined>;
   deleteUser(id: string): Promise<boolean>;
+  getDependentsByParentId(parentId: string): Promise<User[]>;
 
   // Condominiums
   getCondominium(id: string): Promise<Condominium | undefined>;
