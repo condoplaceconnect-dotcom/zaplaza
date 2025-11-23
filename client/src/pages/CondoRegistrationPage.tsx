@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import PhotoUpload from "@/components/PhotoUpload";
-import { ArrowLeft, AlertCircle } from "lucide-react";
+import { ArrowLeft, AlertCircle, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function CondoRegistrationPage() {
@@ -15,13 +15,8 @@ export default function CondoRegistrationPage() {
   const { toast } = useToast();
   const [photo, setPhoto] = useState('');
   const [error, setError] = useState('');
+  const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  // TODO: Remover dados mock quando integrar com backend
-  const [registeredCondos] = useState([
-    'Residencial Jardim das Flores',
-    'Condomínio Vila Verde'
-  ]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -40,24 +35,52 @@ export default function CondoRegistrationPage() {
     setError('');
     setLoading(true);
 
-    // Validação: Condomínio duplicado
-    if (registeredCondos.some(c => c.toLowerCase() === formData.name.toLowerCase())) {
-      setError('Este condomínio já está cadastrado no sistema. Um único perfil é permitido por condomínio.');
+    // Validações básicas
+    if (!formData.name || !formData.address || !formData.city || !formData.state || !formData.zipCode || !formData.units) {
+      setError('Por favor, preencha todos os campos obrigatórios.');
       setLoading(false);
       return;
     }
 
-    // Simular delay de registro
+    // Simular delay de envio
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     toast({
-      title: "Condomínio Registrado!",
-      description: `${formData.name} foi cadastrado com sucesso como localização.`,
+      title: "Solicitação Enviada!",
+      description: `${formData.name} foi enviado para aprovação do administrador.`,
     });
 
     setLoading(false);
-    setLocation('/');
+    setSubmitted(true);
   };
+
+  if (submitted) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="p-8 max-w-md w-full text-center space-y-6">
+          <div className="flex justify-center">
+            <CheckCircle className="w-16 h-16 text-green-600" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold mb-2">Solicitação Enviada!</h2>
+            <p className="text-muted-foreground mb-4">
+              {formData.name} foi submetido para aprovação. Um administrador analisará seu cadastro em breve.
+            </p>
+            <p className="text-sm text-muted-foreground mb-4">
+              Você receberá um email de confirmação quando sua solicitação for aprovada.
+            </p>
+          </div>
+          <Button 
+            onClick={() => setLocation('/')}
+            data-testid="button-back-home"
+            className="w-full"
+          >
+            Voltar ao Início
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -71,7 +94,7 @@ export default function CondoRegistrationPage() {
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <h1 className="text-xl font-bold">Registrar Condomínio</h1>
+          <h1 className="text-xl font-bold">Solicitar Registro de Condomínio</h1>
         </div>
       </header>
 
@@ -84,6 +107,13 @@ export default function CondoRegistrationPage() {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
+
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Sua solicitação será analisada por um administrador. Você receberá uma confirmação por email quando for aprovada.
+              </AlertDescription>
+            </Alert>
 
             <div className="space-y-2">
               <h2 className="text-lg font-semibold">Foto do Condomínio</h2>
@@ -228,9 +258,9 @@ export default function CondoRegistrationPage() {
               <Button 
                 type="submit" 
                 disabled={loading}
-                data-testid="button-register"
+                data-testid="button-submit-request"
               >
-                {loading ? 'Registrando...' : 'Registrar Condomínio'}
+                {loading ? 'Enviando...' : 'Enviar Solicitação'}
               </Button>
             </div>
           </form>
