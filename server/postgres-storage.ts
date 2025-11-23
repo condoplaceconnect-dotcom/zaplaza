@@ -73,7 +73,7 @@ export class PostgresStorage implements IStorage {
         unit: "101",
         accountType: "adult",
         role: "admin",
-        status: "approved",
+        status: "active",
         condoId: acquaSena.id,
       });
 
@@ -92,7 +92,7 @@ export class PostgresStorage implements IStorage {
           unit: "205",
           accountType: "adult",
           role: "vendor",
-          status: "approved",
+          status: "active",
           condoId: acquaSena.id,
         })
         .returning();
@@ -157,7 +157,7 @@ export class PostgresStorage implements IStorage {
         unit: "303",
         accountType: "adult",
         role: "resident",
-        status: "approved",
+        status: "active",
         condoId: acquaSena.id,
       });
 
@@ -174,7 +174,7 @@ export class PostgresStorage implements IStorage {
         unit: "404",
         accountType: "adult",
         role: "service_provider",
-        status: "approved",
+        status: "active",
         condoId: acquaSena.id,
       });
 

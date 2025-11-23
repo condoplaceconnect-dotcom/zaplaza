@@ -94,7 +94,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Determinar status e accountType baseado na idade
-      let status = "pending";
+      let status = "active";
       let accountType = "adult";
       
       if (age < 18) {
@@ -123,7 +123,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json(authService.getBlockedMinorMessage());
       }
 
-      // Fazer login automático apenas para maiores de 18 (status pending aguardando aprovação do admin)
+      // Fazer login automático para maiores de 18
       const token = authService.generateToken(newUser, newUser.role as any);
       res.status(201).json({ 
         token, 

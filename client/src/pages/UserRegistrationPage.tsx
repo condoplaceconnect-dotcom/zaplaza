@@ -144,10 +144,10 @@ export default function UserRegistrationPage() {
 
       toast({ 
         title: "Conta criada com sucesso!", 
-        description: "Aguardando aprovação do administrador do condomínio..." 
+        description: "Você já pode acessar o aplicativo!" 
       });
       
-      // Redirecionar para tela de aprovação pendente
+      // Redirecionar para página inicial
       setTimeout(() => {
         window.location.href = "/";
       }, 1500);

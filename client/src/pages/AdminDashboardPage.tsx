@@ -61,7 +61,7 @@ export default function AdminDashboardPage() {
   });
 
   const { data: users = [], refetch: refetchUsers } = useQuery<User[]>({
-    queryKey: ["/api/admin/users"],
+    queryKey: ["/api/admin/usuarios"],
   });
 
   const { data: stores = [], refetch: refetchStores } = useQuery<Store[]>({
@@ -101,7 +101,7 @@ export default function AdminDashboardPage() {
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
       const token = localStorage.getItem("token");
-      const response = await fetch(`/api/admin/users/${userId}`, {
+      const response = await fetch(`/api/admin/moradores/${userId}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` },
       });
@@ -316,8 +316,8 @@ export default function AdminDashboardPage() {
                         <td className="p-2">{user.username}</td>
                         <td className="p-2">{(user as any).email || '-'}</td>
                         <td className="p-2">
-                          <Badge variant={(user as any).status === 'approved' ? 'default' : 'secondary'}>
-                            {(user as any).status || 'pending'}
+                          <Badge variant={(user as any).status === 'active' ? 'default' : 'secondary'}>
+                            {(user as any).status === 'blocked_until_18' ? 'Bloqueado (<18)' : ((user as any).status || 'active')}
                           </Badge>
                         </td>
                         <td className="p-2 flex gap-2">

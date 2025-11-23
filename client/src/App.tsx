@@ -27,9 +27,9 @@ const ServiceProviderProfilePage = lazy(() => import("@/pages/ServiceProviderPro
 const AdminDashboardPage = lazy(() => import("@/pages/AdminDashboardPage"));
 const AdminLoginPage = lazy(() => import("@/pages/AdminLoginPage"));
 const DeliveryDashboardPage = lazy(() => import("@/pages/DeliveryDashboardPage"));
-const PendingApprovalPage = lazy(() => import("@/pages/PendingApprovalPage"));
 const FamilyAccountPage = lazy(() => import("@/pages/FamilyAccountPage"));
 const MarketplacePage = lazy(() => import("@/pages/MarketplacePage"));
+const LoginPage = lazy(() => import("@/pages/LoginPage"));
 
 // Componente de carregamento
 function PageLoader() {
@@ -53,7 +53,7 @@ function Router() {
   const [authChecked, setAuthChecked] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Começa false, só true após validar
   const [selectedCondoId, setSelectedCondoId] = useState<string | null>(null);
-  const [userStatus, setUserStatus] = useState("pending");
+  const [userStatus, setUserStatus] = useState("active");
 
   // Validar auth state via /api/auth/me no boot
   useEffect(() => {
@@ -64,7 +64,7 @@ function Router() {
         // Sem token, garantir tudo limpo
         setIsLoggedIn(false);
         setSelectedCondoId(null);
-        setUserStatus("pending");
+        setUserStatus("active");
         setAuthChecked(true);
         return;
       }
@@ -82,7 +82,7 @@ function Router() {
           localStorage.clear();
           setIsLoggedIn(false);
           setSelectedCondoId(null);
-          setUserStatus("pending");
+          setUserStatus("active");
           setAuthChecked(true);
           return;
         }
@@ -94,19 +94,15 @@ function Router() {
           id: user.id,
           username: user.username,
           role: user.role,
-          status: user.status || "pending"
+          status: user.status || "active"
         }));
 
         // Atualizar estado
-        setUserStatus(user.status || "pending");
+        setUserStatus(user.status || "active");
         setIsLoggedIn(true);
         
-        // Se usuário não está aprovado, NÃO salvar selectedCondoId
-        if (user.status !== "approved") {
-          localStorage.removeItem("selectedCondoId");
-          setSelectedCondoId(null);
-        } else if (user.condoId) {
-          // Se usuário está aprovado E tem condoId, atualizar
+        // Se usuário tem condoId, atualizar
+        if (user.condoId) {
           localStorage.setItem("selectedCondoId", user.condoId);
           setSelectedCondoId(user.condoId);
         }
@@ -117,7 +113,7 @@ function Router() {
         localStorage.clear();
         setIsLoggedIn(false);
         setSelectedCondoId(null);
-        setUserStatus("pending");
+        setUserStatus("active");
       } finally {
         setAuthChecked(true);
       }
@@ -140,6 +136,7 @@ function Router() {
       <Suspense fallback={<PageLoader />}>
         <Switch>
           <Route path="/" component={LandingPage} />
+          <Route path="/login" component={LoginPage} />
           <Route path="/select-condo" component={CondoSelectorPage} />
           <Route path="/admin/login" component={AdminLoginPage} />
           <Route path="/register-condo" component={CondoRegistrationPage} />
@@ -150,16 +147,7 @@ function Router() {
     );
   }
 
-  // ⏳ Está logado MAS status pending → AGUARDANDO APROVAÇÃO (BLOQUEIA TODAS AS ROTAS!)
-  if (userStatus === "pending") {
-    return (
-      <Suspense fallback={<PageLoader />}>
-        <PendingApprovalPage />
-      </Suspense>
-    );
-  }
-
-  // ✅ Está logado, aprovado MAS NÃO tem condomínio → SELECIONADOR DE CONDOMÍNIO
+  // ✅ Está logado MAS NÃO tem condomínio → SELECIONADOR DE CONDOMÍNIO
   if (!selectedCondoId) {
     return (
       <Suspense fallback={<PageLoader />}>
@@ -176,7 +164,7 @@ function Router() {
     );
   }
 
-  // ✅ Está logado, tem condomínio E está aprovado → ACESSO COMPLETO
+  // ✅ Está logado e tem condomínio → ACESSO COMPLETO
   return (
     <Suspense fallback={<PageLoader />}>
       <Switch>

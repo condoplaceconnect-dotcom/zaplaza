@@ -18,7 +18,7 @@ export const users = pgTable("users", {
   parentAccountId: varchar("parent_account_id"), // ID do adulto responsável (para menores)
   relationship: varchar("relationship", { length: 50 }), // filho, filha, dependente, etc (para menores)
   role: varchar("role", { length: 20 }).notNull().default("resident"), // resident, vendor, service_provider, delivery_person, staff, admin
-  status: varchar("status", { length: 20 }).notNull().default("pending"), // pending, approved, rejected, blocked_until_18
+  status: varchar("status", { length: 20 }).notNull().default("active"), // active, blocked_until_18
   condoId: varchar("condo_id"),
   createdAt: timestamp("created_at").defaultNow(),
 });

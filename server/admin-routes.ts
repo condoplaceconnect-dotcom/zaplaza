@@ -4,43 +4,26 @@ import { adminMiddleware } from "./auth";
 import { queryClient } from "@/lib/queryClient";
 
 export function registerAdminRoutes(app: Express) {
-  // ✅ Admin Requests - Users Pending Approval
-  app.get("/api/admin/solicitacoes/usuarios", adminMiddleware, async (req: Request, res: Response) => {
+  // ✅ Admin - List All Users (flattened array for residents table)
+  app.get("/api/admin/usuarios", adminMiddleware, async (req: Request, res: Response) => {
     try {
       const residentUsers = await storage.listUsersByRole("resident");
       const vendorUsers = await storage.listUsersByRole("vendor");
       const serviceProviders = await storage.listUsersByRole("service_provider");
       const deliveryPersons = await storage.listUsersByRole("delivery_person");
 
-      res.json({
-        residents: residentUsers,
-        vendors: vendorUsers,
-        serviceProviders,
-        deliveryPersons,
-      });
+      // Flatten into single array for frontend
+      const allUsers = [
+        ...residentUsers,
+        ...vendorUsers,
+        ...serviceProviders,
+        ...deliveryPersons
+      ];
+
+      res.json(allUsers);
     } catch (error) {
-      console.error("[ADMIN REQUESTS ERROR]", error);
-      res.status(500).json({ error: "Erro ao listar solicitações" });
-    }
-  });
-
-  // ✅ Admin Approve/Reject User
-  app.post("/api/admin/aprovar/:id", adminMiddleware, async (req: Request, res: Response) => {
-    try {
-      const { action } = req.body; // "approve" or "reject"
-      const user = await storage.getUser(req.params.id);
-
-      if (!user) return res.status(404).json({ error: "Usuário não encontrado" });
-
-      const status = action === "approve" ? "approved" : "rejected";
-      const updated = await storage.updateUser(req.params.id, { 
-        condoId: action === "approve" ? user.condoId : null 
-      });
-
-      res.json({ success: true, user: updated });
-    } catch (error) {
-      console.error("[ADMIN APPROVE ERROR]", error);
-      res.status(500).json({ error: "Erro ao processar solicitação" });
+      console.error("[ADMIN USERS LIST ERROR]", error);
+      res.status(500).json({ error: "Erro ao listar usuários" });
     }
   });
 

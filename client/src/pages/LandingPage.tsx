@@ -20,25 +20,36 @@ export default function LandingPage() {
       {/* Buttons */}
       <div className="w-full max-w-md space-y-4">
         <Button 
+          onClick={() => setLocation("/login")} 
+          size="lg"
+          className="w-full h-12 text-base"
+          data-testid="button-login"
+        >
+          <LogIn className="w-4 h-4 mr-2" />
+          Entrar
+        </Button>
+
+        <Button 
           onClick={() => setLocation("/select-condo")} 
+          variant="outline"
           size="lg"
           className="w-full h-12 text-base"
           data-testid="button-select-condo"
         >
-          <LogIn className="w-4 h-4 mr-2" />
-          Selecionar Condomínio
+          <Plus className="w-4 h-4 mr-2" />
+          Criar Conta
         </Button>
 
-        <Button 
-          onClick={() => setLocation("/register-condo")} 
-          variant="outline"
-          size="lg"
-          className="w-full h-12 text-base"
-          data-testid="button-register-condo"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Registrar Condomínio
-        </Button>
+        <div className="text-center pt-2">
+          <button
+            type="button"
+            onClick={() => setLocation("/register-condo")}
+            data-testid="button-register-condo"
+            className="text-sm text-muted-foreground underline-offset-4 hover:underline cursor-pointer"
+          >
+            Solicitar Registro de Novo Condomínio
+          </button>
+        </div>
       </div>
 
       {/* Admin Link */}
