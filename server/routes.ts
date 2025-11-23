@@ -147,7 +147,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const newStore = await storage.createStore({
         ...req.body,
-        userId: req.user.id,
+        userId: req.user.userId,
       });
 
       res.status(201).json(newStore);
@@ -183,7 +183,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Loja não encontrada" });
       }
 
-      if (store.userId !== req.user.id) {
+      if (store.userId !== req.user.userId) {
         return res.status(403).json({ error: "Sem permissão" });
       }
 
@@ -220,7 +220,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Verificar se usuário é dono da loja
       const store = await storage.getStore(req.body.storeId);
-      if (!store || store.userId !== req.user.id) {
+      if (!store || store.userId !== req.user.userId) {
         return res.status(403).json({ error: "Sem permissão" });
       }
 
@@ -245,7 +245,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const store = await storage.getStore(product.storeId);
-      if (!store || store.userId !== req.user.id) {
+      if (!store || store.userId !== req.user.userId) {
         return res.status(403).json({ error: "Sem permissão" });
       }
 
@@ -270,7 +270,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const store = await storage.getStore(product.storeId);
-      if (!store || store.userId !== req.user.id) {
+      if (!store || store.userId !== req.user.userId) {
         return res.status(403).json({ error: "Sem permissão" });
       }
 
