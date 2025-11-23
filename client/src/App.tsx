@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 
 // ✅ Code Splitting com lazy loading
+const LandingPage = lazy(() => import("@/pages/LandingPage"));
 const HomePage = lazy(() => import("@/pages/HomePage"));
 const OrdersPage = lazy(() => import("@/pages/OrdersPage"));
 const VendorDashboard = lazy(() => import("@/pages/VendorDashboard"));
@@ -62,17 +63,18 @@ function Router() {
         }
       };
       checkCondoStatus();
-    } else if (!selectedCondoId) {
+    } else {
       setCondoStatus('none');
     }
   }, [isLoggedIn, selectedCondoId]);
 
-  // Se não está logado, mostra apenas telas de seleção/registro
+  // Usuário não logado → Landing Page (não pode acessar nada)
   if (!isLoggedIn) {
     return (
       <Suspense fallback={<PageLoader />}>
         <Switch>
-          <Route path="/" component={CondoSelectorPage} />
+          <Route path="/" component={LandingPage} />
+          <Route path="/select-condo" component={CondoSelectorPage} />
           <Route path="/admin/login" component={AdminLoginPage} />
           <Route path="/register-condo" component={CondoRegistrationPage} />
           <Route path="/register" component={UserRegistrationPage} />
@@ -82,12 +84,13 @@ function Router() {
     );
   }
 
-  // Se está logado mas sem condomínio selecionado → redireciona para seleção
+  // Usuário logado sem condomínio ou condomínio status é 'none' → CondoSelectorPage
   if (!selectedCondoId || condoStatus === 'none') {
     return (
       <Suspense fallback={<PageLoader />}>
         <Switch>
           <Route path="/" component={CondoSelectorPage} />
+          <Route path="/select-condo" component={CondoSelectorPage} />
           <Route path="/admin/login" component={AdminLoginPage} />
           <Route path="/admin/dashboard" component={AdminDashboardPage} />
           <Route path="/register-condo" component={CondoRegistrationPage} />
@@ -98,7 +101,7 @@ function Router() {
     );
   }
 
-  // Se condomínio está pendente → mostra tela de "Aguardando aprovação"
+  // Condomínio pendente → Tela de Aguardando Aprovação
   if (condoStatus === 'pending') {
     return (
       <Suspense fallback={<PageLoader />}>
@@ -114,7 +117,7 @@ function Router() {
     );
   }
 
-  // Se condomínio está aprovado → mostra todas as rotas normalmente
+  // Condomínio aprovado → Acesso completo ao app
   return (
     <Suspense fallback={<PageLoader />}>
       <Switch>

@@ -40,6 +40,13 @@ export default function CondoSelectorPage() {
     loadCondos();
   }, []);
 
+  const handleBackToHome = () => {
+    const isLoggedIn = !!localStorage.getItem("token");
+    if (!isLoggedIn) {
+      setLocation("/");
+    }
+  };
+
   const filteredCondos = condos.filter((condo) =>
     condo.name.toLowerCase().includes(search.toLowerCase())
   );
@@ -68,18 +75,29 @@ export default function CondoSelectorPage() {
       <div className="max-w-2xl mx-auto px-4">
         <div className="flex items-center justify-between mb-8">
           <div className="flex-1">
-            <h1 className="text-3xl font-bold mb-2">Bem-vindo ao CondoPlace</h1>
-            <p className="text-muted-foreground">Selecione seu condomínio para continuar</p>
+            <h1 className="text-3xl font-bold mb-2">Selecione seu Condomínio</h1>
+            <p className="text-muted-foreground">Escolha o condomínio onde você reside</p>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setLocation("/admin/login")}
-            data-testid="button-admin-login"
-            className="text-xs"
-          >
-            Admin
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleBackToHome}
+              data-testid="button-back"
+              className="text-xs"
+            >
+              Voltar
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setLocation("/admin/login")}
+              data-testid="button-admin-login"
+              className="text-xs"
+            >
+              Admin
+            </Button>
+          </div>
         </div>
 
         <Card className="p-6 mb-6">

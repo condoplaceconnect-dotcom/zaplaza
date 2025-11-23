@@ -1,0 +1,257 @@
+🚀 DOCUMENTO COMPLETO — CORREÇÕES + FLUXO DEFINITIVO DO CONDOPLACE
+🟩 1. TELA INICIAL (ANTES DE QUALQUER TELA DO APP)
+
+A tela deve ser simples, com fundo branco, logo verde CondoPlace, e dois botões:
+
+Tela: “Bem-vindo ao CondoPlace”
+
+Logo verde (centro)
+“Conectando moradores, lojas e serviços dentro do seu condomínio.”
+
+Botões:
+
+🟩 [ Selecionar Condomínio ]
+
+Abre lista de condomínios aprovados pelo Admin Global.
+
+Por enquanto deve mostrar apenas Acqua Sena.
+
+⬜ [ Registrar Condomínio ]
+
+Formulário: nome + endereço (com autocomplete do Google Maps).
+
+Sem e-mail, sem telefone.
+
+Após envio → “Aguardando aprovação do administrador”.
+
+🟩 2. IMPEDIR ACESSO AO APP SEM CONDOMÍNIO
+
+Antes de ter condominio_id aprovado, o usuário NÃO pode:
+
+abrir a Home
+
+ver lojas
+
+ver serviços
+
+ver entregadores
+
+acessar carrinho
+
+navegar entre abas
+
+ver header
+
+usar busca
+
+Somente a Tela Inicial pode ser acessada.
+
+🟩 3. TELA: “Aguardando Aprovação”
+
+Depois de registrar um condomínio ou de pedir entrada em um existente:
+
+Tela: “Seu condomínio está em análise”
+
+“Um administrador do CondoPlace está revisando sua solicitação.
+Você será liberado assim que for aprovado.”
+
+Botão cinza (desabilitado): [ Aguardando… ]
+
+🟩 4. FLUXO DO ADMIN (PAINEL DO ADMIN GLOBAL)
+
+O Admin Global precisa ter um painel separado (web ou no app) para:
+
+✔ Aprovar condomínios
+
+Ver lista de condomínios pendentes
+
+Aprovar / Rejeitar
+
+Editar nome e endereço
+
+✔ Aprovar entrada de usuários em condomínios
+
+Usuários pendentes por condomínio
+
+Aprovar / Rejeitar
+
+✔ Aprovar lojas
+
+lista de lojas pedindo registro em um condomínio
+
+aprovar loja
+
+bloquear ou remover loja
+
+✔ Aprovar prestadores de serviço
+
+mesmo fluxo das lojas
+
+✔ Aprovar entregadores
+
+aceitar entregadores do condomínio
+
+ativar/desativar disponibilidade
+
+🟩 5. CORREÇÃO DO COMPORTAMENTO INICIAL
+❌ Comportamento atual errado
+
+O app está abrindo diretamente no condomínio “Residencial Jardim das Flores”.
+
+Esse condomínio deve ser:
+
+✔ REMOVIDO do banco
+✔ TOTALMENTE apagado da interface
+✔ Nunca carregado automaticamente
+✔ Comportamento correto
+
+App abre SEM nenhum condomínio carregado
+
+Vai direto para a Tela Inicial
+
+O único condomínio listado deve ser:
+
+Acqua Sena (Tenda)
+Rua Cairú, Bairro Fátima, Canoas – RS
+
+🟩 6. ROTAS DE BACKEND (Replit precisa disso)
+Condominios
+GET /condominios  
+POST /condominios (admin)  
+PUT /condominios/:id (admin)  
+DELETE /condominios/:id (admin)
+
+Solicitação de entrada no condomínio
+POST /condominios/:id/solicitar  
+GET /admin/solicitacoes  
+PUT /admin/solicitacoes/:id/aprovar  
+PUT /admin/solicitacoes/:id/rejeitar
+
+Lojas
+GET /condominios/:id/lojas  
+POST /lojas (cadastrar loja)  
+PUT /lojas/:id (admin ou dono da loja)  
+POST /lojas/:id/imagem  
+
+Serviços
+
+Mesmo esquema de lojas.
+
+Entregadores
+GET /condominios/:id/entregadores  
+POST /entregadores  
+PUT /entregadores/:id  
+
+Autocomplete do Google Maps
+
+Implementar no front:
+
+ao digitar estado → listar cidades
+
+ao digitar rua → sugerir endereço
+
+ao cadastrar condomínio → validar endereço real
+
+🟩 7. ESTRUTURA DO BANCO (Postgres + Drizzle)
+Tabela: condominios
+
+id
+
+nome
+
+endereco
+
+cidade
+
+estado
+
+status (aprovado/pendente)
+
+usuários
+
+id
+
+nome
+
+tipo (cliente, vendedor, entregador, admin)
+
+condominio_id (nullable até aprovação)
+
+status (“pendente”, “aprovado”)
+
+lojas
+
+id
+
+nome
+
+categoria
+
+condominio_id
+
+usuario_id
+
+status
+
+imagens[]
+
+serviços
+
+id
+
+nome
+
+categoria
+
+condominio_id
+
+usuario_id
+
+status
+
+entregadores
+
+id
+
+usuario_id
+
+condominio_id
+
+ativo(boolean)
+
+🟩 8. INTEGRAÇÃO DA TELA INICIAL COM O BACKEND
+
+Quando o app inicia:
+
+1️⃣ Checar se o usuário está logado
+  → se não, mandar pra login
+
+2️⃣ Se logado, mas sem condominio_id
+  → mandar para TELA INICIAL de Seleção/Registro
+
+3️⃣ Se condominio_id existe mas status = pendente
+  → abrir Tela de “Aguardando aprovação”
+
+4️⃣ Se condominio_id aprovado
+  → abrir Home do condomínio
+
+🟩 9. O QUE O REPLIT PRECISA FAZER AGORA
+🔧 Tarefas obrigatórias
+
+ Corrigir fluxo inicial (NÃO abrir Home sem condomínio)
+
+ Criar Tela Inicial (Selecionar/Registrar)
+
+ Criar Tela “Aguardando Aprovação”
+
+ Remover “Residencial Jardim das Flores”
+
+ Manter apenas o Acqua Sena aprovado
+
+ Criar painel admin (nem que seja temporariamente na rota /admin)
+
+ Implementar Maps autocomplete
+
+ Validar acesso do usuário pela aprovação do admin
+
+ Criar rotas backend listadas acima
