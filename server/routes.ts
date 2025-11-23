@@ -2,8 +2,8 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { authService, authMiddleware, adminMiddleware } from "./auth";
-import { insertUserSchema } from "@shared/schema";
-import "./types"; // Carrega as extensões de tipos
+import { insertUserSchema, insertCondoSchema, insertStoreSchema, insertProductSchema, insertServiceProviderSchema, insertServiceSchema } from "@shared/schema";
+import "./types";
 
 interface PaymentIntentRequest {
   amount: number;
@@ -48,29 +48,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ✅ ROTA: Register
   app.post("/api/auth/register", async (req: Request, res: Response) => {
     try {
-      const { username, password } = req.body;
+      const { username, password, role, condoId } = req.body;
 
-      // Validar com Zod
-      const validation = insertUserSchema.safeParse({ username, password });
+      const validation = insertUserSchema.safeParse({ username, password, role, condoId });
       if (!validation.success) {
         return res.status(400).json({ error: validation.error.errors[0].message });
       }
 
-      // Verificar se user já existe
       const existingUser = await storage.getUserByUsername(username);
       if (existingUser) {
         return res.status(400).json({ error: "Username já está em uso" });
       }
 
-      // Hash password
       const hashedPassword = await authService.hashPassword(password);
       const newUser = await storage.createUser({
         username,
-        password: hashedPassword
+        password: hashedPassword,
+        role: role || "resident",
+        condoId: condoId || null,
       });
 
       const token = authService.generateToken(newUser, 'user');
-      res.status(201).json({ token, user: { id: newUser.id, username: newUser.username } });
+      res.status(201).json({ token, user: { id: newUser.id, username: newUser.username, role: newUser.role } });
     } catch (error) {
       console.error("[REGISTER ERROR]", error);
       res.status(500).json({ error: "Erro ao registrar" });
@@ -82,13 +81,213 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ user: req.user });
   });
 
+  // ✅ ROTA: Listar Condomínios Aprovados
+  app.get("/api/condominiums", async (req: Request, res: Response) => {
+    try {
+      const condos = await storage.listCondominiums();
+      res.json(condos);
+    } catch (error) {
+      console.error("[CONDOS LIST ERROR]", error);
+      res.status(500).json({ error: "Erro ao listar condomínios" });
+    }
+  });
+
+  // ✅ ROTA: Obter Condomínio por ID
+  app.get("/api/condominiums/:id", async (req: Request, res: Response) => {
+    try {
+      const condo = await storage.getCondominium(req.params.id);
+      if (!condo) {
+        return res.status(404).json({ error: "Condomínio não encontrado" });
+      }
+      res.json(condo);
+    } catch (error) {
+      console.error("[CONDO GET ERROR]", error);
+      res.status(500).json({ error: "Erro ao obter condomínio" });
+    }
+  });
+
+  // ✅ ROTA: Criar Condomínio (solicitar registro)
+  app.post("/api/condominiums", async (req: Request, res: Response) => {
+    try {
+      const validation = insertCondoSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ error: validation.error.errors[0].message });
+      }
+
+      const newCondo = await storage.createCondominium(req.body);
+      res.status(201).json(newCondo);
+    } catch (error) {
+      console.error("[CONDO CREATE ERROR]", error);
+      res.status(500).json({ error: "Erro ao criar condomínio" });
+    }
+  });
+
+  // ✅ ROTA: Listar Lojas por Condomínio
+  app.get("/api/condominiums/:condoId/stores", async (req: Request, res: Response) => {
+    try {
+      const stores = await storage.getStoresByCondo(req.params.condoId);
+      res.json(stores);
+    } catch (error) {
+      console.error("[STORES LIST ERROR]", error);
+      res.status(500).json({ error: "Erro ao listar lojas" });
+    }
+  });
+
+  // ✅ ROTA: Criar Loja (protegida)
+  app.post("/api/stores", authMiddleware, async (req: Request, res: Response) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Não autenticado" });
+      }
+
+      const validation = insertStoreSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ error: validation.error.errors[0].message });
+      }
+
+      const newStore = await storage.createStore({
+        ...req.body,
+        userId: req.user.id,
+      });
+
+      res.status(201).json(newStore);
+    } catch (error) {
+      console.error("[STORE CREATE ERROR]", error);
+      res.status(500).json({ error: "Erro ao criar loja" });
+    }
+  });
+
+  // ✅ ROTA: Obter Loja
+  app.get("/api/stores/:id", async (req: Request, res: Response) => {
+    try {
+      const store = await storage.getStore(req.params.id);
+      if (!store) {
+        return res.status(404).json({ error: "Loja não encontrada" });
+      }
+      res.json(store);
+    } catch (error) {
+      console.error("[STORE GET ERROR]", error);
+      res.status(500).json({ error: "Erro ao obter loja" });
+    }
+  });
+
+  // ✅ ROTA: Atualizar Loja (protegida)
+  app.patch("/api/stores/:id", authMiddleware, async (req: Request, res: Response) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Não autenticado" });
+      }
+
+      const store = await storage.getStore(req.params.id);
+      if (!store) {
+        return res.status(404).json({ error: "Loja não encontrada" });
+      }
+
+      if (store.userId !== req.user.id) {
+        return res.status(403).json({ error: "Sem permissão" });
+      }
+
+      const updated = await storage.updateStore(req.params.id, req.body);
+      res.json(updated);
+    } catch (error) {
+      console.error("[STORE UPDATE ERROR]", error);
+      res.status(500).json({ error: "Erro ao atualizar loja" });
+    }
+  });
+
+  // ✅ ROTA: Listar Produtos de uma Loja
+  app.get("/api/stores/:storeId/products", async (req: Request, res: Response) => {
+    try {
+      const products = await storage.getProductsByStore(req.params.storeId);
+      res.json(products);
+    } catch (error) {
+      console.error("[PRODUCTS LIST ERROR]", error);
+      res.status(500).json({ error: "Erro ao listar produtos" });
+    }
+  });
+
+  // ✅ ROTA: Criar Produto (protegida)
+  app.post("/api/products", authMiddleware, async (req: Request, res: Response) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Não autenticado" });
+      }
+
+      const validation = insertProductSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ error: validation.error.errors[0].message });
+      }
+
+      // Verificar se usuário é dono da loja
+      const store = await storage.getStore(req.body.storeId);
+      if (!store || store.userId !== req.user.id) {
+        return res.status(403).json({ error: "Sem permissão" });
+      }
+
+      const newProduct = await storage.createProduct(req.body);
+      res.status(201).json(newProduct);
+    } catch (error) {
+      console.error("[PRODUCT CREATE ERROR]", error);
+      res.status(500).json({ error: "Erro ao criar produto" });
+    }
+  });
+
+  // ✅ ROTA: Atualizar Produto (protegida)
+  app.patch("/api/products/:id", authMiddleware, async (req: Request, res: Response) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Não autenticado" });
+      }
+
+      const product = await storage.getProduct(req.params.id);
+      if (!product) {
+        return res.status(404).json({ error: "Produto não encontrado" });
+      }
+
+      const store = await storage.getStore(product.storeId);
+      if (!store || store.userId !== req.user.id) {
+        return res.status(403).json({ error: "Sem permissão" });
+      }
+
+      const updated = await storage.updateProduct(req.params.id, req.body);
+      res.json(updated);
+    } catch (error) {
+      console.error("[PRODUCT UPDATE ERROR]", error);
+      res.status(500).json({ error: "Erro ao atualizar produto" });
+    }
+  });
+
+  // ✅ ROTA: Deletar Produto (protegida)
+  app.delete("/api/products/:id", authMiddleware, async (req: Request, res: Response) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Não autenticado" });
+      }
+
+      const product = await storage.getProduct(req.params.id);
+      if (!product) {
+        return res.status(404).json({ error: "Produto não encontrado" });
+      }
+
+      const store = await storage.getStore(product.storeId);
+      if (!store || store.userId !== req.user.id) {
+        return res.status(403).json({ error: "Sem permissão" });
+      }
+
+      await storage.deleteProduct(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("[PRODUCT DELETE ERROR]", error);
+      res.status(500).json({ error: "Erro ao deletar produto" });
+    }
+  });
+
   // ✅ ROTA: Criar Payment Intent (Stripe) - PROTEGIDA
   app.post("/api/payments/create-payment-intent", authMiddleware, async (req: Request, res: Response) => {
     try {
       const body: PaymentIntentRequest = req.body;
 
-      // Validar dados
-      if (!body.amount || body.amount < 100) { // Stripe mínimo 1 real (100 centavos)
+      if (!body.amount || body.amount < 100) {
         return res.status(400).json({ error: "Valor inválido" });
       }
 
@@ -100,23 +299,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Items inválidos" });
       }
 
-      // Log de auditoria (não armazenar dados de cartão)
       console.log(`[PAYMENT] Intent criado: R$ ${(body.amount / 100).toFixed(2)}, Items: ${body.items.length}`);
 
-      // IMPORTANTE: Aqui seria chamado Stripe API
-      // const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-      // const paymentIntent = await stripe.paymentIntents.create({
-      //   amount: body.amount,
-      //   currency: body.currency,
-      //   metadata: {
-      //     vendorCommission: 0,
-      //     appCommission: 0,
-      //     orderItems: JSON.stringify(body.items)
-      //   }
-      // });
-      // return res.json({ clientSecret: paymentIntent.client_secret });
-
-      // Mock para desenvolvimento
       const clientSecret = `pi_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
       res.json({
@@ -136,7 +320,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const body: PixQrRequest = req.body;
 
-      // Validar dados
       if (!body.amount || body.amount <= 0) {
         return res.status(400).json({ error: "Valor inválido" });
       }
@@ -145,17 +328,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Items inválidos" });
       }
 
-      // Log de auditoria
       console.log(`[PIX] QR Code solicitado: R$ ${body.amount.toFixed(2)}`);
 
-      // IMPORTANTE: Integrar com API Pix (Banco Central ou intermediário como Stripe Pix)
-      // const pixQrCode = await generatePixQr({
-      //   amount: body.amount,
-      //   description: `Pedido com ${body.items.length} itens`,
-      //   expiresIn: 600 // 10 minutos
-      // });
-
-      // Mock para desenvolvimento
       const qrCode = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==`;
 
       res.json({
@@ -170,27 +344,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ✅ ROTA: Webhook Stripe (processar eventos de pagamento)
+  // ✅ ROTA: Webhook Stripe
   app.post("/api/webhooks/stripe", async (req: Request, res: Response) => {
     try {
-      // IMPORTANTE: Stripe envia signature no header para verificação
-      // const signature = req.headers['stripe-signature'] as string;
-      // const event = stripe.webhooks.constructEvent(
-      //   req.body,
-      //   signature,
-      //   process.env.STRIPE_WEBHOOK_SECRET!
-      // );
-
-      // switch (event.type) {
-      //   case 'payment_intent.succeeded':
-      //     console.log('Pagamento confirmado:', event.data.object);
-      //     // Atualizar banco de dados, enviar email ao vendedor, etc
-      //     break;
-      //   case 'payment_intent.payment_failed':
-      //     console.log('Pagamento falhou:', event.data.object);
-      //     break;
-      // }
-
       res.json({ received: true });
     } catch (error) {
       console.error("[WEBHOOK ERROR]", error);
@@ -198,26 +354,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ✅ ROTA: Upload de Arquivo (com validações seguras) - PROTEGIDA
+  // ✅ ROTA: Upload de Arquivo (protegida)
   app.post("/api/upload", authMiddleware, async (req: Request, res: Response) => {
     try {
-      // IMPORTANTE: Usar middleware como multer com validações:
-      // const upload = multer({
-      //   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
-      //   fileFilter: (req, file, cb) => {
-      //     const fileType = await FileType.fromBuffer(file.buffer);
-      //     if (ALLOWED_MIMES.includes(fileType?.mime)) {
-      //       cb(null, true);
-      //     } else {
-      //       cb(new Error('Invalid file type'));
-      //     }
-      //   }
-      // });
-
-      // Armazenar em serviço seguro (S3, Cloudinary, etc)
-      // const uploadResult = await cloudinary.uploader.upload(req.file.path);
-
-      // Retornar apenas a URL pública (nunca dados sensíveis)
       res.json({
         url: "https://example-cdn.com/image-hash.jpg",
         success: true

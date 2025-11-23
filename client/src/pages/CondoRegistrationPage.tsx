@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,8 +7,27 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import PhotoUpload from "@/components/PhotoUpload";
-import { ArrowLeft, AlertCircle, CheckCircle } from "lucide-react";
+import { ArrowLeft, AlertCircle, CheckCircle, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
+interface Suggestion {
+  label: string;
+  value: string;
+}
+
+const BR_STATES = [
+  "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA",
+  "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN",
+  "RS", "RO", "RR", "SC", "SP", "SE", "TO"
+];
+
+const CITIES_BY_STATE: Record<string, string[]> = {
+  "SP": ["São Paulo", "Campinas", "Santos", "Sorocaba", "Ribeirão Preto"],
+  "RJ": ["Rio de Janeiro", "Niterói", "Duque de Caxias", "Nova Iguaçu"],
+  "MG": ["Belo Horizonte", "Uberlândia", "Contagem", "Juiz de Fora"],
+  "RS": ["Porto Alegre", "Caxias do Sul", "Canoas", "Pelotas", "Santa Maria"],
+  "BA": ["Salvador", "Feira de Santana", "Vitória da Conquista", "Ilhéus"],
+};
 
 export default function CondoRegistrationPage() {
   const [, setLocation] = useLocation();
@@ -17,6 +36,11 @@ export default function CondoRegistrationPage() {
   const [error, setError] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  
+  const [citySuggestions, setCitySuggestions] = useState<Suggestion[]>([]);
+  const [showCitySuggestions, setShowCitySuggestions] = useState(false);
+  const [streetSuggestions, setStreetSuggestions] = useState<Suggestion[]>([]);
+  const [showStreetSuggestions, setShowStreetSuggestions] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -30,28 +54,101 @@ export default function CondoRegistrationPage() {
     description: ''
   });
 
+  // Handle state change - update available cities
+  const handleStateChange = (newState: string) => {
+    setFormData({ ...formData, state: newState.toUpperCase(), city: '' });
+    setCitySuggestions([]);
+    setShowCitySuggestions(false);
+  };
+
+  // Handle city input - show suggestions
+  const handleCityInput = (value: string) => {
+    setFormData({ ...formData, city: value });
+    
+    if (value.length > 0 && formData.state) {
+      const cities = CITIES_BY_STATE[formData.state] || [];
+      const filtered = cities.filter(city =>
+        city.toLowerCase().includes(value.toLowerCase())
+      );
+      setCitySuggestions(
+        filtered.map(city => ({ label: city, value: city }))
+      );
+      setShowCitySuggestions(true);
+    } else {
+      setShowCitySuggestions(false);
+    }
+  };
+
+  // Handle city suggestion click
+  const handleCitySuggestionClick = (city: string) => {
+    setFormData({ ...formData, city });
+    setShowCitySuggestions(false);
+  };
+
+  // Handle street input - show suggestions
+  const handleStreetInput = (value: string) => {
+    setFormData({ ...formData, address: value });
+    
+    if (value.length > 1) {
+      // Simular sugestões de rua (em produção, usar Google Maps API)
+      const mockStreets = [
+        `${value} - Avenida`,
+        `${value} - Rua`,
+        `${value} - Travessa`,
+      ];
+      setStreetSuggestions(
+        mockStreets.map(street => ({ label: street, value: street }))
+      );
+      setShowStreetSuggestions(true);
+    } else {
+      setShowStreetSuggestions(false);
+    }
+  };
+
+  // Handle street suggestion click
+  const handleStreetSuggestionClick = (street: string) => {
+    setFormData({ ...formData, address: street });
+    setShowStreetSuggestions(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    // Validações básicas
     if (!formData.name || !formData.address || !formData.city || !formData.state || !formData.zipCode || !formData.units) {
       setError('Por favor, preencha todos os campos obrigatórios.');
       setLoading(false);
       return;
     }
 
-    // Simular delay de envio
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      // Enviar para API
+      const response = await fetch('/api/condominiums', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          units: parseInt(formData.units),
+          image: photo || null,
+        }),
+      });
 
-    toast({
-      title: "Solicitação Enviada!",
-      description: `${formData.name} foi enviado para aprovação do administrador.`,
-    });
+      if (!response.ok) {
+        throw new Error('Erro ao enviar solicitação');
+      }
 
-    setLoading(false);
-    setSubmitted(true);
+      setLoading(false);
+      setSubmitted(true);
+
+      toast({
+        title: "Solicitação Enviada!",
+        description: `${formData.name} foi enviado para aprovação do administrador.`,
+      });
+    } catch (err) {
+      setError('Erro ao enviar solicitação. Tente novamente.');
+      setLoading(false);
+    }
   };
 
   if (submitted) {
@@ -194,42 +291,52 @@ export default function CondoRegistrationPage() {
             <div className="space-y-4">
               <h2 className="text-lg font-semibold">Endereço</h2>
               
-              <div className="space-y-2">
-                <Label htmlFor="address">Rua e Número *</Label>
-                <Input
-                  id="address"
-                  placeholder="Ex: Avenida Paulista, 1000"
-                  value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  required
-                  data-testid="input-address"
-                />
-              </div>
-
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="city">Cidade *</Label>
-                  <Input
-                    id="city"
-                    placeholder="São Paulo"
-                    value={formData.city}
-                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  <Label htmlFor="state">Estado *</Label>
+                  <select
+                    id="state"
+                    value={formData.state}
+                    onChange={(e) => handleStateChange(e.target.value)}
                     required
-                    data-testid="input-city"
-                  />
+                    className="w-full px-3 py-2 border rounded-md bg-background"
+                    data-testid="select-state"
+                  >
+                    <option value="">Selecione</option>
+                    {BR_STATES.map(state => (
+                      <option key={state} value={state}>{state}</option>
+                    ))}
+                  </select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="state">Estado *</Label>
-                  <Input
-                    id="state"
-                    placeholder="SP"
-                    maxLength={2}
-                    value={formData.state}
-                    onChange={(e) => setFormData({ ...formData, state: e.target.value.toUpperCase() })}
-                    required
-                    data-testid="input-state"
-                  />
+                <div className="space-y-2 relative">
+                  <Label htmlFor="city">Cidade *</Label>
+                  <div className="relative">
+                    <Input
+                      id="city"
+                      placeholder="Digite a cidade"
+                      value={formData.city}
+                      onChange={(e) => handleCityInput(e.target.value)}
+                      onFocus={() => formData.city.length > 0 && setShowCitySuggestions(true)}
+                      required
+                      data-testid="input-city"
+                    />
+                    {showCitySuggestions && citySuggestions.length > 0 && (
+                      <div className="absolute top-full left-0 right-0 bg-card border border-t-0 rounded-b-md shadow-md z-10" data-testid="dropdown-cities">
+                        {citySuggestions.map((city, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => handleCitySuggestionClick(city.value)}
+                            className="w-full text-left px-3 py-2 hover:bg-muted"
+                            data-testid={`option-city-${idx}`}
+                          >
+                            {city.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -242,6 +349,36 @@ export default function CondoRegistrationPage() {
                     required
                     data-testid="input-zipcode"
                   />
+                </div>
+              </div>
+
+              <div className="space-y-2 relative">
+                <Label htmlFor="address">Rua e Número *</Label>
+                <div className="relative">
+                  <Input
+                    id="address"
+                    placeholder="Ex: Avenida Paulista, 1000"
+                    value={formData.address}
+                    onChange={(e) => handleStreetInput(e.target.value)}
+                    onFocus={() => formData.address.length > 1 && setShowStreetSuggestions(true)}
+                    required
+                    data-testid="input-address"
+                  />
+                  {showStreetSuggestions && streetSuggestions.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 bg-card border border-t-0 rounded-b-md shadow-md z-10" data-testid="dropdown-streets">
+                      {streetSuggestions.map((street, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => handleStreetSuggestionClick(street.value)}
+                          className="w-full text-left px-3 py-2 hover:bg-muted"
+                          data-testid={`option-street-${idx}`}
+                        >
+                          {street.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
