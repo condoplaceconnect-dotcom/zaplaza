@@ -20,6 +20,9 @@ export const users = pgTable("users", {
   role: varchar("role", { length: 20 }).notNull().default("resident"), // resident, vendor, service_provider, delivery_person, staff, admin
   status: varchar("status", { length: 20 }).notNull().default("active"), // active, blocked_until_18
   condoId: varchar("condo_id"),
+  emailVerified: boolean("email_verified").notNull().default(false), // Email verificado ou não
+  verificationToken: varchar("verification_token", { length: 100 }), // Token para verificação de email
+  verificationTokenExpiry: timestamp("verification_token_expiry"), // Expiração do token
   createdAt: timestamp("created_at").defaultNow(),
 });
 
