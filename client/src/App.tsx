@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -26,6 +26,7 @@ const ServiceProviderProfilePage = lazy(() => import("@/pages/ServiceProviderPro
 const AdminDashboardPage = lazy(() => import("@/pages/AdminDashboardPage"));
 const AdminLoginPage = lazy(() => import("@/pages/AdminLoginPage"));
 const DeliveryDashboardPage = lazy(() => import("@/pages/DeliveryDashboardPage"));
+const PendingApprovalPage = lazy(() => import("@/pages/PendingApprovalPage"));
 
 // Componente de carregamento
 function PageLoader() {
@@ -40,8 +41,33 @@ function PageLoader() {
 
 function Router() {
   const isLoggedIn = !!localStorage.getItem("token");
+  const selectedCondoId = localStorage.getItem("selectedCondoId");
+  const [condoStatus, setCondoStatus] = useState<'loading' | 'approved' | 'pending' | 'none'>('loading');
 
-  // Se não está logado, redireciona para seleção de condomínio
+  // Verificar status do condomínio se o usuário está logado e tem um condomínio selecionado
+  useEffect(() => {
+    if (isLoggedIn && selectedCondoId) {
+      const checkCondoStatus = async () => {
+        try {
+          const response = await fetch(`/api/condominiums/${selectedCondoId}`);
+          if (response.ok) {
+            const condo = await response.json();
+            setCondoStatus(condo.status === 'approved' ? 'approved' : 'pending');
+          } else {
+            setCondoStatus('none');
+          }
+        } catch (error) {
+          console.error("Erro ao verificar status do condomínio:", error);
+          setCondoStatus('none');
+        }
+      };
+      checkCondoStatus();
+    } else if (!selectedCondoId) {
+      setCondoStatus('none');
+    }
+  }, [isLoggedIn, selectedCondoId]);
+
+  // Se não está logado, mostra apenas telas de seleção/registro
   if (!isLoggedIn) {
     return (
       <Suspense fallback={<PageLoader />}>
@@ -56,7 +82,39 @@ function Router() {
     );
   }
 
-  // Se está logado, mostra todas as rotas
+  // Se está logado mas sem condomínio selecionado → redireciona para seleção
+  if (!selectedCondoId || condoStatus === 'none') {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <Switch>
+          <Route path="/" component={CondoSelectorPage} />
+          <Route path="/admin/login" component={AdminLoginPage} />
+          <Route path="/admin/dashboard" component={AdminDashboardPage} />
+          <Route path="/register-condo" component={CondoRegistrationPage} />
+          <Route path="/register" component={UserRegistrationPage} />
+          <Route component={NotFound} />
+        </Switch>
+      </Suspense>
+    );
+  }
+
+  // Se condomínio está pendente → mostra tela de "Aguardando aprovação"
+  if (condoStatus === 'pending') {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <Switch>
+          <Route path="/" component={PendingApprovalPage} />
+          <Route path="/settings" component={SettingsPage} />
+          <Route path="/profile" component={ProfilePage} />
+          <Route path="/admin/login" component={AdminLoginPage} />
+          <Route path="/admin/dashboard" component={AdminDashboardPage} />
+          <Route component={NotFound} />
+        </Switch>
+      </Suspense>
+    );
+  }
+
+  // Se condomínio está aprovado → mostra todas as rotas normalmente
   return (
     <Suspense fallback={<PageLoader />}>
       <Switch>

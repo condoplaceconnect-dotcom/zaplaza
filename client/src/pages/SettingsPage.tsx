@@ -118,9 +118,12 @@ export default function SettingsPage() {
             <div className="flex justify-between items-center py-2">
               <div>
                 <p className="font-medium">Condomínio Atual</p>
-                <p className="text-sm text-muted-foreground">Residencial Jardim das Flores</p>
+                <p className="text-sm text-muted-foreground">Carregando...</p>
               </div>
-              <Button variant="outline" data-testid="button-change-condo">
+              <Button variant="outline" onClick={() => {
+                localStorage.removeItem("selectedCondoId");
+                window.location.href = "/";
+              }} data-testid="button-change-condo">
                 Alterar
               </Button>
             </div>
