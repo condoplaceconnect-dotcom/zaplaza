@@ -1,6 +1,7 @@
 import { type User, type InsertUser, type Condominium, type InsertCondominium, type Store, type InsertStore, type Product, type InsertProduct, type DeliveryPerson, type InsertDeliveryPerson, type Order, type InsertOrder } from "@shared/schema";
 import { randomUUID } from "crypto";
 import * as bcrypt from "bcrypt";
+import { PostgresStorage } from "./postgres-storage";
 
 export interface IStorage {
   // Users
@@ -458,4 +459,5 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Using PostgresStorage instead of MemStorage for persistent data
+export const storage = new PostgresStorage();
