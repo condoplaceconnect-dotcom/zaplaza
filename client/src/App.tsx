@@ -29,6 +29,7 @@ const AdminLoginPage = lazy(() => import("@/pages/AdminLoginPage"));
 const DeliveryDashboardPage = lazy(() => import("@/pages/DeliveryDashboardPage"));
 const PendingApprovalPage = lazy(() => import("@/pages/PendingApprovalPage"));
 const FamilyAccountPage = lazy(() => import("@/pages/FamilyAccountPage"));
+const MarketplacePage = lazy(() => import("@/pages/MarketplacePage"));
 
 // Componente de carregamento
 function PageLoader() {
@@ -191,6 +192,7 @@ function Router() {
         <Route path="/delivery/dashboard" component={DeliveryDashboardPage} />
         <Route path="/profile" component={ProfilePage} />
         <Route path="/family" component={FamilyAccountPage} />
+        <Route path="/marketplace" component={MarketplacePage} />
         <Route path="/vendor/profile-old" component={VendorProfilePage} />
         <Route path="/delivery/profile" component={DeliveryProfilePage} />
         <Route path="/settings" component={SettingsPage} />
