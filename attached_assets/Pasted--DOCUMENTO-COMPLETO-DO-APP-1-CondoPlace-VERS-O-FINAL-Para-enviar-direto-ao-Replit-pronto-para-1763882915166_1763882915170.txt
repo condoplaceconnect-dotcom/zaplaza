@@ -1,0 +1,567 @@
+✅ DOCUMENTO COMPLETO DO APP 1 — CondoPlace (VERSÃO FINAL)
+Para enviar direto ao Replit — pronto para desenvolvimento do ZERO
+🟩 1. CONCEPÇÃO GERAL DO APP
+
+O CondoPlace é um app mobile estilo “mini iFood + marketplace interno”, voltado exclusivamente para:
+
+Moradores
+
+Lojistas
+
+Prestadores de serviços
+
+Entregadores internos
+
+Funcionários do condomínio (Bloco 0)
+
+Sem sistema de condomínio ou síndico neste app.
+É apenas uma plataforma para compras, vendas, serviços, trocas, entregas e comunidade interna.
+
+O app precisa ser leve, rápido, tema verde e branco, e construído já com capacidade para exportar APK Android.
+
+🟩 2. ONBOARDING E LOGIN
+✔ Fluxo inicial simples:
+
+Tela de boas-vindas → Criar Conta ou Entrar
+
+Métodos de login:
+
+Google
+
+Telefone (SMS)
+
+Email + senha
+
+Após login → Tela de Preenchimento de Perfil:
+
+Nome completo
+
+Data de nascimento
+
+Bloco e apartamento
+
+Funcionários do condomínio usam:
+
+Bloco 0 / Apto 00 → porteiros
+
+Bloco 0 / Apto 01 → zelador
+
+Bloco 0 / Apto 02+ → demais funcionários
+
+🟩 3. VERIFICAÇÃO DE IDADE (SEM DOCUMENTO)
+
+Modelo igual ao Tinder:
+
+Usuário informa data de nascimento.
+
+Se 18+ anos → acesso normal.
+
+Se menor de idade → conta criada, mas acesso bloqueado.
+
+Mensagem:
+“Sua conta foi criada! Acesso liberado no dia XX/XX/20XX.”
+
+Menor não entra no app.
+Mas pode ser adicionado por um adulto (Conta Família).
+
+🟩 4. CONTA FAMÍLIA (ADULTO + MENORES)
+✔ Apenas adultos podem criar “Família”.
+✔ Subcontas infantis NÃO possuem login próprio.
+
+Fluxo:
+
+Adulto → Perfil → Conta Família → “Adicionar menor”
+
+Campos:
+
+Nome
+
+Data de nascimento (validada como <18)
+
+Avatar simples
+
+Grau de parentesco
+
+✔ Limitações da conta infantil:
+
+Não compra sozinha
+
+Não conversa com lojistas/entregadores
+
+Não acessa marketplace adulto
+
+Não cria posts
+
+Apenas usa recursos seguros:
+
+Achados & Perdidos
+
+Explorar lojas
+
+Favoritar
+
+Solicitar compras (para aprovação do adulto)
+
+✔ Adulto aprova compras:
+
+Menor → “Solicitar”
+Adulto recebe notificação para Aprovar ou Recusar.
+
+✔ Adulto vê TUDO da conta menor:
+
+Histórico
+
+Notificações
+
+Relatórios
+
+Tentativas de acesso
+
+🟩 5. NAVEGAÇÃO PRINCIPAL DO APP
+
+Menu minimalista:
+
+DOIS botões grandes no meio:
+
+Lojas
+
+Serviços
+
+No canto superior (três pontinhos + avatar):
+
+Marketplace (doações/vendas entre moradores)
+
+Achados & Perdidos
+
+Notificações
+
+Perfil
+
+Nada de telas confusas.
+
+🟩 6. FUNCIONALIDADES PRINCIPAIS
+🛒 A) Lojas
+
+Lojas separadas por categorias:
+
+Comida
+
+Sobremesas
+
+Roupas
+
+Pets
+
+Estética
+
+Minimercado
+
+Etc (dinâmico)
+
+Regras:
+
+Lojista só vê seus produtos
+
+Cliente só vê lista geral
+
+Entregadores fazem delivery interno entre blocos
+
+Extras:
+
+Promoções
+
+Cupons
+
+Programas de fidelidade
+
+Lojistas podem pagar para Clientes VIP
+
+Ranking mensal dos mais vendidos
+
+🛠 B) Serviços
+
+Categorias:
+
+Barbeiro
+
+Manicure
+
+Mecânico
+
+Eletricista
+
+Encanador
+
+Professor particular
+
+Serviços gerais
+
+Fluxo:
+
+Cliente solicita →
+
+Prestador aprova →
+
+Cliente recebe confirmação + horário
+
+Avaliações no final
+
+💬 C) Chat (apenas para pedidos)
+
+➡️ Cliente ↔ Loja
+➡️ Cliente ↔ Entregador
+
+Sem chat entre moradores neste app.
+Zero risco de brigas ou uso indevido.
+
+📦 D) Entregadores internos
+
+Perfil próprio
+
+Recebem pedidos
+
+Sistema de rota simples:
+
+“Pedido em preparo”
+
+“Saiu para entrega”
+
+“Chegou no seu bloco”
+
+Pequeno mapa interno (mapa do condomínio) opcional
+
+Opção de gorjeta
+
+🛎 E) Marketplace entre moradores
+
+Área separada:
+
+Vendas livres
+
+Doações
+
+Trocas
+
+Itens usados
+
+Categorias dinâmicas
+
+Com regras:
+
+Fotos
+
+Preço
+
+Descrição
+
+Localização interna (bloco/apto)
+
+🟢 F) Achados & Perdidos
+
+Página simples
+
+Fotos + descrição + bloco encontrado
+
+Usuários pedem devolução
+
+Sistema transparente e útil
+
+🟩 7. SISTEMA DE DENÚNCIAS
+✔ Todo usuário adulto pode denunciar:
+
+Produtos
+
+Lojas
+
+Serviços
+
+Entregadores
+
+Perfis
+
+Publicações
+
+Conversas
+
+Marketplace
+
+Achados & Perdidos
+
+Motivos:
+
+Produto impróprio
+
+Má conduta
+
+Golpe/fraude
+
+Assédio
+
+Ofensa
+
+Conteúdo proibido
+
+Problemas com entrega
+
+Preço abusivo
+
+Violação de regras
+
+Perigo real
+
+Menor tentando usar features indevidas
+
+✔ Para menores:
+
+Somente → “Reportar ao responsável”.
+
+Adulto recebe notificação e decide se transforma em denúncia.
+
+🟩 8. PERMISSÕES POR TIPO DE PERFIL
+USUÁRIO CLIENTE ADULTO
+
+Comprar
+
+Favoritar
+
+Avaliar
+
+Denunciar
+
+Usar Marketplace
+
+Criar posts em Achados & Perdidos
+
+Criar conta família
+
+USUÁRIO CLIENTE MENOR
+
+Navegar
+
+Favoritar
+
+Solicitar compras
+
+Reportar ao responsável
+
+Achados & Perdidos (visualização limitada)
+
+LOJISTA
+
+Criar loja
+
+Gerenciar cardápio/produtos
+
+Receber pedidos
+
+Usar chat com cliente
+
+PRESTADOR DE SERVIÇO
+
+Criar perfil profissional
+
+Receber solicitações
+
+Gerenciar agenda
+
+Falar com cliente
+
+ENTREGADOR
+
+Ver fila de entregas
+
+Chat com cliente
+
+Atualizar status
+
+Receber gorjetas
+
+FUNCIONÁRIOS DO CONDOMÍNIO
+
+Bloco 0
+
+Acesso comum de cliente
+
+Podem fazer compras também
+
+🟩 9. DESIGN DO APP
+Tema:
+
+Verde principal (como logo)
+
+Fundo branco
+
+Letras pretas
+
+Layout:
+
+Simples
+
+Minimalista
+
+2 botões grandes (Lojas e Serviços)
+
+3 pontinhos no topo com opções extras
+
+Avatar redondo no topo direito
+
+🟩 10. TECNOLOGIA NECESSÁRIA
+Deve permitir:
+
+Geração de APK Android
+
+API pronta
+
+Autenticação segura
+
+Banco de dados (Postgres)
+
+Imagens em Storage
+
+Módulo de chat em tempo real (pode ser Pusher, Supabase Realtime ou Firebase)
+
+Sistema de notificações push
+
+🟩 11. ENTREGAR AO REPLIT PARA CONSTRUIR
+
+Mensagem para o dev (pronto para copiar e colar):
+
+📌 TEXTO FINAL PARA O REPLIT
+
+(Copia e cola exatamente isso:)
+
+"Por favor, criar o app do zero seguindo as especificações abaixo:
+
+NOME DO APP: CondoPlace
+PLATAFORMA: Mobile-first, com geração de APK Android.
+🔧 FUNCIONALIDADES PRINCIPAIS
+
+Login moderno
+
+Google Login
+
+Telefone (SMS)
+
+Email + senha
+
+Verificação de idade tipo Tinder
+
+Data de nascimento obrigatória
+
+<18 anos: conta criada mas acesso bloqueado
+
+18 anos: acesso normal
+
+Menores só entram via “Conta Família”.
+
+Conta Família (adulto cria subcontas menores)
+
+Adulto pode adicionar dependentes
+
+Menores não têm login
+
+Menores só podem navegar e solicitar compras
+
+Adulto controla tudo
+
+Adulto vê todas as atividades dos menores
+
+Menu principal minimalista
+
+2 botões grandes: Lojas e Serviços
+
+Três pontinhos no topo com:
+
+Marketplace (vendas/doações entre moradores)
+
+Achados & Perdidos
+
+Notificações
+
+Perfil
+
+Lojas
+
+Categorias
+
+Catálogo
+
+Pedidos
+
+Chat com cliente
+
+Entrega interna
+
+Serviços
+
+Agendamentos
+
+Chat
+
+Perfil profissional
+
+Entregadores internos
+
+Visualização de pedidos
+
+Atualização de status
+
+“Chegou no seu bloco”
+
+Gorjeta
+
+Marketplace entre moradores
+
+Vendas
+
+Doações
+
+Trocas
+
+Achados e Perdidos
+
+postagens com foto + descrição
+
+contato seguro
+
+Sistema de denúncias completo
+
+Disponível para adultos
+
+Menores “reportam ao responsável”
+
+Painel de denúncias para Admin
+
+Perfis especiais Bloco 0:
+
+Funcionários do condomínio podem usar o app
+
+Bloco 0 / Apto 00 = porteiros
+
+Bloco 0 / Apto 01 = zelador
+
+Bloco 0 / Apto 02+ funcionários
+
+Design
+
+Verde e branco
+
+Tipografia simples
+
+Interface leve e rápida
+
+🔧 BACKEND / INFRA NECESSÁRIA
+
+Banco Postgres
+
+API REST + autenticação segura
+
+Storage para imagens
+
+Chat em tempo real
+
+Push notifications
+
+Rotas isoladas por tipo de usuário
+
+Perfis com permissões diferentes
