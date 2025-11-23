@@ -92,8 +92,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/auth/me", authMiddleware, (req: Request, res: Response) => {
-    res.json({ user: req.user });
+  app.get("/api/auth/me", authMiddleware, async (req: Request, res: Response) => {
+    try {
+      // Buscar usuário completo do storage (com status e condoId)
+      const fullUser = await storage.getUser(req.user!.userId);
+      
+      if (!fullUser) {
+        return res.status(404).json({ error: "Usuário não encontrado" });
+      }
+
+      // Retornar dados completos do usuário (sem password)
+      const { password, ...userWithoutPassword } = fullUser;
+      res.json({ user: userWithoutPassword });
+    } catch (error) {
+      console.error("[AUTH ME ERROR]", error);
+      res.status(500).json({ error: "Erro ao buscar dados do usuário" });
+    }
   });
 
   // ✅ CONDOMINIUM ROUTES
