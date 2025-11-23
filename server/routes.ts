@@ -1,5 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
+import crypto from "crypto";
 import { storage } from "./storage";
 import { authService, authMiddleware, adminMiddleware, vendorMiddleware, serviceProviderMiddleware, deliveryPersonMiddleware } from "./auth";
 import { insertUserSchema, insertCondoSchema, insertStoreSchema, insertProductSchema, insertServiceProviderSchema, insertServiceSchema, insertDeliveryPersonSchema, insertOrderSchema, insertMarketplaceItemSchema, updateMarketplaceItemSchema } from "@shared/schema";
@@ -102,6 +103,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         accountType = "minor";
       }
 
+      // Gerar token de verificação de email
+      const verificationToken = crypto.randomBytes(32).toString('hex');
+      const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
+
       const hashedPassword = await authService.hashPassword(password);
       const newUser = await storage.createUser({
         name,
@@ -116,11 +121,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         role: role || "resident",
         status,
         condoId: condoId || null,
+        emailVerified: false,
+        verificationToken,
+        verificationTokenExpiry,
       });
 
       // Se for menor de 18, não fazer login automático
       if (age < 18) {
         return res.status(403).json(authService.getBlockedMinorMessage());
+      }
+
+      // Enviar email de verificação (não bloquear se falhar)
+      try {
+        const { sendVerificationEmail } = await import("./email-service");
+        await sendVerificationEmail(email, username, verificationToken);
+      } catch (emailError) {
+        console.error("[EMAIL SEND ERROR]", emailError);
+        // Continuar mesmo se email falhar
       }
 
       // Fazer login automático para maiores de 18
@@ -131,7 +148,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           id: newUser.id, 
           username: newUser.username, 
           role: newUser.role,
-          status: newUser.status 
+          status: newUser.status,
+          emailVerified: newUser.emailVerified
         } 
       });
     } catch (error) {
@@ -155,6 +173,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("[AUTH ME ERROR]", error);
       res.status(500).json({ error: "Erro ao buscar dados do usuário" });
+    }
+  });
+
+  // ✅ Verificar email via token
+  app.get("/api/auth/verify-email/:token", async (req: Request, res: Response) => {
+    try {
+      const { token } = req.params;
+      
+      if (!token) {
+        return res.status(400).json({ error: "Token não fornecido" });
+      }
+
+      // Buscar usuário pelo token
+      const user = await storage.getUserByVerificationToken(token);
+      
+      if (!user) {
+        return res.status(404).json({ error: "Token inválido ou expirado" });
+      }
+
+      // Verificar se token expirou
+      if (user.verificationTokenExpiry && new Date() > new Date(user.verificationTokenExpiry)) {
+        return res.status(400).json({ error: "Token expirado. Solicite um novo email de verificação." });
+      }
+
+      // Marcar email como verificado
+      await storage.updateUser(user.id, {
+        emailVerified: true,
+        verificationToken: null,
+        verificationTokenExpiry: null,
+      });
+
+      // Enviar email de boas-vindas
+      try {
+        const { sendWelcomeEmail } = await import("./email-service");
+        await sendWelcomeEmail(user.email, user.username);
+      } catch (emailError) {
+        console.error("[WELCOME EMAIL ERROR]", emailError);
+      }
+
+      res.json({ 
+        success: true, 
+        message: "Email verificado com sucesso!",
+        emailVerified: true 
+      });
+    } catch (error) {
+      console.error("[VERIFY EMAIL ERROR]", error);
+      res.status(500).json({ error: "Erro ao verificar email" });
+    }
+  });
+
+  // ✅ Reenviar email de verificação
+  app.post("/api/auth/resend-verification", authMiddleware, async (req: Request, res: Response) => {
+    try {
+      const user = await storage.getUser(req.user!.userId);
+      
+      if (!user) {
+        return res.status(404).json({ error: "Usuário não encontrado" });
+      }
+
+      if (user.emailVerified) {
+        return res.status(400).json({ error: "Email já verificado" });
+      }
+
+      // Gerar novo token
+      const verificationToken = crypto.randomBytes(32).toString('hex');
+      const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+      await storage.updateUser(user.id, {
+        verificationToken,
+        verificationTokenExpiry,
+      });
+
+      // Enviar email
+      try {
+        const { sendVerificationEmail } = await import("./email-service");
+        await sendVerificationEmail(user.email, user.username, verificationToken);
+      } catch (emailError) {
+        console.error("[EMAIL SEND ERROR]", emailError);
+        return res.status(500).json({ error: "Erro ao enviar email" });
+      }
+
+      res.json({ 
+        success: true, 
+        message: "Email de verificação reenviado" 
+      });
+    } catch (error) {
+      console.error("[RESEND VERIFICATION ERROR]", error);
+      res.status(500).json({ error: "Erro ao reenviar email" });
     }
   });
 

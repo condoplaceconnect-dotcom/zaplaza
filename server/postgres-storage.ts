@@ -197,6 +197,12 @@ export class PostgresStorage implements IStorage {
     });
   }
 
+  async getUserByVerificationToken(token: string): Promise<User | undefined> {
+    return await db.query.users.findFirst({
+      where: eq(schema.users.verificationToken, token),
+    });
+  }
+
   async createUser(user: InsertUser): Promise<User> {
     const [created] = await db.insert(schema.users).values(user).returning();
     return created;

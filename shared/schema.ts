@@ -275,6 +275,9 @@ export const insertUserSchema = createInsertSchema(users)
     role: true,
     status: true,
     condoId: true,
+    emailVerified: true,
+    verificationToken: true,
+    verificationTokenExpiry: true,
   })
   .extend({
     // Validação customizada para data de nascimento
