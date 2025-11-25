@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,22 +27,7 @@ export default function UserRegistrationPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [userType, setUserType] = useState<UserType>('resident');
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
-  const [selectedCondoId, setSelectedCondoId] = useState<string | null>(null);
 
-  useEffect(() => {
-    const condoId = localStorage.getItem("selectedCondoId");
-    if (!condoId) {
-      toast({ 
-        title: "Erro", 
-        description: "Nenhum condomínio selecionado. Por favor, volte e selecione um.", 
-        variant: "destructive" 
-      });
-      setLocation("/select-condo");
-    } else {
-      setSelectedCondoId(condoId);
-    }
-  }, [toast, setLocation]);
-  
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -53,6 +38,7 @@ export default function UserRegistrationPage() {
     birthDate: "",
     block: "",
     unit: "",
+    inviteCode: "", // New field for invite code
     storeName: "",
     storeCategory: "",
     serviceType: "",
@@ -64,15 +50,15 @@ export default function UserRegistrationPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!selectedCondoId) {
-        toast({ title: "Erro", description: "ID do condomínio não encontrado. Por favor, selecione um condomínio.", variant: "destructive" });
-        return;
-    }
     
     // Validações obrigatórias
-    if (!formData.name || !formData.email || !formData.phone || !formData.username || !formData.password || !formData.birthDate || !formData.block || !formData.unit) {
+    if (!formData.name || !formData.email || !formData.phone || !formData.username || !formData.password || !formData.birthDate || !formData.block || !formData.unit || !formData.inviteCode) {
       toast({ title: "Erro", description: "Todos os campos obrigatórios devem ser preenchidos", variant: "destructive" });
+      return;
+    }
+
+    if (formData.inviteCode.length !== 8) {
+      toast({ title: "Erro", description: "O código de convite deve ter 8 caracteres", variant: "destructive" });
       return;
     }
 
@@ -111,21 +97,23 @@ export default function UserRegistrationPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-          condoId: selectedCondoId, // Include condoId in the request
           role: userType,
         }),
       });
 
-      if (!registerRes.ok) {
-        const err = await registerRes.json();
-        throw new Error(err.error || "Erro ao registrar");
-      }
+      const resBody = await registerRes.json();
 
-      const { message } = await registerRes.json();
+      if (!registerRes.ok) {
+        // Handle specific error for invite code
+        if (resBody.errors && resBody.errors.inviteCode) {
+          throw new Error(resBody.errors.inviteCode[0]);
+        }
+        throw new Error(resBody.error || "Erro ao registrar");
+      }
 
       toast({ 
         title: "Cadastro enviado!", 
-        description: message
+        description: resBody.message
       });
       
       setRegistrationSuccess(true);
@@ -158,7 +146,7 @@ export default function UserRegistrationPage() {
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 bg-card border-b">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={() => setLocation("/select-condo")} data-testid="button-back">
+          <Button variant="ghost" size="icon" onClick={() => setLocation("/login")} data-testid="button-back">
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <h1 className="text-xl font-bold">Criar Conta</h1>
@@ -174,6 +162,50 @@ export default function UserRegistrationPage() {
           </TabsList>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* CONDO INFO */}
+            <Card className="p-6 space-y-4">
+              <h2 className="text-lg font-semibold">Informações do Condomínio</h2>
+              <div>
+                <Label htmlFor="inviteCode">Código de Convite *</Label>
+                <Input
+                  id="inviteCode"
+                  name="inviteCode"
+                  placeholder="Código de 8 dígitos fornecido pelo seu condomínio"
+                  value={formData.inviteCode}
+                  onChange={handleChange}
+                  required
+                  maxLength={8}
+                  data-testid="input-invite-code"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="block">Bloco *</Label>
+                  <Input
+                    id="block"
+                    name="block"
+                    placeholder="Ex: A, B, C"
+                    value={formData.block}
+                    onChange={handleChange}
+                    required
+                    data-testid="input-block"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="unit">Apartamento *</Label>
+                  <Input
+                    id="unit"
+                    name="unit"
+                    placeholder="Ex: 101, 205"
+                    value={formData.unit}
+                    onChange={handleChange}
+                    required
+                    data-testid="input-unit"
+                  />
+                </div>
+              </div>
+            </Card>
+
             {/* PERSONAL INFO */}
             <Card className="p-6 space-y-4">
               <h2 className="text-lg font-semibold">Dados Pessoais</h2>
@@ -230,33 +262,6 @@ export default function UserRegistrationPage() {
                   required
                   data-testid="input-birthdate"
                 />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="block">Bloco *</Label>
-                  <Input
-                    id="block"
-                    name="block"
-                    placeholder="Ex: A, B, C"
-                    value={formData.block}
-                    onChange={handleChange}
-                    required
-                    data-testid="input-block"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="unit">Apartamento *</Label>
-                  <Input
-                    id="unit"
-                    name="unit"
-                    placeholder="Ex: 101, 205"
-                    value={formData.unit}
-                    onChange={handleChange}
-                    required
-                    data-testid="input-unit"
-                  />
-                </div>
               </div>
             </Card>
 

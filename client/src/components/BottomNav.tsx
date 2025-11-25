@@ -1,17 +1,14 @@
-import { Home, ShoppingBag, Calendar, User } from "lucide-react";
-import { useLocation } from "wouter";
+import { Home, ShoppingBag, MessageCircle, User, ArrowRightLeft } from "lucide-react";
+import { useLocation, Link } from "wouter";
 
-interface BottomNavProps {
-  onNavigate: (path: string) => void;
-}
-
-export default function BottomNav({ onNavigate }: BottomNavProps) {
+export default function BottomNav() {
   const [location] = useLocation();
 
   const navItems = [
-    { path: '/', icon: Home, label: 'Início', testId: 'home' },
-    { path: '/orders', icon: ShoppingBag, label: 'Pedidos', testId: 'orders' },
-    { path: '/appointments', icon: Calendar, label: 'Agenda', testId: 'appointments' },
+    { path: '/home', icon: Home, label: 'Home', testId: 'home' },
+    { path: '/marketplace', icon: ShoppingBag, label: 'Marketplace', testId: 'marketplace' },
+    { path: '/loans', icon: ArrowRightLeft, label: 'Empréstimos', testId: 'loans' },
+    { path: '/chat', icon: MessageCircle, label: 'Chat', testId: 'chat' },
     { path: '/profile', icon: User, label: 'Perfil', testId: 'profile' }
   ];
 
@@ -23,9 +20,9 @@ export default function BottomNav({ onNavigate }: BottomNavProps) {
           const Icon = item.icon;
           
           return (
-            <button
+            <Link
               key={item.path}
-              onClick={() => onNavigate(item.path)}
+              to={item.path}
               className={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${
                 isActive ? 'text-primary' : 'text-muted-foreground'
               }`}
@@ -33,7 +30,7 @@ export default function BottomNav({ onNavigate }: BottomNavProps) {
             >
               <Icon className="w-5 h-5 mb-1" />
               <span className="text-xs">{item.label}</span>
-            </button>
+            </Link>
           );
         })}
       </div>

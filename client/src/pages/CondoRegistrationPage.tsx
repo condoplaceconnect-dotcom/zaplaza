@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ArrowLeft, CheckCircle, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ArrowLeft, CheckCircle, AlertCircle, Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const BR_STATES = [
@@ -20,6 +20,7 @@ export default function CondoRegistrationPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -32,6 +33,13 @@ export default function CondoRegistrationPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+  
+  const handleCopyToClipboard = () => {
+    if (inviteCode) {
+      navigator.clipboard.writeText(inviteCode);
+      toast({ title: "Copiado!", description: "Código de convite copiado para a área de transferência." });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -64,14 +72,10 @@ export default function CondoRegistrationPage() {
       }
 
       const condo = await res.json();
-      localStorage.setItem("selectedCondoId", condo.id);
       
-      toast({ title: "Sucesso!", description: "Condomínio registrado com sucesso" });
+      toast({ title: "Sucesso!", description: "Condomínio registrado com sucesso. Aguarde aprovação." });
+      setInviteCode(condo.inviteCode);
       setSubmitted(true);
-
-      setTimeout(() => {
-        setLocation("/register");
-      }, 1500);
 
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Erro desconhecido";
@@ -84,10 +88,27 @@ export default function CondoRegistrationPage() {
   if (submitted) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="p-8 max-w-md w-full text-center">
+        <Card className="p-8 max-w-lg w-full text-center">
           <CheckCircle className="w-16 h-16 text-primary mx-auto mb-4" />
-          <h2 className="text-2xl font-bold mb-2">Condomínio Registrado!</h2>
-          <p className="text-muted-foreground mb-6">Redirecionando para criar sua conta...</p>
+          <h2 className="text-2xl font-bold mb-2">Solicitação Enviada!</h2>
+          <p className="text-muted-foreground mb-6">
+            Seu condomínio foi registrado e está pendente de aprovação. Guarde bem o código de convite abaixo. Você e os outros moradores precisarão dele para criar uma conta.
+          </p>
+          
+          <Alert variant="default" className="mb-6 text-left">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Código de Convite do seu Condomínio</AlertTitle>
+            <AlertDescription className="flex items-center justify-between mt-2">
+              <strong className="text-lg tracking-widest font-mono" data-testid="invite-code-display">{inviteCode}</strong>
+              <Button variant="outline" size="icon" onClick={handleCopyToClipboard} data-testid="button-copy-code">
+                <Copy className="h-4 w-4" />
+              </Button>
+            </AlertDescription>
+          </Alert>
+
+          <Button className="w-full" onClick={() => setLocation("/register")} data-testid="button-continue-to-register">
+            Continuar e Criar Minha Conta de Administrador
+          </Button>
         </Card>
       </div>
     );
@@ -108,7 +129,7 @@ export default function CondoRegistrationPage() {
         <Alert className="mb-6">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Sua solicitação será analisada. Você receberá um email de confirmação.
+            Após o registro, sua solicitação será analisada pela administração. Você receberá um código de convite para compartilhar com os moradores.
           </AlertDescription>
         </Alert>
 

@@ -4,7 +4,7 @@
 
 ### 🌐 Abrir o Aplicativo
 1. **Clique no botão "Open" ou "Preview" na IDE**
-2. A aplicação irá carregar e você verá a tela para selecionar o condomínio.
+2. A aplicação irá carregar e você verá a tela de login/registro.
 
 ---
 
@@ -20,6 +20,7 @@
 
 ### Condomínio Disponível
 - **Nome:** Acqua Sena (Canoas/RS)
+- **Código de Convite:** `CONVITE1` (Use este código para se registrar)
 
 ### Loja de Exemplo
 - **Nome:** Loja do João - Lanches & Bebidas
@@ -33,19 +34,21 @@
 
 ## 🧪 TESTE RÁPIDO (2 minutos)
 
-1. **Selecione o condomínio "Acqua Sena"** na tela inicial.
-2. **Crie uma conta** ou use a conta de cliente de teste (`cliente` / `cliente123`).
-3. **Navegue pelos produtos** da "Loja do João".
-4. **Adicione um item** ao carrinho.
-5. **Vá para o checkout** e veja o fluxo de pagamento simulado.
+1. Clique em **"Criar Conta"**.
+2. Insira o código de convite `CONVITE1`.
+3. Preencha seus dados para criar uma conta de morador.
+4. Após o registro, faça login com suas novas credenciais.
+5. **Navegue pelos produtos** da "Loja do João".
+6. **Adicione um item** ao carrinho.
+7. **Vá para o checkout** e veja o fluxo de pagamento simulado.
 
 ---
 
 ## 👤 COMO SE REGISTRAR
 
-1. Na tela inicial, selecione o condomínio **Acqua Sena**.
-2. Clique em **"Criar Conta"**.
-3. Preencha seus dados para se registrar como morador, vendedor ou outro perfil.
+1. Na tela inicial, clique em **"Criar Conta"**.
+2. Preencha seus dados e, no campo **"Código de Convite"**, insira o código fornecido pelo seu condomínio (para testes, use `CONVITE1`).
+3. Siga as instruções para completar seu registro como morador, vendedor ou outro perfil.
 
 ---
 
@@ -73,7 +76,7 @@
 
 ### Erro de autenticação?
 - Use as contas de teste fornecidas acima.
-- Certifique-se de ter selecionado o condomínio antes de fazer login ou se registrar.
+- Certifique-se de estar usando o código de convite correto (`CONVITE1`) durante o registro.
 
 ---
 

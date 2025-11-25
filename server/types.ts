@@ -1,13 +1,9 @@
-// Extend Express Request com suporte a user autenticado
-import { type Request } from 'express';
-import { type JWTPayload } from './auth';
+import { User } from '@shared/schema';
 
 declare global {
   namespace Express {
     interface Request {
-      user?: JWTPayload;
+      user?: User;
     }
   }
 }
-
-export {};
