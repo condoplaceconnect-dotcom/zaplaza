@@ -1,131 +1,99 @@
-import { lazy, Suspense } from "react";
-import { Switch, Route } from "wouter";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { queryClient } from "./lib/queryClient";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { Switch, Route, Redirect } from "wouter";
+import { useAuth } from "./hooks/useAuth";
 
-// Layouts
-import AdminLayout from "@/pages/admin/AdminLayout";
-import UserLayout from "@/components/UserLayout";
+// Layout Component
+import UserLayout from "./components/UserLayout";
 
-// Pages
-import NotFound from "@/pages/not-found";
-import CreateReportPage from "@/pages/CreateReportPage";
-const CondoStatusPage = lazy(() => import("@/pages/CondoStatusPage"));
+// Page Components
+import LoginPage from "./pages/LoginPage";
+import UserRegistrationPage from "./pages/UserRegistrationPage";
+import CondoRegistrationPage from "./pages/CondoRegistrationPage";
+import CondoStatusPage from "./pages/CondoStatusPage";
+import EmailVerificationPage from "./pages/EmailVerificationPage";
+import HomePage from "./pages/HomePage";
+import MarketplaceFeed from "./pages/MarketplaceFeed";
+import ServiceFeed from "./pages/ServiceFeed";
+import CreatePostPage from "./pages/CreatePostPage";
+import ChatListPage from "./pages/ChatListPage";
+import ChatPage from "./pages/ChatPage";
+import LoanRequestsFeedPage from "./pages/LoanRequestsFeedPage";
+import LoanRequestDetailsPage from "./pages/LoanRequestDetailsPage";
+import CreateServicePage from "./pages/CreateServicePage";
+import LostAndFoundFeed from "./pages/LostAndFoundFeed";
+import CreateLostAndFoundPage from "./pages/CreateLostAndFoundPage";
+import ProfilePage from "./pages/ProfilePage";
 
-// Lazy-loaded Pages
-const LandingPage = lazy(() => import("@/pages/LandingPage"));
-const HomePage = lazy(() => import("@/pages/HomePage"));
-const LoginPage = lazy(() => import("@/pages/LoginPage"));
-const EmailVerificationPage = lazy(() => import("@/pages/EmailVerificationPage"));
-const OrdersPage = lazy(() => import("@/pages/OrdersPage"));
-const ChatPage = lazy(() => import("@/pages/ChatPage"));
-const VendorDashboard = lazy(() => import("@/pages/VendorDashboard"));
-const ServicesPage = lazy(() => import("@/pages/ServicesPage"));
-const AppointmentsPage = lazy(() => import("@/pages/AppointmentsPage"));
-const ProfilePage = lazy(() => import("@/pages/ProfilePage"));
-const SettingsPage = lazy(() => import("@/pages/SettingsPage"));
-const CondoRegistrationPage = lazy(() => import("@/pages/CondoRegistrationPage"));
-const UserRegistrationPage = lazy(() => import("@/pages/UserRegistrationPage"));
-const FamilyAccountPage = lazy(() => import("@/pages/FamilyAccountPage"));
-const MarketplacePage = lazy(() => import("@/pages/MarketplacePage"));
-const CreatePostPage = lazy(() => import("@/pages/CreatePostPage"));
-const LoansPage = lazy(() => import("@/pages/LoansPage")); // Import the new LoansPage
+// UI Components
+import { Toaster } from "./components/ui/toaster";
 
-// Admin Pages (Lazy-loaded)
-const AdminDashboardPage = lazy(() => import("@/pages/admin/AdminDashboardPage"));
-const AdminLoginPage = lazy(() => import("@/pages/admin/AdminLoginPage"));
-const CondoApprovalPage = lazy(() => import("@/pages/admin/CondoApprovalPage"));
-const AdminUsersPage = lazy(() => import("@/pages/admin/AdminUsersPage"));
-const ReportsPage = lazy(() => import("@/pages/admin/ReportsPage"));
-const ReportDetailsPage = lazy(() => import("@/pages/admin/ReportDetailsPage"));
-
-function PageLoader() {
+// This component wraps all the private routes and applies the UserLayout
+const PrivateRoutes = () => {
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="animate-pulse">
-        <div className="h-12 w-12 bg-primary rounded-full"></div>
-      </div>
-    </div>
-  );
-}
-
-function Router() {
-  // Admin Routes Component
-  const AdminRoutes = () => (
-    <AdminLayout>
-      <Suspense fallback={<PageLoader />}>
-        <Switch>
-          <Route path="/admin/dashboard" component={AdminDashboardPage} />
-          <Route path="/admin/condo-approval" component={CondoApprovalPage} />
-          <Route path="/admin/users" component={AdminUsersPage} />
-          <Route path="/admin/reports" component={ReportsPage} />
-          <Route path="/admin/reports/:id" component={ReportDetailsPage} />
-          <Route component={NotFound} />
-        </Switch>
-      </Suspense>
-    </AdminLayout>
-  );
-
-  const AuthenticatedUserRoutes = () => (
     <UserLayout>
       <Switch>
         <Route path="/home" component={HomePage} />
-        <Route path="/orders" component={OrdersPage} />
-        <Route path="/chat" component={ChatPage} />
-        <Route path="/services" component={ServicesPage} />
-        <Route path="/appointments" component={AppointmentsPage} />
-        <Route path="/marketplace" component={MarketplacePage} />
-        <Route path="/loans" component={LoansPage} /> {/* Add the new route */}
+        <Route path="/marketplace" component={MarketplaceFeed} />
+        <Route path="/services" component={ServiceFeed} />
+        <Route path="/lost-and-found" component={LostAndFoundFeed} />
         <Route path="/profile" component={ProfilePage} />
-        <Route path="/family" component={FamilyAccountPage} />
-        <Route path="/settings" component={SettingsPage} />
-        <Route path="/report/create" component={CreateReportPage} />
-        <Route path="/vendor/dashboard" component={VendorDashboard} />
-        <Route path="/posts/create" component={CreatePostPage} />
-        <Route component={NotFound} />
+        <Route path="/create-post" component={CreatePostPage} />
+        <Route path="/create-service" component={CreateServicePage} />
+        <Route path="/create-lost-and-found" component={CreateLostAndFoundPage} />
+        <Route path="/loan-requests-feed" component={LoanRequestsFeedPage} />
+        <Route path="/loan-requests/:id" component={LoanRequestDetailsPage} />
+        <Route path="/chats" component={ChatListPage} />
+        <Route path="/chat/:id" component={ChatPage} />
+        {/* Redirect from root of private routes to /home */}
+        <Route path="/"><Redirect to="/home" /></Route>
+        {/* 404 Fallback for private routes */}
+        <Route>404, Not Found!</Route>
       </Switch>
     </UserLayout>
-  )
+  );
+};
+
+const App = () => {
+  const { token, loading } = useAuth();
+
+  if (loading) {
+    // You can replace this with a beautiful spinner component
+    return (
+      <div className="flex items-center justify-center h-screen">
+        Carregando...
+      </div>
+    );
+  }
 
   return (
-    <Suspense fallback={<PageLoader />}>
+    <>
+      <Toaster />
       <Switch>
-        {/* Public & Auth Routes */}
-        <Route path="/" component={LandingPage} />
-        <Route path="/login" component={LoginPage} />
-        <Route path="/register" component={UserRegistrationPage} />
-        <Route path="/register-condo" component={CondoRegistrationPage} />
-        <Route path="/verify-email" component={EmailVerificationPage} />
-        <Route path="/condo-status" component={CondoStatusPage} />
-        
-        {/* Authenticated User Routes */}
-        <ProtectedRoute>
-          <AuthenticatedUserRoutes />
-        </ProtectedRoute>
+        {/* Public Routes */}
+        <Route path="/login">
+          {token ? <Redirect to="/home" /> : <LoginPage />}
+        </Route>
+        <Route path="/register">
+          {token ? <Redirect to="/home" /> : <UserRegistrationPage />}
+        </Route>
 
-        {/* Admin Routes */}
-        <Route path="/admin/login" component={AdminLoginPage} />
-        <Route path="/admin/:rest*" component={AdminRoutes} />
-        
-        {/* Not Found */}
-        <Route component={NotFound} />
+        {/* Special auth routes that don't use the main UserLayout */}
+        <Route path="/register-condo">
+          {!token ? <Redirect to="/login" /> : <CondoRegistrationPage />}
+        </Route>
+        <Route path="/condo-status">
+          {!token ? <Redirect to="/login" /> : <CondoStatusPage />}
+        </Route>
+        <Route path="/verify-email">
+          {!token ? <Redirect to="/login" /> : <EmailVerificationPage />}
+        </Route>
+
+        {/* Catch-all for private routes */}
+        <Route path="/:rest*">
+          {token ? <PrivateRoutes /> : <Redirect to="/login" />}
+        </Route>
       </Switch>
-    </Suspense>
+    </>
   );
-}
-
-function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Router />
-        <Toaster />
-      </TooltipProvider>
-    </QueryClientProvider>
-  );
-}
+};
 
 export default App;

@@ -1,39 +1,41 @@
-import { Home, ShoppingBag, MessageCircle, User, ArrowRightLeft } from "lucide-react";
+import { Home, ShoppingBag, MessageSquare, User, ArrowRightLeft, Search, Briefcase } from "lucide-react";
 import { useLocation, Link } from "wouter";
 
-export default function BottomNav() {
+export function BottomNav() {
   const [location] = useLocation();
 
   const navItems = [
     { path: '/home', icon: Home, label: 'Home', testId: 'home' },
-    { path: '/marketplace', icon: ShoppingBag, label: 'Marketplace', testId: 'marketplace' },
-    { path: '/loans', icon: ArrowRightLeft, label: 'Empréstimos', testId: 'loans' },
-    { path: '/chat', icon: MessageCircle, label: 'Chat', testId: 'chat' },
-    { path: '/profile', icon: User, label: 'Perfil', testId: 'profile' }
+    { path: '/marketplace', icon: ShoppingBag, label: 'Achadinhos', testId: 'marketplace' },
+    { path: '/services', icon: Briefcase, label: 'Zap Bico', testId: 'services' },
+    { path: '/lost-and-found', icon: Search, label: 'Achados', testId: 'lost-and-found' },
+    { path: '/chats', icon: MessageSquare, label: 'Conversas', testId: 'chats' },
+    { path: '/profile', icon: User, label: 'Perfil', testId: 'profile' }, // Re-adding the profile link
   ];
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t z-50">
+    <nav className="fixed bottom-0 left-0 right-0 bg-card border-t z-50 md:hidden">
       <div className="flex justify-around items-center h-16">
         {navItems.map((item) => {
-          const isActive = location === item.path;
           const Icon = item.icon;
-          
+          const isActive = location.startsWith(item.path) && (location === item.path || location.startsWith(`${item.path}/`));
+          const isHomeActive = item.path === '/home' && location === '/home';
+
           return (
             <Link
               key={item.path}
               to={item.path}
               className={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${
-                isActive ? 'text-primary' : 'text-muted-foreground'
+                (item.path === '/home' ? isHomeActive : isActive) ? 'text-primary' : 'text-muted-foreground'
               }`}
               data-testid={`button-nav-${item.testId}`}
             >
               <Icon className="w-5 h-5 mb-1" />
-              <span className="text-xs">{item.label}</span>
+              <span className="text-xs text-center">{item.label}</span>
             </Link>
           );
         })}
       </div>
-    </div>
+    </nav>
   );
 }

@@ -1,133 +1,142 @@
-import type { Express, Request, Response } from "express";
-import { createServer, type Server } from "http";
-import crypto from "crypto";
+import { Router, Request, Response } from "express";
 import { storage } from "./storage";
-import { authService, authMiddleware } from "./auth";
+import { authMiddleware, AuthenticatedRequest } from "./auth";
 import { 
-    insertUserSchema, 
-    loginUserSchema, 
-    insertMarketplaceItemSchema, 
-    updateMarketplaceItemSchema, 
-    insertCondoSchema, 
-    insertStoreSchema, 
-    insertProductSchema,
-    insertLoanSchema
-} from "@shared/schema"; 
-import { registerAdminRoutes } from "./admin-routes";
-import "./types";
+    insertLoanRequestSchema, 
+    createLoanAgreementSchema,
+    confirmReturnSchema,
+    insertServiceSchema,
+    insertMarketplaceItemSchema,
+    insertLostAndFoundItemSchema
+} from "@shared/schema";
 
-// Função para gerar um código de convite único
-async function generateUniqueInviteCode(length: number = 8): Promise<string> {
-  // ... (implementation omitted for brevity)
-  return ""; 
-}
+// ===== LOAN ROUTES (EMPRESTA AÍ) =====
+const loanRouter = Router();
+loanRouter.use(authMiddleware);
 
-export async function registerRoutes(app: Express): Promise<Server> {
+loanRouter.post("/loan-requests", async (req: AuthenticatedRequest, res: Response) => {
+    const user = req.user!;
+    const validation = insertLoanRequestSchema.safeParse(req.body);
+    if (!validation.success) return res.status(400).json({ error: validation.error.flatten() });
+    const newRequest = await storage.createLoanRequest(validation.data, user.userId, user.condoId! );
+    res.status(201).json(newRequest);
+});
 
-  // ✅ CONDOMINIUM REGISTRATION
-  app.post("/api/condominiums", async (req: Request, res: Response) => { /* ... */ });
+loanRouter.get("/loan-requests", async (req: AuthenticatedRequest, res: Response) => {
+    const requests = await storage.listOpenLoanRequests(req.user!.condoId!, req.user!.userId);
+    res.status(200).json(requests);
+});
 
-  // ✅ AUTH ROUTES
-  app.post("/api/auth/login", /* ... */);
-  app.get("/api/auth/me", authMiddleware, /* ... */);
-  app.post("/api/auth/register", /* ... */);
-  app.get("/api/auth/verify-email", /* ... */);
+loanRouter.get("/loan-requests/:id", async (req: AuthenticatedRequest, res: Response) => {
+    const details = await storage.getLoanRequestDetails(req.params.id);
+    if (!details) return res.status(404).json({ error: "Pedido não encontrado." });
+    res.status(200).json(details);
+});
 
-  // ✅ MARKETPLACE ROUTES
-  app.get("/api/marketplace", authMiddleware, /* ... */);
-  app.post("/api/marketplace", authMiddleware, /* ... */);
-  app.patch("/api/marketplace/:id", authMiddleware, /* ... */);
-  app.delete("/api/marketplace/:id", authMiddleware, /* ... */);
-  
-  app.get("/api/my-marketplace-items", authMiddleware, async (req: Request, res: Response) => {
-    try {
-        const user = req.user;
-        if (!user) {
-            return res.status(401).json({ error: "Não autenticado." });
-        }
-        const items = await storage.getMarketplaceItemsByUser(user.id);
-        res.status(200).json(items);
-    } catch (error: any) {
-        console.error("[MY MARKETPLACE ITEMS GET ERROR]", error);
-        res.status(500).json({ error: "Erro ao buscar itens do usuário." });
+loanRouter.post("/loan-requests/:id/offers", async (req: AuthenticatedRequest, res: Response) => {
+    const newOffer = await storage.createLoanOffer(req.params.id, req.user!.userId);
+    res.status(201).json(newOffer);
+});
+
+loanRouter.post("/loans/agreements", async (req: AuthenticatedRequest, res: Response) => {
+    const validation = createLoanAgreementSchema.safeParse(req.body);
+    if (!validation.success) return res.status(400).json({ error: validation.error.flatten() });
+    const finalLoan = await storage.createLoanAgreement(validation.data, req.user!.userId);
+    res.status(201).json(finalLoan);
+});
+
+loanRouter.get("/my-loans", async (req: AuthenticatedRequest, res: Response) => {
+    const loans = await storage.getUserLoans(req.user!.userId);
+    res.status(200).json(loans);
+});
+
+loanRouter.get("/loans/:id", async (req: AuthenticatedRequest, res: Response) => {
+    const loan = await storage.getLoanDetails(req.params.id);
+    if (!loan) return res.status(404).json({ error: "Empréstimo não encontrado." });
+    if (loan.borrowerId !== req.user!.userId && loan.ownerId !== req.user!.userId) {
+        return res.status(403).json({ error: "Acesso negado." });
     }
-  });
+    res.status(200).json(loan);
+});
 
-  // ✅ STORE ROUTES
-  app.post("/api/stores", authMiddleware, /* ... */);
-  app.get("/api/stores", authMiddleware, /* ... */);
-  app.get("/api/my-store", authMiddleware, /* ... */);
+// ===== SERVICE ROUTES (ZAP BICO) =====
+const servicesRouter = Router();
+servicesRouter.use(authMiddleware);
 
-  // ✅ PRODUCT ROUTES
-  app.post("/api/products", authMiddleware, /* ... */);
-  app.get("/api/products/store/:storeId", authMiddleware, /* ... */);
+servicesRouter.get('/services', async (req: AuthenticatedRequest, res: Response) => {
+    const userId = req.query.userId as string | undefined;
+    const services = await storage.listServices({ condoId: req.user!.condoId, userId });
+    res.json(services);
+});
 
-  // ✅ LOAN ROUTES
-  app.post("/api/loans", authMiddleware, async (req: Request, res: Response) => {
-    try {
-        const user = req.user;
-        if (!user) return res.status(401).json({ error: "Não autenticado." });
+servicesRouter.post('/services', async (req: AuthenticatedRequest, res: Response) => {
+    const validation = insertServiceSchema.safeParse(req.body);
+    if (!validation.success) return res.status(400).json({ error: validation.error.flatten() });
+    const service = await storage.createService(validation.data, req.user!.userId, req.user!.condoId);
+    res.status(201).json(service);
+});
 
-        const validation = insertLoanSchema.safeParse(req.body);
-        if (!validation.success) {
-            return res.status(400).json({ error: validation.error.flatten() });
-        }
+servicesRouter.patch('/services/:id', async (req: AuthenticatedRequest, res: Response) => {
+    const service = await storage.updateService(req.params.id, req.body, req.user!.userId);
+    res.json(service);
+});
 
-        const { itemId, ownerId, returnDate, terms } = validation.data;
-        const newLoan = await storage.createLoan({
-            itemId,
-            ownerId,
-            borrowerId: user.id, // O borrower é o usuário logado que está fazendo a requisição
-            returnDate,
-            terms,
-        });
-        res.status(201).json(newLoan);
+servicesRouter.delete('/services/:id', async (req: AuthenticatedRequest, res: Response) => {
+    await storage.deleteService(req.params.id, req.user!.userId);
+    res.status(204).send();
+});
 
-    } catch (error: any) {
-        console.error("[LOAN CREATE ERROR]", error);
-        res.status(500).json({ error: "Erro ao solicitar empréstimo." });
-    }
-  });
+// ===== MARKETPLACE ROUTES (ACHADINHOS) =====
+const marketplaceRouter = Router();
+marketplaceRouter.use(authMiddleware);
 
-  app.get("/api/loans/my", authMiddleware, async (req: Request, res: Response) => {
-      try {
-          const user = req.user;
-          if (!user) return res.status(401).json({ error: "Não autenticado." });
+marketplaceRouter.get('/marketplace', async (req: AuthenticatedRequest, res: Response) => {
+    const items = await storage.listMarketplaceItems(req.user!.condoId);
+    res.json(items);
+});
 
-          const borrowed = await storage.getLoansByBorrower(user.id);
-          const lent = await storage.getLoansByOwner(user.id);
+marketplaceRouter.get('/marketplace/:id', async (req: AuthenticatedRequest, res: Response) => {
+    const item = await storage.getMarketplaceItemDetails(req.params.id);
+    if(!item) return res.status(404).json({error: "Item not found"});
+    res.json(item);
+});
 
-          res.status(200).json({ borrowed, lent });
+marketplaceRouter.post('/marketplace', async (req: AuthenticatedRequest, res: Response) => {
+    const validation = insertMarketplaceItemSchema.safeParse(req.body);
+    if (!validation.success) return res.status(400).json({ error: validation.error.flatten() });
+    const item = await storage.createMarketplaceItem(validation.data, req.user!.userId, req.user!.condoId);
+    res.status(201).json(item);
+});
 
-      } catch (error: any) {
-          console.error("[LOAN LIST ERROR]", error);
-          res.status(500).json({ error: "Erro ao listar empréstimos." });
-      }
-  });
+marketplaceRouter.patch('/marketplace/:id', async (req: AuthenticatedRequest, res: Response) => {
+    const item = await storage.updateMarketplaceItem(req.params.id, req.body, req.user!.userId);
+    res.json(item);
+});
 
-  app.patch("/api/loans/:id/status", authMiddleware, async (req: Request, res: Response) => {
-      try {
-          const user = req.user;
-          const { id } = req.params;
-          const { status } = req.body; 
+marketplaceRouter.delete('/marketplace/:id', async (req: AuthenticatedRequest, res: Response) => {
+    await storage.deleteMarketplaceItem(req.params.id, req.user!.userId);
+    res.status(204).send();
+});
 
-          if (!user) return res.status(401).json({ error: "Não autenticado." });
-          if (!status) return res.status(400).json({ error: "Status é obrigatório." });
+// ===== LOST & FOUND ROUTES (ACHADOS E PERDIDOS) =====
+const lostAndFoundRouter = Router();
+lostAndFoundRouter.use(authMiddleware);
 
-          const updatedLoan = await storage.updateLoanStatus(id, status, user.id);
-          res.status(200).json(updatedLoan);
+lostAndFoundRouter.get('/lost-and-found', async (req: AuthenticatedRequest, res: Response) => {
+    const items = await storage.listLostAndFoundItems(req.user!.condoId);
+    res.json(items);
+});
 
-      } catch (error: any) {
-          console.error("[LOAN UPDATE STATUS ERROR]", error);
-          if (error.message.includes("Apenas o proprietário") || error.message.includes("Apenas o mutuário")) {
-              return res.status(403).json({ error: error.message });
-          }
-          res.status(500).json({ error: "Erro ao atualizar status do empréstimo." });
-      }
-  });
+lostAndFoundRouter.post('/lost-and-found', async (req: AuthenticatedRequest, res: Response) => {
+    const validation = insertLostAndFoundItemSchema.safeParse(req.body);
+    if (!validation.success) return res.status(400).json({ error: validation.error.flatten() });
+    const item = await storage.createLostAndFoundItem(validation.data, req.user!.userId, req.user!.condoId);
+    res.status(201).json(item);
+});
 
-  registerAdminRoutes(app);
-
-  const httpServer = createServer(app);
-  return httpServer;
-}
+export {
+    loanRouter,
+    servicesRouter,
+    marketplaceRouter,
+    lostAndFoundRouter
+};

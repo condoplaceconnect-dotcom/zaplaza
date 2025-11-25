@@ -1,8 +1,3 @@
-Zaplaza — Design Do App (ui + Páginas + Admin)
-Você está visualizando conteúdo gerado por usuários, que pode não ser seguro ou verificado.
-Denunciar
-ChatGPT
-Editar com o ChatGPT
 Zaplaza — Design do App (UI + Páginas + Admin)
 Documento totalmente organizado em seções separadas, com cada grupo de telas bem dividido, limpo e fácil de navegar. Agora o layout está estruturado como um manual profissional de design, tudo em blocos independentes.
 
@@ -17,16 +12,16 @@ Laranja destaque: #FF7A45
 Cinzas neutros: #FFFFFF, #F7FAFC, #E6EEF2, #6B7280
 
 1.2 Tipografia
-Títulos: Inter / Poppins Bold
+Títulos: Poppins Bold (padrão para destaque)
 
-Texto: Inter / Roboto Regular
+Texto: Inter Regular (padrão para corpo de texto e legibilidade)
 
 1.3 Componentes fixos
 Header (logo + título + menu + compartilhar)
 
 Bottom Nav (Home • Pedidos • Chat • Perfil)
 
-FAB universal (Criar anúncio)
+FAB universal (Ação contextual, ex: “Anunciar Produto”, “Oferecer Serviço”)
 
 Card padrão (produto/serviço/anúncio)
 
@@ -240,28 +235,33 @@ Condo liberado
 4. Endpoints da API (pré-esboço)
 Tudo separado para ficar fácil de ler e implementar.
 
-Autenticação
-POST /auth/login
+**Autenticação**
+`POST /auth/login`
+`POST /auth/register`
 
-POST /auth/register
+**Marketplace (Itens)**
+`GET /marketplace/items?category={}&sortBy={price_asc|recent}&page={}`
+`GET /marketplace/items/:id`
+`POST /marketplace/items`
+`PATCH /marketplace/items/:id`
+`DELETE /marketplace/items/:id`
 
-Marketplace
-GET /marketplace/items
+**Serviços**
+`GET /services?category={}&userId={}`
+`GET /services/:id`
+`POST /services`
+`PATCH /services/:id`
+`DELETE /services/:id`
 
-GET /items/:id
+**Pedidos**
+`POST /orders`
+`GET /orders/:id`
 
-POST /items
+**Entrega**
+`POST /deliveries/accept`
 
-Pedidos
-POST /orders
-
-GET /orders/:id
-
-Entrega
-POST /deliveries/accept
-
-Admin
-GET /admin/metrics
+**Admin**
+`GET /admin/metrics`
 
 5. Área de Assets (organizada)
 Ícone 01: /mnt/data/A_flat_design_digital_vector_graphic_showcases_the.png
@@ -285,8 +285,6 @@ Organizar JSON final dos endpoints.
 
 Preparar arquivos para PWA + Play Store.
 
-Pronto: documento dividido, organizado e legível, como tu pediu.
-
 Dossiê Zaplaza – Seção 1
 
 Módulo "Empresta Aí" – Sistema de Empréstimos Comunitários
@@ -297,13 +295,13 @@ Criar um ecossistema seguro, organizado e social para empréstimos dentro de con
 
 2. Fluxo do Pedido
 
-Usuário cria um pedido descrevendo o item desejado (nome, foto opcional, urgência).
-
-O pedido aparece como um pop‑up comunitário, visível para todos os moradores.
-
-Quem tiver o item pode clicar em “Emprestar”.
-
-Abre-se um chat individual entre o dono do item e o solicitante.
+- Usuário cria um pedido descrevendo o item desejado (nome, foto opcional, urgência).
+- O pedido aparece como um pop‑up comunitário, visível para todos os moradores.
+- Moradores interessados enviam uma “oferta de empréstimo” que fica vinculada ao pedido original.
+- O solicitante vê uma lista de ofertas (ex: “João do ap 101 ofereceu uma furadeira Bosch”).
+- Ele escolhe a melhor oferta e clica em “Aceitar e Combinar”.
+- APENAS NESSE MOMENTO, um chat privado é aberto entre os dois para combinar a entrega.
+- As outras ofertas são automaticamente recusadas com uma mensagem de agradecimento.
 
 3. Confirmação do Empréstimo
 
@@ -369,11 +367,11 @@ O sistema encerra o empréstimo.
 
 Se houver dano:
 
-Abre automaticamente um canal de resolução.
+Abre-se um **ticket de disputa** mediado por um administrador do condomínio (Sub-Admin).
 
-Envia o termo digital para ambos.
+O sistema anexa automaticamente o termo digital e as fotos para análise do mediador.
 
-Oferece suporte para mediação.
+O canal de resolução é um chat privado que inclui o solicitante, o dono do item e o mediador.
 
 7. Pontuação e Benefícios
 
@@ -464,3 +462,172 @@ Pontuação geral do usuário.
 Esta é apenas a primeira parte do dossiê.
 Próxima seção será definida juntos, expandindo o ecossistema Zaplaza.
 
+Dossiê — Parte 2 (Zaplaza)
+
+Novas Funções e Expansões do Sistema
+
+1. Camada “Empresta Aí” (Sistema de Empréstimos)
+
+-   Pedido aberto para todo o condomínio.
+-   Pop‑up estilo “pedido de clã” de jogos.
+-   Moradores interessados enviam uma “oferta de empréstimo” que fica vinculada ao pedido original.
+-   O solicitante vê uma lista de ofertas (ex: “João do ap 101 ofereceu uma furadeira Bosch”).
+-   Ele escolhe a melhor oferta e clica em “Aceitar e Combinar”.
+-   APENAS NESSE MOMENTO, um chat privado é aberto entre os dois para combinar a entrega.
+-   As outras ofertas são automaticamente recusadas com uma mensagem de agradecimento.
+-   Registro obrigatório com fotos do item no envio e na devolução.
+-   Painel de itens emprestados/pendentes para ambos.
+-   Avisos legais + termo aceito no cadastro:
+    -   Possibilidade de responsabilização civil em caso de não
+        devolução.
+    -   Permissão para o app registrar prova (fotos e logs).
+-   Possibilidade futura: acionar sistema de “disputa”.
+
+------------------------------------------------------------------------
+
+2. Stories Internos do App
+
+-   Stories divididos:
+    -   Lojas / Serviços (sempre prioritários).
+    -   Comunidade / Momentos / Empréstimos concluídos.
+-   Stories duram 24h.
+-   Todos os stories têm botão Compartilhar (WhatsApp, Instagram,
+    TikTok, Facebook, Kwai, etc).
+-   Foto conjunta no ato do empréstimo gera pontos + aparece nos
+    stories.
+-   Lojistas podem criar:
+    -   Promoções
+    -   Combos
+    -   Cupons
+    -   Materiais visuais rápidos com ferramentas internas
+
+------------------------------------------------------------------------
+
+3. Sistema de Pontuação
+
+-   Moradores ganham pontos por:
+    -   Emprestar itens
+    -   Cumprir devoluções
+    -   Tirar foto com o vizinho (consentimento mútuo)
+    -   Participar de ações comunitárias
+-   Lojas ganham pontos por:
+    -   Engajamento
+    -   Frequência de posts
+    -   Avaliações positivas
+-   Pontos podem render:
+    -   Destaque temporário no feed
+    -   Aparição acima em stories
+    -   Recursos cosméticos (emojis, molduras, avatares)
+-   Futuro: descontos reais, cashback, benefícios pagos.
+
+------------------------------------------------------------------------
+
+4. Eventos Exclusivos para Comerciantes
+
+-   Uma aba separada, visível apenas para lojistas e serviços.
+-   Não aparece para clientes para evitar poluição visual.
+-   Eventos possíveis:
+    -   Feiras internas
+    -   Vaquinhas para criar vitrines coletivas
+    -   Ações sazonais (Dia das Mães, Black Friday interna)
+-   Só vira anúncio público se o evento realmente for confirmado.
+-   Stories fixos para divulgação quando aprovado.
+
+------------------------------------------------------------------------
+
+5. Ferramentas Visuais para Lojistas
+
+-   Criador de stories nativo:
+    -   Templates
+    -   Texto
+    -   Efeitos simples
+    -   Stickers promocionais
+-   Criador de anúncio rápido:
+    -   Foto
+    -   Preço
+    -   Bônus
+    -   Cupom
+-   Botão de compartilhar em todos os conteúdos criados.
+
+------------------------------------------------------------------------
+
+6. Admin — Nova Estrutura Avançada
+
+Administração global
+
+-   Todos os condomínios
+-   Auditoria
+-   Logs
+-   Segurança
+-   Termos legais
+-   Penalidades
+-   Moderação de disputas
+
+Administração por condomínio (Sub-Admin)
+
+-   Cada condomínio tem seu próprio admin local
+-   Funções:
+    -   Aprovar moradores
+    -   Resolver disputas internas
+    -   Moderar marketplace local
+    -   Banir moradores problemáticos
+    -   Ajustar regras internas (ex: horários de entregadores)
+
+Admin global vê tudo; sub-admin só vê seu “servidor”.
+
+------------------------------------------------------------------------
+
+7. Estrutura Multi-Condomínio
+
+-   Um único app → vários “mundos” separados.
+-   Cada conta pertence a um condomínio por padrão.
+-   Lojistas e prestadores podem ativar modo multi-condomínio (manual).
+-   Anúncios, marketplace, stories, pedidos:
+    -   Não aparecem entre condomínios diferentes por padrão.
+-   O usuário só vê:
+    -   Seus vizinhos
+    -   Suas lojas
+    -   Seus prestadores
+    -   Seus eventos
+
+------------------------------------------------------------------------
+
+8. Permissões do App
+
+O Zaplaza pedirá:
+
+-   Câmera (foto de produtos, stories, empréstimos)
+-   Arquivos / Galeria
+    -   O app oferecerá duas opções:
+        1.  Acessar todas as fotos (fácil para idosos)
+        2.  Acessar apenas fotos selecionadas
+-   Localização
+    -   Para entregadores
+    -   Para rota de serviços
+    -   Para validar o condomínio
+-   Notificações
+    -   Pedidos
+    -   Entregas
+    -   Promoções
+    -   Stories importantes
+-   Microfone (opcional, para áudios no chat futuramente)
+
+O app não vê fotos não selecionadas quando o usuário usa o modo
+“selecionar apenas”.
+
+------------------------------------------------------------------------
+
+9. Termos de Uso — Pontos Importantes
+
+-   Podemos colocar que o período “Plus” é por tempo indeterminado.
+-   Legalmente válido, desde que:
+    -   Está escrito nos termos
+    -   O usuário concorda na criação da conta
+    -   O app possa encerrar o plano a qualquer momento
+-   Termos abrangem:
+    -   Empréstimos e disputas
+    -   Responsabilidade por devolução
+    -   Armazenamento de fotos como prova
+    -   Penalidades por mau uso
+    -   Multi-condomínio
+    -   Acesso às permissões

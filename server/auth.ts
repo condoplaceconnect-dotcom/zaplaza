@@ -1,103 +1,40 @@
+import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import * as bcrypt from 'bcrypt';
-import type { User } from '@shared/schema';
-import type { Request, Response, NextFunction } from 'express';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-change-in-production';
-const TOKEN_EXPIRY = '24h'; // Extend token life for development
+export const JWT_SECRET = process.env.JWT_SECRET;
 
-export interface JWTPayload {
-  userId: string;
-  username: string;
-  role: 'resident' | 'vendor' | 'service_provider' | 'delivery_person' | 'admin';
-  condoId: string | null; // Added condoId to payload
+if (!JWT_SECRET) {
+  throw new Error("FATAL ERROR: JWT_SECRET is not defined in environment variables.");
 }
 
-export const authService = {
-  hashPassword: async (password: string): Promise<string> => {
-    const saltRounds = 10;
-    return bcrypt.hash(password, saltRounds);
-  },
+// Extend the Express Request interface to include our custom user property
+export interface AuthenticatedRequest extends Request {
+  user?: { userId: string; condoId: string; role: string };
+}
 
-  verifyPassword: async (password: string, hash: string): Promise<boolean> => {
-    return bcrypt.compare(password, hash);
-  },
+// Middleware to authenticate JWT tokens
+export const authenticateToken = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
-  generateToken: (user: User): string => {
-    const payload: JWTPayload = {
-      userId: user.id,
-      username: user.username,
-      role: user.role as any,
-      condoId: user.condoId || null, // Include condoId in the token
-    };
+  if (token == null) {
+    return res.status(401).json({ error: "No token provided" }); // No token, unauthorized
+  }
 
-    return jwt.sign(payload, JWT_SECRET, {
-      expiresIn: TOKEN_EXPIRY,
-      issuer: 'condoplace',
-      subject: user.id
-    });
-  },
-
-  verifyToken: (token: string): JWTPayload | null => {
-    try {
-      return jwt.verify(token, JWT_SECRET, { issuer: 'condoplace' }) as JWTPayload;
-    } catch (error) {
-      console.error('[AUTH] Token verification failed:', error);
-      return null;
+  jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
+    if (err) {
+      console.error("JWT Verification Error:", err.message);
+      return res.status(403).json({ error: "Invalid or expired token" }); // Invalid token
     }
-  },
-
-  getTokenFromHeader: (authHeader: string | undefined): string | null => {
-    if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
-    return authHeader.split(' ')[1];
-  },
+    req.user = user as { userId: string; condoId: string; role: string };
+    next();
+  });
 };
 
-// ATTACH USER TO REQUEST
-// This middleware decodes the token and attaches the payload to req.user
-export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  const token = authService.getTokenFromHeader(req.headers.authorization);
-  if (!token) {
-    return res.status(401).json({ error: 'Token de autenticação não fornecido.' });
-  }
-
-  const payload = authService.verifyToken(token);
-  if (!payload) {
-    return res.status(401).json({ error: 'Token inválido ou expirado.' });
-  }
-
-  // @ts-ignore - Attach user payload to the Express request object
-  req.user = payload;
-  next();
-};
-
-// ROLE-BASED ACCESS CONTROL
-
-// For any admin (condo-specific or global)
-export const adminMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  // @ts-ignore
-  if (req.user?.role !== 'admin') {
-    return res.status(403).json({ error: 'Acesso restrito a administradores.' });
-  }
-  next();
-};
-
-// For GLOBAL admins only (not tied to a condo)
-export const globalAdminMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  // @ts-ignore
-  const user = req.user as JWTPayload;
-  if (user?.role !== 'admin' || user?.condoId) {
-    return res.status(403).json({ error: 'Acesso restrito a administradores globais.' });
-  }
-  next();
-};
-
-// For condo-specific admins only
-export const condoAdminMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  // @ts-ignore
-  const user = req.user as JWTPayload;
-  if (user?.role !== 'admin' || !user?.condoId) {
-    return res.status(403).json({ error: 'Acesso restrito a administradores de condomínio.' });
-  }
-  next();
+// Optional: Middleware to check for admin role
+export const adminOnly = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    if (req.user?.role !== 'admin') {
+        return res.status(403).json({ error: "Access denied: Admins only" });
+    }
+    next();
 };
