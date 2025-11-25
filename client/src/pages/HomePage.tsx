@@ -32,7 +32,7 @@ export default function HomePage() {
   
   const [cartItems, setCartItems] = useState<Array<{ id: string; name: string; price: number; quantity: number; image: string }>>([]);
 
-  // Buscar dados do usuário (incluindo status de verificação de email)
+  // Fetch user data (including email verification status)
   useEffect(() => {
     const selectedCondoId = localStorage.getItem("selectedCondoId");
     if (selectedCondoId) {
@@ -40,9 +40,13 @@ export default function HomePage() {
         .then(res => res.json())
         .then(data => setCondoName(data.name))
         .catch(() => setCondoName("Condomínio"));
+    } else {
+      // If no condo is selected, redirect to the selection page.
+      setLocation("/select-condo");
+      return;
     }
 
-    // Buscar status de verificação de email
+    // Fetch email verification status
     const token = localStorage.getItem("token");
     if (token) {
       fetch("/api/auth/me", {
@@ -54,7 +58,7 @@ export default function HomePage() {
         })
         .catch(() => setEmailVerified(true));
     }
-  }, []);
+  }, [setLocation]);
 
   const banners = [
     {

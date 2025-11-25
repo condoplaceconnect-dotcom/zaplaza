@@ -54,17 +54,9 @@ export const stores = pgTable("stores", {
   phone: varchar("phone", { length: 20 }),
   email: text("email"),
   status: varchar("status", { length: 20 }).notNull().default("active"),
+  condoId: varchar("condo_id").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-// ✅ STORE CONDOMINIUM JUNCTION TABLE (lojas em múltiplos condomínios)
-export const storeCondominiums = pgTable("store_condominiums", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  storeId: varchar("store_id").notNull(),
-  condoId: varchar("condo_id").notNull(),
-  status: varchar("status", { length: 20 }).notNull().default("pending"), // pending, approved, active
-  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // ✅ PRODUCTS TABLE (Produtos das Lojas)
@@ -82,45 +74,6 @@ export const products = pgTable("products", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// ✅ SERVICE PROVIDERS TABLE (Prestadores de Serviço)
-export const serviceProviders = pgTable("service_providers", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull(),
-  name: text("name").notNull(),
-  description: text("description"),
-  image: text("image"),
-  serviceType: varchar("service_type", { length: 50 }).notNull(),
-  phone: varchar("phone", { length: 20 }),
-  email: text("email"),
-  status: varchar("status", { length: 20 }).notNull().default("active"),
-  rating: decimal("rating", { precision: 3, scale: 2 }).default("0"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-// ✅ SERVICE PROVIDER CONDOMINIUM JUNCTION TABLE
-export const serviceProviderCondominiums = pgTable("service_provider_condominiums", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  providerId: varchar("provider_id").notNull(),
-  condoId: varchar("condo_id").notNull(),
-  status: varchar("status", { length: 20 }).notNull().default("pending"),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-// ✅ SERVICES TABLE (Serviços Oferecidos)
-export const services = pgTable("services", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  providerId: varchar("provider_id").notNull(),
-  name: text("name").notNull(),
-  description: text("description"),
-  image: text("image"),
-  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
-  duration: integer("duration"),
-  available: boolean("available").notNull().default(true),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
 // ✅ DELIVERY PERSONS TABLE (Entregadores)
 export const deliveryPersons = pgTable("delivery_persons", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -133,17 +86,9 @@ export const deliveryPersons = pgTable("delivery_persons", {
   status: varchar("status", { length: 20 }).notNull().default("offline"), // online, offline
   rating: decimal("rating", { precision: 3, scale: 2 }).default("0"),
   totalDeliveries: integer("total_deliveries").default(0),
+  condoId: varchar("condo_id").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-// ✅ DELIVERY PERSON CONDOMINIUM JUNCTION TABLE
-export const deliveryPersonCondominiums = pgTable("delivery_person_condominiums", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  deliveryPersonId: varchar("delivery_person_id").notNull(),
-  condoId: varchar("condo_id").notNull(),
-  status: varchar("status", { length: 20 }).notNull().default("active"),
-  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // ✅ ORDERS TABLE (Pedidos)
@@ -162,46 +107,6 @@ export const orders = pgTable("orders", {
   rating: integer("rating"), // 1-5
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-// ✅ APPOINTMENTS TABLE (Agendamentos)
-export const appointments = pgTable("appointments", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  condoId: varchar("condo_id").notNull(),
-  serviceId: varchar("service_id").notNull(),
-  providerId: varchar("provider_id").notNull(),
-  residentId: varchar("resident_id").notNull(),
-  status: varchar("status", { length: 20 }).notNull().default("pending"), // pending, confirmed, completed, cancelled
-  scheduledAt: timestamp("scheduled_at").notNull(),
-  notes: text("notes"),
-  rating: integer("rating"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-// ✅ COMMUNICATIONS TABLE (Comunicados)
-export const communications = pgTable("communications", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  condoId: varchar("condo_id").notNull(),
-  title: text("title").notNull(),
-  content: text("content").notNull(),
-  image: text("image"),
-  status: varchar("status", { length: 20 }).notNull().default("published"),
-  createdBy: varchar("created_by").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-// ✅ RATINGS TABLE (Avaliações)
-export const ratings = pgTable("ratings", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  condoId: varchar("condo_id").notNull(),
-  targetType: varchar("target_type", { length: 20 }).notNull(), // product, store, service, delivery_person
-  targetId: varchar("target_id").notNull(),
-  residentId: varchar("resident_id").notNull(),
-  score: integer("score").notNull(), // 1-5
-  comment: text("comment"),
-  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // ✅ MARKETPLACE ITEMS TABLE (Vendas/Doações/Trocas entre moradores)
@@ -223,24 +128,6 @@ export const marketplaceItems = pgTable("marketplace_items", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// ✅ LOST AND FOUND TABLE (Achados & Perdidos)
-export const lostAndFound = pgTable("lost_and_found", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  condoId: varchar("condo_id").notNull(),
-  userId: varchar("user_id").notNull(), // quem achou/perdeu
-  type: varchar("type", { length: 20 }).notNull(), // lost, found
-  title: text("title").notNull(),
-  description: text("description").notNull(),
-  images: jsonb("images").default([]), // array de URLs
-  category: varchar("category", { length: 50 }), // chaves, documentos, pets, eletrônicos, etc
-  locationFound: text("location_found"), // onde foi encontrado (bloco, área comum, etc)
-  block: varchar("block", { length: 20 }),
-  contactInfo: text("contact_info"), // como contatar
-  status: varchar("status", { length: 20 }).notNull().default("active"), // active, resolved, expired
-  resolvedAt: timestamp("resolved_at"),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
 // ✅ REPORTS TABLE (Denúncias)
 export const reports = pgTable("reports", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -259,6 +146,11 @@ export const reports = pgTable("reports", {
 });
 
 // ✅ ZOD SCHEMAS
+export const loginUserSchema = z.object({
+  username: z.string().min(1, "Username é obrigatório"),
+  password: z.string().min(1, "Senha é obrigatória"),
+});
+
 export const insertUserSchema = createInsertSchema(users)
   .pick({
     username: true,
@@ -280,29 +172,32 @@ export const insertUserSchema = createInsertSchema(users)
     verificationTokenExpiry: true,
   })
   .extend({
-    // Validação customizada para data de nascimento
+    email: z.string().email({ message: "Formato de e-mail inválido." }).min(1, { message: "E-mail é obrigatório." }),
+    phone: z.string().min(10, { message: "Telefone deve ter no mínimo 10 dígitos." }).max(20, { message: "Telefone muito longo." }),
     birthDate: z.string()
       .regex(/^\d{4}-\d{2}-\d{2}$/, "Data deve estar no formato YYYY-MM-DD")
+      .refine((date) => !isNaN(new Date(date).getTime()), "Data de nascimento inválida")
+      .refine((date) => new Date(date) <= new Date(), "Data de nascimento não pode ser no futuro")
       .refine((date) => {
-        const dateObj = new Date(date);
-        return !isNaN(dateObj.getTime());
-      }, "Data de nascimento inválida")
-      .refine((date) => {
-        const dateObj = new Date(date);
-        const today = new Date();
-        return dateObj <= today;
-      }, "Data de nascimento não pode ser no futuro")
-      .refine((date) => {
-        const dateObj = new Date(date);
-        const today = new Date();
-        const age = today.getFullYear() - dateObj.getFullYear();
+        const age = new Date().getFullYear() - new Date(date).getFullYear();
         return age >= 0 && age <= 120;
       }, "Idade deve estar entre 0 e 120 anos"),
-    
-    // Validação para bloco e unidade
     block: z.string().min(1, "Bloco é obrigatório").max(20, "Bloco muito longo"),
     unit: z.string().min(1, "Unidade/Apartamento é obrigatório").max(10, "Unidade muito longa"),
   });
+
+export const updateUserSchema = z.object({
+  name: z.string().min(1, "Nome é obrigatório").optional(),
+  email: z.string().email("Formato de e-mail inválido").optional(),
+  phone: z.string().min(10, "Telefone deve ter no mínimo 10 dígitos").optional(),
+  status: z.enum(["active", "blocked_until_18"]).optional(),
+  role: z.enum(["resident", "vendor", "service_provider", "delivery_person", "staff", "admin"]).optional(),
+});
+
+export const updateReportSchema = z.object({
+  status: z.enum(["pending", "under_review", "resolved", "dismissed"]),
+  adminNotes: z.string().optional().nullable(),
+});
 
 // Schema base gerado pelo Drizzle
 const baseInsertMarketplaceItemSchema = createInsertSchema(marketplaceItems).omit({
@@ -323,7 +218,6 @@ export const insertMarketplaceItemSchema = baseInsertMarketplaceItemSchema
   })
   .refine(
     (data) => {
-      // Se for venda, preço é obrigatório
       if (data.type === "sale") {
         return !!data.price && parseFloat(data.price) > 0;
       }
@@ -347,7 +241,6 @@ export const updateMarketplaceItemSchema = z
   })
   .refine(
     (data) => {
-      // Se houver preço, deve ser válido
       if (data.price !== undefined && data.price !== null) {
         const numPrice = parseFloat(data.price);
         return !isNaN(numPrice) && numPrice >= 0;
@@ -359,16 +252,6 @@ export const updateMarketplaceItemSchema = z
       path: ["price"],
     }
   );
-
-export const insertLostAndFoundSchema = createInsertSchema(lostAndFound).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertReportSchema = createInsertSchema(reports).omit({
-  id: true,
-  createdAt: true,
-});
 
 export const insertCondoSchema = createInsertSchema(condominiums).omit({
   id: true,
@@ -387,18 +270,6 @@ export const insertProductSchema = createInsertSchema(products).omit({
   updatedAt: true,
 });
 
-export const insertServiceProviderSchema = createInsertSchema(serviceProviders).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const insertServiceSchema = createInsertSchema(services).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
 export const insertDeliveryPersonSchema = createInsertSchema(deliveryPersons).omit({
   id: true,
   createdAt: true,
@@ -411,10 +282,14 @@ export const insertOrderSchema = createInsertSchema(orders).omit({
   updatedAt: true,
 });
 
-export const insertAppointmentSchema = createInsertSchema(appointments).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
+export const insertReportSchema = createInsertSchema(reports).pick({
+  condoId: true,
+  reporterId: true,
+  targetType: true,
+  targetId: true,
+  reason: true,
+  description: true,
+  evidence: true,
 });
 
 // ✅ TYPES
@@ -430,26 +305,14 @@ export type InsertStore = z.infer<typeof insertStoreSchema>;
 export type Product = typeof products.$inferSelect;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 
-export type ServiceProvider = typeof serviceProviders.$inferSelect;
-export type InsertServiceProvider = z.infer<typeof insertServiceProviderSchema>;
-
-export type Service = typeof services.$inferSelect;
-export type InsertService = z.infer<typeof insertServiceSchema>;
-
 export type DeliveryPerson = typeof deliveryPersons.$inferSelect;
 export type InsertDeliveryPerson = z.infer<typeof insertDeliveryPersonSchema>;
 
 export type Order = typeof orders.$inferSelect;
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
 
-export type Appointment = typeof appointments.$inferSelect;
-export type InsertAppointment = z.infer<typeof insertAppointmentSchema>;
-
 export type MarketplaceItem = typeof marketplaceItems.$inferSelect;
 export type InsertMarketplaceItem = z.infer<typeof insertMarketplaceItemSchema>;
-
-export type LostAndFoundItem = typeof lostAndFound.$inferSelect;
-export type InsertLostAndFoundItem = z.infer<typeof insertLostAndFoundSchema>;
 
 export type Report = typeof reports.$inferSelect;
 export type InsertReport = z.infer<typeof insertReportSchema>;

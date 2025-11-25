@@ -1,177 +1,79 @@
-# 🚀 COMO USAR O CONDOMÍNIOMARKET
+# 🚀 COMO USAR O ZÁPLAZA
 
 ## ✅ Seu aplicativo está **100% RODANDO** agora!
 
 ### 🌐 Abrir o Aplicativo
-1. **Clique no botão "Open" ou "Preview" no Replit**
-2. Ou abra manualmente: **http://localhost:5000**
-
----
-
-## 📱 O QUE VOCÊ VÊ
-
-### Homepage
-- ✅ Catálogo de produtos do condomínio
-- ✅ Lojas e seus produtos
-- ✅ Carrinho de compras
-- ✅ Menu inferior com navegação
-
----
-
-## 🛒 COMO FAZER UMA COMPRA
-
-### Passo 1: Escolher Produto
-1. Clique em qualquer produto
-2. Veja os detalhes
-3. Clique em "Adicionar ao Carrinho"
-
-### Passo 2: Ir para Checkout
-1. Clique no ícone de carrinho (canto inferior direito)
-2. Veja os itens do seu carrinho
-3. Clique em "Proceder para Pagamento"
-
-### Passo 3: Pagar
-1. Escolha o método:
-   - **Cartão de Crédito** (Stripe)
-   - **PIX** (com QR Code)
-2. Preencha os dados
-3. Clique em "Finalizar Pagamento"
-
----
-
-## 👤 COMO SE REGISTRAR
-
-### Para Cliente
-1. Clique em "Registrar" (home)
-2. Escolha: "Cliente"
-3. Preencha:
-   - Usuário
-   - Senha
-   - Condomínio (escolha um)
-   - Apartamento
-4. Clique em "Registrar"
-
-### Para Vendedor
-1. Clique em "Registrar"
-2. Escolha: "Vendedor"
-3. Preencha:
-   - Nome da loja
-   - Tipo (escolha uma categoria)
-   - Senha
-   - Condomínio
-4. Clique em "Registrar"
-
-### Para Entregador
-1. Clique em "Registrar"
-2. Escolha: "Entregador"
-3. Preencha dados
-4. Aguarde aprovação
-
----
-
-## 📊 ACESSAR ADMIN (Pagamentos)
-
-1. Abra: **http://localhost:5000/admin/payments**
-2. Veja:
-   - ✅ Total de pagamentos
-   - ✅ Transações completadas
-   - ✅ Histórico
-   - ✅ 100% repassado aos vendedores
-
----
-
-## 🔐 FAZER LOGIN
-
-1. Na homepage, clique "Login"
-2. Digite:
-   - **Usuário**: seu_usuario
-   - **Senha**: sua_senha
-3. Clique em "Entrar"
-4. ✅ Você estará autenticado
-
----
-
-## 🧭 NAVEGAÇÃO
-
-### Menu Inferior (Todos os Ícones)
-- 🏠 **Home** → Catálogo de produtos
-- 🛍️ **Serviços** → Profissionais e serviços
-- 📦 **Pedidos** → Seus pedidos
-- 📅 **Agendamentos** → Seus agendamentos
-- 👤 **Perfil** → Dados do seu perfil
-- ⚙️ **Configurações** → Preferências
-
----
-
-## 🧪 TESTE RÁPIDO (2 minutos)
-
-1. **Abra o app**: http://localhost:5000
-2. **Clique em um produto** (ex: "Brigadeiro Gourmet")
-3. **Adicione ao carrinho**
-4. **Vá para checkout**
-5. **Veja os 2 métodos de pagamento**
-6. **Teste o PIX** (veja o QR Code)
+1. **Clique no botão "Open" ou "Preview" na IDE**
+2. A aplicação irá carregar e você verá a tela para selecionar o condomínio.
 
 ---
 
 ## 💡 DADOS DE TESTE
 
-### Condomínios Disponíveis
-- Residencial Jardim das Flores
-- Condomínio Vila Verde
-- Edifício Solar do Parque
+### Contas de Teste
+| Papel | Usuário | Senha |
+|---|---|---|
+| Admin | `admin` | `admin123` |
+| Vendedor | `vendedor` | `vendor123` |
+| Cliente | `cliente` | `cliente123` |
+| Prestador | `prestador` | `servico123` |
 
-### Lojas (Vendedores)
-- 🍰 Doces da Maria
-- 💇 Studio da Beleza
-- 🥐 Lanchonete do Seu José
+### Condomínio Disponível
+- **Nome:** Acqua Sena (Canoas/RS)
 
-### Produtos Disponíveis
-- Brigadeiro Gourmet - R$ 3,50
-- Pão de Queijo - R$ 2,00
-- Coxinha - R$ 4,00
+### Loja de Exemplo
+- **Nome:** Loja do João - Lanches & Bebidas
+
+### Produtos de Exemplo
+- X-Burger Completo - R$ 25,90
+- Coca-Cola 2L - R$ 10,00
+- Pizza Margherita - R$ 45,00
+
+---
+
+## 🧪 TESTE RÁPIDO (2 minutos)
+
+1. **Selecione o condomínio "Acqua Sena"** na tela inicial.
+2. **Crie uma conta** ou use a conta de cliente de teste (`cliente` / `cliente123`).
+3. **Navegue pelos produtos** da "Loja do João".
+4. **Adicione um item** ao carrinho.
+5. **Vá para o checkout** e veja o fluxo de pagamento simulado.
+
+---
+
+## 👤 COMO SE REGISTRAR
+
+1. Na tela inicial, selecione o condomínio **Acqua Sena**.
+2. Clique em **"Criar Conta"**.
+3. Preencha seus dados para se registrar como morador, vendedor ou outro perfil.
+
+---
+
+## 🧭 NAVEGAÇÃO
+
+### Menu Inferior (Ícones Principais)
+- 🏠 **Início** → Catálogo de produtos e lojas
+- 🛍️ **Serviços** → Profissionais e serviços (Em breve)
+- 📦 **Pedidos** → Histórico de seus pedidos
+- 👤 **Perfil** → Seus dados e configurações
 
 ---
 
 ## 🎨 TEMA (Escuro/Claro)
 
-- Clique no ícone de **sol/lua** (canto superior direito)
-- O tema vai mudar automaticamente
-
----
-
-## 📱 TESTAR NO CELULAR
-
-1. Pegue seu celular
-2. Abra: **http://seu-ip-do-replit:5000**
-3. (Pergunta para o Replit qual é o IP)
-4. Teste toda a navegação mobile
+- Clique no ícone de **sol/lua** no canto superior direito para alternar entre os temas.
 
 ---
 
 ## ⚠️ SE ALGO NÃO FUNCIONAR
 
-### Página em branco?
-- Clique **F5** para recarregar
-- Limpe o cache: **Ctrl+Shift+Delete**
-
-### Erro de conexão?
-- Verifique se o servidor está rodando (porta 5000)
-- Tente: http://localhost:5000
+### Página em branco ou não carrega?
+- Verifique se o servidor está rodando na IDE.
+- Clique **F5** para recarregar a página.
 
 ### Erro de autenticação?
-- Use dados corretos no login
-- Ou registre um novo usuário
-
----
-
-## 🚀 PRÓXIMAS IMPLEMENTAÇÕES (Futuro)
-
-- [ ] Conectar banco de dados real
-- [ ] Integrar Stripe com credenciais reais
-- [ ] Sistema de chat entre usuários
-- [ ] Rastreamento em tempo real
-- [ ] Notificações por email
+- Use as contas de teste fornecidas acima.
+- Certifique-se de ter selecionado o condomínio antes de fazer login ou se registrar.
 
 ---
 
@@ -179,10 +81,8 @@
 
 ✅ **Seu app está pronto e funcional!**
 
-- Abra: **http://localhost:5000**
-- Teste: **Qualquer funcionalidade**
-- Registre: **Um novo usuário**
-- Compre: **Um produto**
-- Veja: **Admin Payments**
+- Teste os diferentes perfis de usuário.
+- Explore a loja e os produtos de exemplo.
+- Simule uma compra.
 
 **Tudo deve funcionar perfeitamente!** 🎉

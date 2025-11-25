@@ -37,10 +37,11 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "http://localhost:*"],
+      connectSrc: ["'self'", "http://localhost:*", "ws://*", "wss://*"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       objectSrc: ["'none'"],
-      upgradeInsecureRequests: []
+      upgradeInsecureRequests: [],
+      frameAncestors: ["'self'", "*.replit.dev", "*.repl.co", "*.cloudworkstations.dev"]
     }
   },
   hsts: {
@@ -48,7 +49,6 @@ app.use(helmet({
     includeSubDomains: true,
     preload: true
   },
-  frameguard: { action: 'deny' },
   noSniff: true,
   xssFilter: true
 }));

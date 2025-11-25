@@ -1,161 +1,171 @@
 import type { Express, Request, Response } from "express";
 import { storage } from "./storage";
-import { adminMiddleware } from "./auth";
-import { queryClient } from "@/lib/queryClient";
+import { authMiddleware, adminMiddleware, globalAdminMiddleware, condoAdminMiddleware } from "./auth";
+import { updateUserSchema, updateReportSchema } from "@shared/schema";
+import type { JWTPayload } from "./auth";
 
 export function registerAdminRoutes(app: Express) {
-  // ✅ Admin - List All Users (flattened array for residents table)
-  app.get("/api/admin/usuarios", adminMiddleware, async (req: Request, res: Response) => {
+  app.use("/api/admin", authMiddleware);
+
+  // ROTAS DE SUPER ADMIN (ADMINS GLOBAIS)
+  app.get("/api/admin/condominiums/pending", globalAdminMiddleware, async (req: Request, res: Response) => {
     try {
-      const residentUsers = await storage.listUsersByRole("resident");
-      const vendorUsers = await storage.listUsersByRole("vendor");
-      const serviceProviders = await storage.listUsersByRole("service_provider");
-      const deliveryPersons = await storage.listUsersByRole("delivery_person");
-
-      // Flatten into single array for frontend
-      const allUsers = [
-        ...residentUsers,
-        ...vendorUsers,
-        ...serviceProviders,
-        ...deliveryPersons
-      ];
-
-      res.json(allUsers);
+      const pendingCondos = await storage.listPendingCondominiums();
+      res.json(pendingCondos);
     } catch (error) {
-      console.error("[ADMIN USERS LIST ERROR]", error);
+      res.status(500).json({ error: "Erro ao listar condomínios pendentes" });
+    }
+  });
+
+  app.patch("/api/admin/condominiums/:id/status", globalAdminMiddleware, async (req: Request, res: Response) => {
+    try {
+      const { status } = req.body;
+      const updated = await storage.updateCondominium(req.params.id, { status });
+      res.json(updated);
+    } catch (error) {
+      res.status(500).json({ error: "Erro ao atualizar status do condomínio" });
+    }
+  });
+
+  // ROTAS DE GERENCIAMENTO DE USUÁRIOS (TODOS OS ADMINS)
+  app.get("/api/admin/users", adminMiddleware, async (req: Request, res: Response) => {
+    try {
+      const users = await storage.listUsers();
+      res.json(users);
+    } catch (error) {
       res.status(500).json({ error: "Erro ao listar usuários" });
     }
   });
 
-  // ✅ Admin Get Condominiums Data
-  app.get("/api/admin/condominio/:condoId", adminMiddleware, async (req: Request, res: Response) => {
+  app.get("/api/admin/users/:id", adminMiddleware, async (req: Request, res: Response) => {
     try {
-      const condo = await storage.getCondominium(req.params.condoId);
-      if (!condo) return res.status(404).json({ error: "Condomínio não encontrado" });
-
-      res.json(condo);
+      const user = await storage.getUser(req.params.id);
+      res.json(user);
     } catch (error) {
-      console.error("[ADMIN CONDO GET ERROR]", error);
-      res.status(500).json({ error: "Erro ao obter condomínio" });
+      res.status(500).json({ error: "Erro ao obter detalhes do usuário" });
     }
   });
 
-  // ✅ Admin Update Condominium
-  app.patch("/api/admin/condominio/:condoId", adminMiddleware, async (req: Request, res: Response) => {
+  app.patch("/api/admin/users/:id", adminMiddleware, async (req: Request, res: Response) => {
     try {
-      const updated = await storage.updateCondominium(req.params.condoId, req.body);
-      if (!updated) return res.status(404).json({ error: "Condomínio não encontrado" });
-
-      res.json(updated);
+      const validation = updateUserSchema.partial().safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ error: validation.error.flatten() });
+      }
+      const updatedUser = await storage.updateUser(req.params.id, validation.data);
+      res.json(updatedUser);
     } catch (error) {
-      console.error("[ADMIN CONDO UPDATE ERROR]", error);
-      res.status(500).json({ error: "Erro ao atualizar condomínio" });
+      res.status(500).json({ error: "Erro ao atualizar usuário" });
     }
   });
 
-  // ✅ Admin Get Residents
-  app.get("/api/admin/moradores/:condoId", adminMiddleware, async (req: Request, res: Response) => {
+  app.delete("/api/admin/users/:id", adminMiddleware, async (req: Request, res: Response) => {
     try {
-      const residents = await storage.listUsersByRole("resident");
-      const filtered = residents.filter((r) => r.condoId === req.params.condoId);
-
-      res.json(filtered);
+      await storage.deleteUser(req.params.id);
+      res.status(204).send();
     } catch (error) {
-      console.error("[ADMIN RESIDENTS ERROR]", error);
+      res.status(500).json({ error: "Erro ao excluir usuário" });
+    }
+  });
+
+  // ROTAS DE ADMIN DE CONDOMÍNIO
+  app.get("/api/admin/my-condo/reports", condoAdminMiddleware, async (req: Request, res: Response) => {
+    try {
+      const user = req.user as JWTPayload;
+      const reports = await storage.listReportsByCondo(user.condoId as string);
+      res.json(reports);
+    } catch (error) {
+      res.status(500).json({ error: "Erro ao listar denúncias" });
+    }
+  });
+
+  app.get("/api/admin/reports/:id", condoAdminMiddleware, async (req: Request, res: Response) => {
+    try {
+      const user = req.user as JWTPayload;
+      const report = await storage.getReport(req.params.id);
+      if (!report || report.condoId !== user.condoId) {
+        return res.status(404).json({ error: "Denúncia não encontrada ou não pertence a este condomínio" });
+      }
+      res.json(report);
+    } catch (error) {
+      res.status(500).json({ error: "Erro ao obter denúncia" });
+    }
+  });
+
+  app.patch("/api/admin/reports/:id", condoAdminMiddleware, async (req: Request, res: Response) => {
+    try {
+      const user = req.user as JWTPayload;
+      const report = await storage.getReport(req.params.id);
+      if (!report || report.condoId !== user.condoId) {
+        return res.status(404).json({ error: "Denúncia não encontrada ou não pertence a este condomínio" });
+      }
+      const validation = updateReportSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ error: validation.error.flatten() });
+      }
+      const updatedData = { ...validation.data, resolvedBy: user.userId, resolvedAt: new Date() };
+      const updatedReport = await storage.updateReport(req.params.id, updatedData);
+      res.json(updatedReport);
+    } catch (error) {
+      res.status(500).json({ error: "Erro ao atualizar denúncia" });
+    }
+  });
+
+  app.get("/api/admin/my-condo/residents", condoAdminMiddleware, async (req: Request, res: Response) => {
+    try {
+      const user = req.user as JWTPayload;
+      const residents = await storage.listUsersByCondo(user.condoId as string);
+      res.json(residents);
+    } catch (error) {
       res.status(500).json({ error: "Erro ao listar moradores" });
     }
   });
 
-  // ✅ Admin Delete Resident
-  app.delete("/api/admin/moradores/:id", adminMiddleware, async (req: Request, res: Response) => {
+  app.delete("/api/admin/my-condo/residents/:residentId", condoAdminMiddleware, async (req: Request, res: Response) => {
     try {
-      await storage.updateUser(req.params.id, { condoId: null });
-      res.json({ success: true });
+      await storage.deleteUser(req.params.residentId);
+      res.status(204).send();
     } catch (error) {
-      console.error("[ADMIN DELETE RESIDENT ERROR]", error);
       res.status(500).json({ error: "Erro ao remover morador" });
     }
   });
 
-  // ✅ Admin Get Stores
-  app.get("/api/admin/lojas/:condoId", adminMiddleware, async (req: Request, res: Response) => {
+  app.get("/api/admin/my-condo/stores", condoAdminMiddleware, async (req: Request, res: Response) => {
     try {
-      const stores = await storage.getStoresByCondo(req.params.condoId);
+      const user = req.user as JWTPayload;
+      const stores = await storage.getStoresByCondo(user.condoId as string);
       res.json(stores);
     } catch (error) {
-      console.error("[ADMIN STORES ERROR]", error);
       res.status(500).json({ error: "Erro ao listar lojas" });
     }
   });
 
-  // ✅ Admin Update Store Status
-  app.patch("/api/admin/lojas/:id", adminMiddleware, async (req: Request, res: Response) => {
+  app.delete("/api/admin/my-condo/stores/:storeId", condoAdminMiddleware, async (req: Request, res: Response) => {
     try {
-      const { status } = req.body;
-      if (!["active", "pending", "blocked"].includes(status)) {
-        return res.status(400).json({ error: "Status inválido" });
-      }
-
-      const updated = await storage.updateStore(req.params.id, { status });
-      res.json(updated);
+      // Futuramente, pode ser necessário deletar produtos associados
+      await storage.deleteStore(req.params.storeId);
+      res.status(204).send();
     } catch (error) {
-      console.error("[ADMIN STORE UPDATE ERROR]", error);
-      res.status(500).json({ error: "Erro ao atualizar loja" });
+      res.status(500).json({ error: "Erro ao remover loja" });
     }
   });
 
-  // ✅ Admin Delete Store
-  app.delete("/api/admin/lojas/:id", adminMiddleware, async (req: Request, res: Response) => {
+    app.get("/api/admin/my-condo/products", condoAdminMiddleware, async (req: Request, res: Response) => {
     try {
-      // TODO: Delete all products associated with store
-      res.json({ success: true });
+      const user = req.user as JWTPayload;
+      const products = await storage.getProductsByCondo(user.condoId as string);
+      res.json(products);
     } catch (error) {
-      console.error("[ADMIN DELETE STORE ERROR]", error);
-      res.status(500).json({ error: "Erro ao deletar loja" });
+      res.status(500).json({ error: "Erro ao listar produtos" });
     }
   });
 
-  // ✅ Admin Get Delivery Persons
-  app.get("/api/admin/entregadores/:condoId", adminMiddleware, async (req: Request, res: Response) => {
+  app.delete("/api/admin/my-condo/products/:productId", condoAdminMiddleware, async (req: Request, res: Response) => {
     try {
-      const persons = await storage.getDeliveryPersonsByCondo(req.params.condoId);
-      res.json(persons);
+      await storage.deleteProduct(req.params.productId);
+      res.status(204).send();
     } catch (error) {
-      console.error("[ADMIN DELIVERY PERSONS ERROR]", error);
-      res.status(500).json({ error: "Erro ao listar entregadores" });
-    }
-  });
-
-  // ✅ Admin Get Service Providers
-  app.get("/api/admin/prestadores/:condoId", adminMiddleware, async (req: Request, res: Response) => {
-    try {
-      // TODO: Get service providers by condo with junction table
-      res.json([]);
-    } catch (error) {
-      console.error("[ADMIN SERVICE PROVIDERS ERROR]", error);
-      res.status(500).json({ error: "Erro ao listar prestadores" });
-    }
-  });
-
-  // ✅ Admin Get Communications
-  app.get("/api/admin/comunicados/:condoId", adminMiddleware, async (req: Request, res: Response) => {
-    try {
-      // TODO: Get communications by condo
-      res.json([]);
-    } catch (error) {
-      console.error("[ADMIN COMMUNICATIONS ERROR]", error);
-      res.status(500).json({ error: "Erro ao listar comunicados" });
-    }
-  });
-
-  // ✅ Admin Create Communication
-  app.post("/api/admin/comunicados/:condoId", adminMiddleware, async (req: Request, res: Response) => {
-    try {
-      // TODO: Create communication
-      res.status(201).json({ success: true });
-    } catch (error) {
-      console.error("[ADMIN CREATE COMMUNICATION ERROR]", error);
-      res.status(500).json({ error: "Erro ao criar comunicado" });
+      res.status(500).json({ error: "Erro ao remover produto" });
     }
   });
 }

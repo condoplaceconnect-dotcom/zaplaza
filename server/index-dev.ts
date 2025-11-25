@@ -1,3 +1,4 @@
+import "dotenv/config";
 import fs from "node:fs";
 import path from "node:path";
 import { type Server } from "node:http";
@@ -8,6 +9,12 @@ import { createServer as createViteServer, createLogger } from "vite";
 
 import viteConfig from "../vite.config";
 import runApp from "./app";
+
+// Set the port from the command line arguments
+const portArgIndex = process.argv.indexOf('--port');
+if (portArgIndex !== -1 && process.argv[portArgIndex + 1]) {
+  process.env.PORT = process.argv[portArgIndex + 1];
+}
 
 export async function setupVite(app: Express, server: Server) {
   const viteLogger = createLogger();

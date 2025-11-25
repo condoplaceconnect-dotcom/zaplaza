@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,28 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("verified") === "true") {
+      toast({
+        title: "E-mail Verificado!",
+        description: "Seu e-mail foi verificado com sucesso. Agora você pode fazer login.",
+        variant: "success",
+      });
+    }
+    const verificationError = params.get("error");
+    if (verificationError) {
+      toast({
+        title: "Erro de Verificação",
+        description: verificationError || "Não foi possível verificar seu e-mail.",
+        variant: "destructive",
+      });
+    }
+    if (params.has("verified") || params.has("error")) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [toast]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +56,6 @@ export default function LoginPage() {
         throw new Error(data.error || "Erro ao fazer login");
       }
 
-      // Salvar token e dados do usuário
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
@@ -43,8 +64,9 @@ export default function LoginPage() {
         description: "Bem-vindo de volta!",
       });
 
-      // Redirecionar para home
-      window.location.href = "/";
+      // Navigate to home using wouter for SPA navigation
+      setLocation("/home");
+
     } catch (err: any) {
       setError(err.message);
       toast({
@@ -60,13 +82,11 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6">
-        {/* Header */}
         <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold text-primary">CondoPlace</h1>
+          <h1 className="text-4xl font-bold text-primary">Zaplaza</h1>
           <p className="text-muted-foreground">Entre com sua conta</p>
         </div>
 
-        {/* Login Form */}
         <Card className="p-6">
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
@@ -128,7 +148,6 @@ export default function LoginPage() {
           </div>
         </Card>
 
-        {/* Back Button */}
         <Button
           variant="ghost"
           onClick={() => setLocation("/")}

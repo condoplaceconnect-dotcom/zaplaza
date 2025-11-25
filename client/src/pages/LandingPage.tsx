@@ -1,16 +1,49 @@
+import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Plus, LogIn } from "lucide-react";
 
+interface User {
+  condoId?: string;
+  // add other user properties here if needed
+}
+
 export default function LandingPage() {
   const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        try {
+          const user: User = JSON.parse(userStr);
+          if (user.condoId) {
+            localStorage.setItem("selectedCondoId", user.condoId);
+            setLocation("/home");
+          } else {
+            // If the user has no associated condo, let them select one.
+            setLocation("/select-condo");
+          }
+        } catch (error) {
+          console.error("Failed to parse user data from localStorage", error);
+          // If user data is corrupted, force re-login
+          setLocation("/login");
+        }
+      } else {
+        // If there's a token but no user data, the state is inconsistent.
+        // Force re-login to fix it.
+        setLocation("/login");
+      }
+    }
+  }, [setLocation]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       {/* Logo & Title */}
       <div className="text-center mb-12 space-y-4">
         <div className="text-5xl font-bold text-primary">
-          CondoPlace
+          Zaplaza
         </div>
         <p className="text-lg text-muted-foreground max-w-md">
           Conectando moradores, lojas e serviços dentro do seu condomínio.

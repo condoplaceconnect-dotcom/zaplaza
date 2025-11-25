@@ -3,9 +3,7 @@ import CondoSelector from '../CondoSelector';
 
 export default function CondoSelectorExample() {
   const condos = [
-    { id: '1', name: 'Residencial Jardim das Flores' },
-    { id: '2', name: 'Condomínio Vila Verde' },
-    { id: '3', name: 'Edifício Solar do Parque' }
+    { id: 'condo-acqua-sena', name: 'Acqua Sena' },
   ];
 
   const [selected, setSelected] = useState(condos[0]);

@@ -31,7 +31,7 @@ export default function AdminLoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch("/api/auth/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -44,17 +44,12 @@ export default function AdminLoginPage() {
 
       const { token, user } = await response.json();
 
-      if (user.role !== "admin") {
-        setError("Acesso restrito a administradores");
-        return;
-      }
-
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
       
       toast({
         title: "Sucesso",
-        description: "Login realizado com sucesso",
+        description: "Login de administrador realizado com sucesso",
       });
 
       // Recarregar página para atualizar estado de login

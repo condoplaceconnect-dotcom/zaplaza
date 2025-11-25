@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,9 +26,23 @@ export default function UserRegistrationPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [userType, setUserType] = useState<UserType>('resident');
-  
-  const selectedCondoId = localStorage.getItem("selectedCondoId");
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [selectedCondoId, setSelectedCondoId] = useState<string | null>(null);
 
+  useEffect(() => {
+    const condoId = localStorage.getItem("selectedCondoId");
+    if (!condoId) {
+      toast({ 
+        title: "Erro", 
+        description: "Nenhum condomínio selecionado. Por favor, volte e selecione um.", 
+        variant: "destructive" 
+      });
+      setLocation("/select-condo");
+    } else {
+      setSelectedCondoId(condoId);
+    }
+  }, [toast, setLocation]);
+  
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -50,6 +64,11 @@ export default function UserRegistrationPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!selectedCondoId) {
+        toast({ title: "Erro", description: "ID do condomínio não encontrado. Por favor, selecione um condomínio.", variant: "destructive" });
+        return;
+    }
     
     // Validações obrigatórias
     if (!formData.name || !formData.email || !formData.phone || !formData.username || !formData.password || !formData.birthDate || !formData.block || !formData.unit) {
@@ -57,14 +76,12 @@ export default function UserRegistrationPage() {
       return;
     }
 
-    // Validação de email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       toast({ title: "Erro", description: "Email inválido", variant: "destructive" });
       return;
     }
 
-    // Validação de telefone (mínimo 10 dígitos)
     const phoneDigits = formData.phone.replace(/\D/g, '');
     if (phoneDigits.length < 10) {
       toast({ title: "Erro", description: "Telefone deve ter no mínimo 10 dígitos", variant: "destructive" });
@@ -89,21 +106,13 @@ export default function UserRegistrationPage() {
     setIsLoading(true);
 
     try {
-      // 1. Registrar usuário
       const registerRes = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          username: formData.username,
-          password: formData.password,
-          birthDate: formData.birthDate,
-          block: formData.block,
-          unit: formData.unit,
+          ...formData,
+          condoId: selectedCondoId, // Include condoId in the request
           role: userType,
-          condoId: selectedCondoId,
         }),
       });
 
@@ -112,61 +121,33 @@ export default function UserRegistrationPage() {
         throw new Error(err.error || "Erro ao registrar");
       }
 
-      const { token, user } = await registerRes.json();
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify({ 
-        id: user.id, 
-        username: user.username, 
-        role: user.role,
-        status: user.status || "approved" 
-      }));
-
-      // 2. Se vendor, criar loja
-      if (userType === 'vendor') {
-        const storeRes = await fetch("/api/stores", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            name: formData.storeName,
-            category: formData.storeCategory || formData.serviceType,
-            userId: user.id,
-            condoId: selectedCondoId,
-          }),
-        });
-
-        if (!storeRes.ok) {
-          console.error("Erro ao criar loja");
-        }
-      }
+      const { message } = await registerRes.json();
 
       toast({ 
-        title: "Conta criada com sucesso!", 
-        description: "Você já pode acessar o aplicativo!" 
+        title: "Cadastro enviado!", 
+        description: message
       });
       
-      // Redirecionar para página inicial
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 1500);
+      setRegistrationSuccess(true);
 
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Erro desconhecido";
-      toast({ title: "Erro", description: msg, variant: "destructive" });
+      toast({ title: "Erro no Cadastro", description: msg, variant: "destructive" });
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (!selectedCondoId) {
+  if (registrationSuccess) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="p-8 max-w-md w-full">
-          <p className="text-center mb-4">Selecione um condomínio primeiro</p>
-          <Button className="w-full" onClick={() => setLocation("/")} data-testid="button-select-condo">
-            Voltar para Seleção
+        <Card className="p-8 max-w-md w-full text-center">
+          <h1 className="text-2xl font-bold mb-4">Verifique seu E-mail</h1>
+          <p className="text-muted-foreground mb-6">
+            Enviamos um link de verificação para o seu e-mail. Por favor, clique no link para ativar sua conta e poder fazer o login.
+          </p>
+          <Button className="w-full" onClick={() => setLocation("/login")} data-testid="button-go-to-login">
+            Ir para o Login
           </Button>
         </Card>
       </div>
@@ -177,7 +158,7 @@ export default function UserRegistrationPage() {
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 bg-card border-b">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={() => setLocation("/")} data-testid="button-back">
+          <Button variant="ghost" size="icon" onClick={() => setLocation("/select-condo")} data-testid="button-back">
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <h1 className="text-xl font-bold">Criar Conta</h1>

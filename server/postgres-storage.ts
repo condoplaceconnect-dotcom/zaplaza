@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import * as schema from "@shared/schema";
 import type {
   User,
@@ -16,175 +16,20 @@ import type {
   InsertOrder,
   MarketplaceItem,
   InsertMarketplaceItem,
-  LostAndFoundItem,
-  InsertLostAndFoundItem,
   Report,
   InsertReport,
 } from "@shared/schema";
 import type { IStorage } from "./storage";
-import * as bcrypt from "bcrypt";
 
 export class PostgresStorage implements IStorage {
-  constructor() {
-    this.initializeTestData();
-  }
-
-  private async initializeTestData() {
-    try {
-      // Verificar se já existe o admin
-      const existingAdmin = await db.query.users.findFirst({
-        where: eq(schema.users.username, "admin"),
-      });
-
-      if (existingAdmin) {
-        console.log("✅ Dados de teste já existem");
-        return;
-      }
-
-      console.log("🌱 Criando dados de teste...");
-
-      // ✅ Criar condomínio oficial: Acqua Sena
-      const [acquaSena] = await db
-        .insert(schema.condominiums)
-        .values({
-          id: "condo-acqua-sena",
-          name: "Acqua Sena",
-          address: "Rua Cairu 1755, Bairro Fatima",
-          city: "Canoas",
-          state: "RS",
-          zipCode: "92200664",
-          units: 460,
-          description: "Condomínio residencial Acqua Sena",
-          status: "approved",
-        })
-        .returning();
-
-      // ✅ Criar usuário ADMIN
-      const adminPassword = await bcrypt.hash("admin123", 10);
-      await db.insert(schema.users).values({
-        id: "admin-001",
-        username: "admin",
-        password: adminPassword,
-        name: "Administrador",
-        email: "admin@condoplace.com",
-        phone: "+55 51 99999-9999",
-        birthDate: "1990-01-01",
-        block: "A",
-        unit: "101",
-        accountType: "adult",
-        role: "admin",
-        status: "active",
-        condoId: acquaSena.id,
-      });
-
-      // ✅ Criar usuário VENDEDOR
-      const vendorPassword = await bcrypt.hash("vendor123", 10);
-      const [vendorUser] = await db
-        .insert(schema.users)
-        .values({
-          username: "vendedor",
-          password: vendorPassword,
-          name: "João Silva",
-          email: "vendedor@condoplace.com",
-          phone: "+55 51 98888-8888",
-          birthDate: "1985-05-15",
-          block: "B",
-          unit: "205",
-          accountType: "adult",
-          role: "vendor",
-          status: "active",
-          condoId: acquaSena.id,
-        })
-        .returning();
-
-      // ✅ Criar LOJA do vendedor
-      const [store] = await db
-        .insert(schema.stores)
-        .values({
-          name: "Loja do João - Lanches & Bebidas",
-          category: "Alimentação",
-          userId: vendorUser.id,
-          phone: "+55 51 98888-8888",
-          email: "lojadojoao@condoplace.com",
-          description: "Lanches, bebidas e petiscos para entrega no condomínio",
-          status: "active",
-        })
-        .returning();
-
-      // ✅ Criar PRODUTOS da loja
-      await db.insert(schema.products).values([
-        {
-          name: "X-Burger Completo",
-          price: "25.90",
-          storeId: store.id,
-          description:
-            "Hambúrguer artesanal com queijo, alface, tomate, bacon e molho especial",
-          category: "Lanches",
-          ingredients:
-            "Pão, carne 180g, queijo, alface, tomate, bacon, molho especial",
-          available: true,
-        },
-        {
-          name: "Coca-Cola 2L",
-          price: "10.00",
-          storeId: store.id,
-          description: "Refrigerante Coca-Cola 2 litros gelada",
-          category: "Bebidas",
-          available: true,
-        },
-        {
-          name: "Pizza Margherita",
-          price: "45.00",
-          storeId: store.id,
-          description:
-            "Pizza tradicional com molho de tomate, mussarela e manjericão",
-          category: "Pizzas",
-          ingredients: "Massa artesanal, molho de tomate, mussarela, manjericão",
-          available: true,
-        },
-      ]);
-
-      // ✅ Criar usuário CLIENTE/MORADOR
-      const clientPassword = await bcrypt.hash("cliente123", 10);
-      await db.insert(schema.users).values({
-        username: "cliente",
-        password: clientPassword,
-        name: "Maria Santos",
-        email: "maria@condoplace.com",
-        phone: "+55 51 97777-7777",
-        birthDate: "1995-08-20",
-        block: "C",
-        unit: "303",
-        accountType: "adult",
-        role: "resident",
-        status: "active",
-        condoId: acquaSena.id,
-      });
-
-      // ✅ Criar usuário PRESTADOR DE SERVIÇO
-      const servicePassword = await bcrypt.hash("servico123", 10);
-      await db.insert(schema.users).values({
-        username: "prestador",
-        password: servicePassword,
-        name: "Carlos Pereira",
-        email: "carlos@condoplace.com",
-        phone: "+55 51 96666-6666",
-        birthDate: "1988-03-10",
-        block: "D",
-        unit: "404",
-        accountType: "adult",
-        role: "service_provider",
-        status: "active",
-        condoId: acquaSena.id,
-      });
-
-      console.log("✅ Dados de teste criados com sucesso!");
-    } catch (error) {
-      console.error("❌ Erro ao criar dados de teste:", error);
-    }
-  }
 
   // ===== USERS =====
+  async listUsers(): Promise<User[]> {
+    return await db.query.users.findMany({
+      orderBy: desc(schema.users.createdAt),
+    });
+  }
+  
   async getUser(id: string): Promise<User | undefined> {
     return await db.query.users.findFirst({
       where: eq(schema.users.id, id),
@@ -196,7 +41,7 @@ export class PostgresStorage implements IStorage {
       where: eq(schema.users.username, username),
     });
   }
-
+  
   async getUserByVerificationToken(token: string): Promise<User | undefined> {
     return await db.query.users.findFirst({
       where: eq(schema.users.verificationToken, token),
@@ -291,16 +136,9 @@ export class PostgresStorage implements IStorage {
   }
 
   async getStoresByCondo(condoId: string): Promise<Store[]> {
-    // Stores are linked to users, and users are linked to condos
-    const users = await this.listUsersByCondo(condoId);
-    const userIds = users.map((u) => u.id);
-    
-    const stores: Store[] = [];
-    for (const userId of userIds) {
-      const userStores = await this.getStoresByUser(userId);
-      stores.push(...userStores);
-    }
-    return stores;
+    return await db.query.stores.findMany({
+      where: eq(schema.stores.condoId, condoId),
+    });
   }
 
   async createStore(store: InsertStore): Promise<Store> {
@@ -379,16 +217,9 @@ export class PostgresStorage implements IStorage {
   }
 
   async getDeliveryPersonsByCondo(condoId: string): Promise<DeliveryPerson[]> {
-    // Similar to stores - delivery persons are linked via users
-    const users = await this.listUsersByCondo(condoId);
-    const userIds = users.map((u) => u.id);
-    
-    const deliveryPersons: DeliveryPerson[] = [];
-    for (const userId of userIds) {
-      const userDeliveryPersons = await this.getDeliveryPersonsByUser(userId);
-      deliveryPersons.push(...userDeliveryPersons);
-    }
-    return deliveryPersons;
+    return await db.query.deliveryPersons.findMany({
+        where: eq(schema.deliveryPersons.condoId, condoId)
+    });
   }
 
   async createDeliveryPerson(
@@ -484,12 +315,13 @@ export class PostgresStorage implements IStorage {
 
   async updateMarketplaceItem(
     id: string,
-    item: Partial<MarketplaceItem>
+    item: Partial<MarketplaceItem>,
+    userId: string
   ): Promise<MarketplaceItem | undefined> {
     const [updated] = await db
       .update(schema.marketplaceItems)
       .set(item)
-      .where(eq(schema.marketplaceItems.id, id))
+      .where(and(eq(schema.marketplaceItems.id, id), eq(schema.marketplaceItems.userId, userId)))
       .returning();
     return updated;
   }
@@ -499,5 +331,36 @@ export class PostgresStorage implements IStorage {
       .delete(schema.marketplaceItems)
       .where(eq(schema.marketplaceItems.id, id));
     return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  // ===== REPORTS =====
+  async getReport(id: string): Promise<Report | undefined> {
+    return await db.query.reports.findFirst({
+      where: eq(schema.reports.id, id),
+    });
+  }
+
+  async createReport(report: InsertReport): Promise<Report> {
+    const [created] = await db.insert(schema.reports).values(report).returning();
+    return created;
+  }
+
+  async listReportsByCondo(condoId: string): Promise<Report[]> {
+    return await db.query.reports.findMany({
+      where: eq(schema.reports.condoId, condoId),
+      orderBy: (reports, { desc }) => [desc(reports.createdAt)],
+    });
+  }
+
+  async updateReport(
+    id: string,
+    report: Partial<Report>
+  ): Promise<Report | undefined> {
+    const [updated] = await db
+      .update(schema.reports)
+      .set(report)
+      .where(eq(schema.reports.id, id))
+      .returning();
+    return updated;
   }
 }
