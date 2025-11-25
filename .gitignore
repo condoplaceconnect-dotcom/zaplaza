@@ -1,6 +1,31 @@
-node_modules
-dist
+# Dependencies
+/node_modules
+/.pnpm
+/bower_components
+/jspm_packages
+
+# Production
+/build
+/dist
+/out
+/.next/
+/public/build/
+
+# Miscellaneous
 .DS_Store
-server/public
-vite.config.ts.*
-*.tar.gz
+*.pem
+*.log
+.env
+.env*.local
+.vercel
+.cache
+.npm
+.yarn-cache
+
+# IDEs
+.idea/
+.vscode/
+.idx/
+
+# Firebase
+firebase-debug.log
