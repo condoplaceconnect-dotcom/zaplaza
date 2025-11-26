@@ -101,8 +101,10 @@ router.post('/loans', authenticateToken, async (req: AuthenticatedRequest, res, 
 // GET /api/loans/:id - Get details for a specific loan
 router.get('/loans/:id', authenticateToken, async (req: AuthenticatedRequest, res, next) => {
     try {
-        const loan = await storage.getLoanDetails(req.params.id);
-        // Add logic to ensure user is part of this loan (owner or borrower)
+        const loan = await storage.getLoanDetails(req.params.id, req.user!.userId);
+        if (!loan) {
+            return res.status(404).json({ message: "Empréstimo não encontrado ou acesso negado." });
+        }
         res.json(loan);
     } catch (error) {
         next(error);
@@ -118,7 +120,10 @@ router.post('/loans/:id/handover', authenticateToken, async (req: AuthenticatedR
         }
         const loan = await storage.confirmHandover(req.params.id, req.user!.userId, validation.data);
         res.json(loan);
-    } catch (error) {
+    } catch (error: any) {
+        if (error.message.includes("permission denied")) {
+            return res.status(403).json({ error: error.message });
+        }
         next(error);
     }
 });
@@ -132,7 +137,10 @@ router.post('/loans/:id/return', authenticateToken, async (req: AuthenticatedReq
         }
         const loan = await storage.initiateReturn(req.params.id, req.user!.userId, validation.data);
         res.json(loan);
-    } catch (error) {
+    } catch (error: any) {
+        if (error.message.includes("permission denied")) {
+            return res.status(403).json({ error: error.message });
+        }
         next(error);
     }
 });
@@ -142,7 +150,10 @@ router.post('/loans/:id/return-confirm', authenticateToken, async (req: Authenti
     try {
         const loan = await storage.confirmReturnByOwner(req.params.id, req.user!.userId);
         res.json(loan);
-    } catch (error) {
+    } catch (error: any) {
+        if (error.message.includes("permission denied")) {
+            return res.status(403).json({ error: error.message });
+        }
         next(error);
     }
 });

@@ -4,7 +4,6 @@ import { authMiddleware, AuthenticatedRequest } from "./auth";
 import { 
     insertLoanRequestSchema, 
     createLoanAgreementSchema,
-    confirmReturnSchema,
     insertServiceSchema,
     insertMarketplaceItemSchema,
     insertLostAndFoundItemSchema
@@ -51,11 +50,8 @@ loanRouter.get("/my-loans", async (req: AuthenticatedRequest, res: Response) => 
 });
 
 loanRouter.get("/loans/:id", async (req: AuthenticatedRequest, res: Response) => {
-    const loan = await storage.getLoanDetails(req.params.id);
-    if (!loan) return res.status(404).json({ error: "Empréstimo não encontrado." });
-    if (loan.borrowerId !== req.user!.userId && loan.ownerId !== req.user!.userId) {
-        return res.status(403).json({ error: "Acesso negado." });
-    }
+    const loan = await storage.getLoanDetails(req.params.id, req.user!.userId);
+    if (!loan) return res.status(404).json({ error: "Empréstimo não encontrado ou acesso negado." });
     res.status(200).json(loan);
 });
 
@@ -65,14 +61,14 @@ servicesRouter.use(authMiddleware);
 
 servicesRouter.get('/services', async (req: AuthenticatedRequest, res: Response) => {
     const userId = req.query.userId as string | undefined;
-    const services = await storage.listServices({ condoId: req.user!.condoId, userId });
+    const services = await storage.listServices({ condoId: req.user!.condoId!, userId });
     res.json(services);
 });
 
 servicesRouter.post('/services', async (req: AuthenticatedRequest, res: Response) => {
     const validation = insertServiceSchema.safeParse(req.body);
     if (!validation.success) return res.status(400).json({ error: validation.error.flatten() });
-    const service = await storage.createService(validation.data, req.user!.userId, req.user!.condoId);
+    const service = await storage.createService(validation.data, req.user!.userId, req.user!.condoId!);
     res.status(201).json(service);
 });
 
@@ -91,7 +87,14 @@ const marketplaceRouter = Router();
 marketplaceRouter.use(authMiddleware);
 
 marketplaceRouter.get('/marketplace', async (req: AuthenticatedRequest, res: Response) => {
-    const items = await storage.listMarketplaceItems(req.user!.condoId);
+    const { category, sortBy, page } = req.query;
+    const options = {
+        condoId: req.user!.condoId!,
+        category: category as string | undefined,
+        sortBy: sortBy as 'recent' | 'price_asc' | undefined,
+        page: page ? parseInt(page as string) : undefined,
+    };
+    const items = await storage.listMarketplaceItems(options);
     res.json(items);
 });
 
@@ -104,7 +107,7 @@ marketplaceRouter.get('/marketplace/:id', async (req: AuthenticatedRequest, res:
 marketplaceRouter.post('/marketplace', async (req: AuthenticatedRequest, res: Response) => {
     const validation = insertMarketplaceItemSchema.safeParse(req.body);
     if (!validation.success) return res.status(400).json({ error: validation.error.flatten() });
-    const item = await storage.createMarketplaceItem(validation.data, req.user!.userId, req.user!.condoId);
+    const item = await storage.createMarketplaceItem(validation.data, req.user!.userId, req.user!.condoId!);
     res.status(201).json(item);
 });
 
@@ -123,14 +126,14 @@ const lostAndFoundRouter = Router();
 lostAndFoundRouter.use(authMiddleware);
 
 lostAndFoundRouter.get('/lost-and-found', async (req: AuthenticatedRequest, res: Response) => {
-    const items = await storage.listLostAndFoundItems(req.user!.condoId);
+    const items = await storage.listLostAndFoundItems(req.user!.condoId!);
     res.json(items);
 });
 
 lostAndFoundRouter.post('/lost-and-found', async (req: AuthenticatedRequest, res: Response) => {
     const validation = insertLostAndFoundItemSchema.safeParse(req.body);
     if (!validation.success) return res.status(400).json({ error: validation.error.flatten() });
-    const item = await storage.createLostAndFoundItem(validation.data, req.user!.userId, req.user!.condoId);
+    const item = await storage.createLostAndFoundItem(validation.data, req.user!.userId, req.user!.condoId!);
     res.status(201).json(item);
 });
 
