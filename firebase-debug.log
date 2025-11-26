@@ -476,3 +476,180 @@
 [error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
 [debug] [2025-11-25T06:40:59.770Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
 [debug] [2025-11-25T06:40:59.770Z] > authorizing via signed-in user (condoplaceconnect@gmail.com)
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-11-25T07:05:56.671Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-25T07:05:56.671Z] > authorizing via signed-in user (condoplaceconnect@gmail.com)
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-11-25T07:05:56.673Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-25T07:05:56.673Z] > authorizing via signed-in user (condoplaceconnect@gmail.com)
+[info] 
+=== Dataconnect Setup Actuation
+[debug] [2025-11-25T07:05:56.675Z] Checked if tokens are valid: false, expires at: 1764055151896
+[debug] [2025-11-25T07:05:56.675Z] Checked if tokens are valid: false, expires at: 1764055151896
+[debug] [2025-11-25T07:05:56.675Z] > refreshing access token with scopes: []
+[debug] [2025-11-25T07:05:56.676Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-11-25T07:05:56.676Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-25T07:05:56.678Z] Checked if tokens are valid: false, expires at: 1764055151896
+[debug] [2025-11-25T07:05:56.678Z] Checked if tokens are valid: false, expires at: 1764055151896
+[debug] [2025-11-25T07:05:56.678Z] > refreshing access token with scopes: []
+[debug] [2025-11-25T07:05:56.679Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-11-25T07:05:56.679Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-25T07:05:56.719Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-11-25T07:05:56.719Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-25T07:05:56.730Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/firebasedataconnect.googleapis.com [none]
+[debug] [2025-11-25T07:05:56.730Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/condoplace-app
+[debug] [2025-11-25T07:05:56.732Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-11-25T07:05:56.732Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-25T07:05:56.741Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/sqladmin.googleapis.com [none]
+[debug] [2025-11-25T07:05:56.741Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/sqladmin.googleapis.com x-goog-quota-user=projects/condoplace-app
+[debug] [2025-11-25T07:05:56.848Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/sqladmin.googleapis.com 200
+[debug] [2025-11-25T07:05:56.848Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/sqladmin.googleapis.com [omitted]
+[debug] [2025-11-25T07:05:56.849Z] Checked if tokens are valid: true, expires at: 1764057955732
+[debug] [2025-11-25T07:05:56.849Z] Checked if tokens are valid: true, expires at: 1764057955732
+[debug] [2025-11-25T07:05:56.849Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/sqladmin.googleapis.com:enable [none]
+[debug] [2025-11-25T07:05:56.849Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/sqladmin.googleapis.com:enable x-goog-quota-user=projects/condoplace-app
+[debug] [2025-11-25T07:05:56.850Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/firebasedataconnect.googleapis.com 200
+[debug] [2025-11-25T07:05:56.851Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/firebasedataconnect.googleapis.com [omitted]
+[debug] [2025-11-25T07:05:56.851Z] Checked if tokens are valid: true, expires at: 1764057955732
+[debug] [2025-11-25T07:05:56.851Z] Checked if tokens are valid: true, expires at: 1764057955732
+[debug] [2025-11-25T07:05:56.851Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/firebasedataconnect.googleapis.com:enable [none]
+[debug] [2025-11-25T07:05:56.851Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/firebasedataconnect.googleapis.com:enable x-goog-quota-user=projects/condoplace-app
+[debug] [2025-11-25T07:05:56.994Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/firebasedataconnect.googleapis.com:enable 200
+[debug] [2025-11-25T07:05:56.994Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/firebasedataconnect.googleapis.com:enable [omitted]
+[debug] [2025-11-25T07:05:57.067Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/sqladmin.googleapis.com:enable 200
+[debug] [2025-11-25T07:05:57.067Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/sqladmin.googleapis.com:enable [omitted]
+[debug] [2025-11-25T07:06:07.072Z] Checked if tokens are valid: true, expires at: 1764057955732
+[debug] [2025-11-25T07:06:07.072Z] Checked if tokens are valid: true, expires at: 1764057955732
+[debug] [2025-11-25T07:06:07.073Z] >>> [apiv2][query] GET https://sqladmin.googleapis.com/v1/projects/condoplace-app/instances/condoplace-fdc [none]
+[debug] [2025-11-25T07:06:07.153Z] <<< [apiv2][status] GET https://sqladmin.googleapis.com/v1/projects/condoplace-app/instances/condoplace-fdc 404
+[debug] [2025-11-25T07:06:07.153Z] <<< [apiv2][body] GET https://sqladmin.googleapis.com/v1/projects/condoplace-app/instances/condoplace-fdc {"error":{"code":404,"message":"The Cloud SQL instance does not exist.","errors":[{"message":"The Cloud SQL instance does not exist.","domain":"global","reason":"instanceDoesNotExist"}]}}
+[debug] [2025-11-25T07:06:07.154Z] Checked if tokens are valid: true, expires at: 1764057955732
+[debug] [2025-11-25T07:06:07.154Z] Checked if tokens are valid: true, expires at: 1764057955732
+[debug] [2025-11-25T07:06:07.155Z] >>> [apiv2][query] GET https://monitoring.googleapis.com/v3/projects/condoplace-app/timeSeries/ filter=metric.type%3D%22serviceruntime.googleapis.com%2Fquota%2Fallocation%2Fusage%22+AND+metric.label.quota_metric+%3D+%22sqladmin.googleapis.com%2Ffdc_lifetime_free_trial_per_project%22&interval.endTime=2025-11-25T07%3A06%3A07.154Z&interval.startTime=2025-11-18T07%3A06%3A07.154Z
+[debug] [2025-11-25T07:06:08.090Z] <<< [apiv2][status] GET https://monitoring.googleapis.com/v3/projects/condoplace-app/timeSeries/ 200
+[debug] [2025-11-25T07:06:08.090Z] <<< [apiv2][body] GET https://monitoring.googleapis.com/v3/projects/condoplace-app/timeSeries/ {"unit":"1"}
+[debug] [2025-11-25T07:06:08.090Z] Checked if tokens are valid: true, expires at: 1764057955732
+[debug] [2025-11-25T07:06:08.090Z] Checked if tokens are valid: true, expires at: 1764057955732
+[debug] [2025-11-25T07:06:08.090Z] >>> [apiv2][query] POST https://sqladmin.googleapis.com/v1/projects/condoplace-app/instances [none]
+[debug] [2025-11-25T07:06:08.091Z] >>> [apiv2][body] POST https://sqladmin.googleapis.com/v1/projects/condoplace-app/instances {"name":"condoplace-fdc","region":"us-central1","databaseVersion":"POSTGRES_15","settings":{"tier":"db-f1-micro","edition":"ENTERPRISE","ipConfiguration":{"authorizedNetworks":[]},"enableGoogleMlIntegration":false,"databaseFlags":[{"name":"cloudsql.iam_authentication","value":"on"}],"storageAutoResize":false,"userLabels":{"firebase-data-connect":"ft"},"insightsConfig":{"queryInsightsEnabled":true,"queryPlansPerMinute":5,"queryStringLength":1024}}}
+[debug] [2025-11-25T07:06:08.335Z] <<< [apiv2][status] POST https://sqladmin.googleapis.com/v1/projects/condoplace-app/instances 403
+[debug] [2025-11-25T07:06:08.335Z] <<< [apiv2][body] POST https://sqladmin.googleapis.com/v1/projects/condoplace-app/instances {"error":{"code":403,"message":"The billing account is not in good standing; therefore no new instance can be created.","errors":[{"message":"The billing account is not in good standing; therefore no new instance can be created.","domain":"global","reason":"invalidBillingAccountState"}]}}
+[debug] [2025-11-25T07:06:08.336Z] Checked if tokens are valid: true, expires at: 1764057955732
+[debug] [2025-11-25T07:06:08.336Z] Checked if tokens are valid: true, expires at: 1764057955732
+[debug] [2025-11-25T07:06:08.336Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/condoplace-app/billingInfo [none]
+[debug] [2025-11-25T07:06:08.404Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/condoplace-app/billingInfo 200
+[debug] [2025-11-25T07:06:08.404Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/condoplace-app/billingInfo {"name":"projects/condoplace-app/billingInfo","projectId":"condoplace-app","billingAccountName":"","billingEnabled":false}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-11-25T07:07:56.825Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-25T07:07:56.825Z] > authorizing via signed-in user (condoplaceconnect@gmail.com)
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-11-25T07:07:56.827Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-25T07:07:56.827Z] > authorizing via signed-in user (condoplaceconnect@gmail.com)
+[info] 
+=== Firestore Setup Actuation
+[info] ✔  Wrote firestore.rules 
+[info] ✔  Wrote firestore.indexes.json 
+[info] ✔  Wrote configuration info to firebase.json 
+[info] ✔  Wrote project information to .firebaserc 
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-11-26T00:57:09.575Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-26T00:57:09.576Z] > authorizing via signed-in user (condoplaceconnect@gmail.com)
+[debug] [2025-11-26T00:57:09.582Z] Checked if tokens are valid: false, expires at: 1764057955732
+[debug] [2025-11-26T00:57:09.583Z] Checked if tokens are valid: false, expires at: 1764057955732
+[debug] [2025-11-26T00:57:09.583Z] > refreshing access token with scopes: []
+[debug] [2025-11-26T00:57:09.586Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-11-26T00:57:09.586Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-26T00:57:09.633Z] Checked if tokens are valid: false, expires at: 1764057955732
+[debug] [2025-11-26T00:57:09.633Z] Checked if tokens are valid: false, expires at: 1764057955732
+[debug] [2025-11-26T00:57:09.633Z] > refreshing access token with scopes: []
+[debug] [2025-11-26T00:57:09.634Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-11-26T00:57:09.634Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-26T00:57:09.636Z] Checked if tokens are valid: false, expires at: 1764057955732
+[debug] [2025-11-26T00:57:09.637Z] Checked if tokens are valid: false, expires at: 1764057955732
+[debug] [2025-11-26T00:57:09.637Z] > refreshing access token with scopes: []
+[debug] [2025-11-26T00:57:09.637Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-11-26T00:57:09.637Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-11-26T00:57:09.645Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-26T00:57:09.645Z] > authorizing via signed-in user (condoplaceconnect@gmail.com)
+[debug] [2025-11-26T00:57:09.646Z] Checked if tokens are valid: false, expires at: 1764057955732
+[debug] [2025-11-26T00:57:09.646Z] Checked if tokens are valid: false, expires at: 1764057955732
+[debug] [2025-11-26T00:57:09.646Z] > refreshing access token with scopes: []
+[debug] [2025-11-26T00:57:09.646Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-11-26T00:57:09.646Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-26T00:57:09.649Z] Checked if tokens are valid: false, expires at: 1764057955732
+[debug] [2025-11-26T00:57:09.650Z] Checked if tokens are valid: false, expires at: 1764057955732
+[debug] [2025-11-26T00:57:09.650Z] > refreshing access token with scopes: []
+[debug] [2025-11-26T00:57:09.650Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-11-26T00:57:09.650Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-26T00:57:09.651Z] Checked if tokens are valid: false, expires at: 1764057955732
+[debug] [2025-11-26T00:57:09.652Z] Checked if tokens are valid: false, expires at: 1764057955732
+[debug] [2025-11-26T00:57:09.652Z] > refreshing access token with scopes: []
+[debug] [2025-11-26T00:57:09.652Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-11-26T00:57:09.652Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-26T00:57:09.749Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-11-26T00:57:09.749Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-26T00:57:09.780Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/firebaseapphosting.googleapis.com [none]
+[debug] [2025-11-26T00:57:09.780Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/firebaseapphosting.googleapis.com x-goog-quota-user=projects/condoplace-app
+[debug] [2025-11-26T00:57:09.800Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-11-26T00:57:09.800Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-26T00:57:09.812Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/firebaseio.com [none]
+[debug] [2025-11-26T00:57:09.812Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/firebaseio.com x-goog-quota-user=projects/condoplace-app
+[debug] [2025-11-26T00:57:09.816Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-11-26T00:57:09.816Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-26T00:57:09.826Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/firebaseapphosting.googleapis.com [none]
+[debug] [2025-11-26T00:57:09.826Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/firebaseapphosting.googleapis.com x-goog-quota-user=projects/condoplace-app
+[debug] [2025-11-26T00:57:09.828Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-11-26T00:57:09.828Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-26T00:57:09.838Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/cloudfunctions.googleapis.com [none]
+[debug] [2025-11-26T00:57:09.838Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/cloudfunctions.googleapis.com x-goog-quota-user=projects/condoplace-app
+[debug] [2025-11-26T00:57:09.840Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-11-26T00:57:09.840Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-26T00:57:09.851Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/firebaseio.com [none]
+[debug] [2025-11-26T00:57:09.851Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/firebaseio.com x-goog-quota-user=projects/condoplace-app
+[debug] [2025-11-26T00:57:09.853Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-11-26T00:57:09.853Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-26T00:57:09.862Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/cloudfunctions.googleapis.com [none]
+[debug] [2025-11-26T00:57:09.862Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/cloudfunctions.googleapis.com x-goog-quota-user=projects/condoplace-app
+[debug] [2025-11-26T00:57:09.898Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/firebaseapphosting.googleapis.com 200
+[debug] [2025-11-26T00:57:09.898Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/firebaseapphosting.googleapis.com [omitted]
+[debug] [2025-11-26T00:57:09.912Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/firebaseio.com 403
+[debug] [2025-11-26T00:57:09.912Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/firebaseio.com [omitted]
+[debug] [2025-11-26T00:57:09.922Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/firebaseio.com 403
+[debug] [2025-11-26T00:57:09.922Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/firebaseio.com [omitted]
+[debug] [2025-11-26T00:57:09.980Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/firebaseapphosting.googleapis.com 200
+[debug] [2025-11-26T00:57:09.980Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/firebaseapphosting.googleapis.com [omitted]
+[debug] [2025-11-26T00:57:09.985Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/cloudfunctions.googleapis.com 200
+[debug] [2025-11-26T00:57:09.985Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/cloudfunctions.googleapis.com [omitted]
+[debug] [2025-11-26T00:57:09.986Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/cloudfunctions.googleapis.com 200
+[debug] [2025-11-26T00:57:09.986Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/condoplace-app/services/cloudfunctions.googleapis.com [omitted]
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-11-26T00:57:09.988Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-26T00:57:09.989Z] > authorizing via signed-in user (condoplaceconnect@gmail.com)
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-11-26T00:57:09.990Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-26T00:57:09.990Z] > authorizing via signed-in user (condoplaceconnect@gmail.com)
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-11-26T00:57:09.999Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-26T00:57:09.999Z] > authorizing via signed-in user (condoplaceconnect@gmail.com)
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-11-26T00:57:10.002Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-26T00:57:10.002Z] > authorizing via signed-in user (condoplaceconnect@gmail.com)
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-11-26T00:57:10.005Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-26T00:57:10.005Z] > authorizing via signed-in user (condoplaceconnect@gmail.com)
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-11-26T00:57:10.006Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-11-26T00:57:10.006Z] > authorizing via signed-in user (condoplaceconnect@gmail.com)

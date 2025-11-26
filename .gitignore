@@ -1,31 +1,7 @@
-# Dependencies
+
 /node_modules
-/.pnpm
-/bower_components
-/jspm_packages
-
-# Production
-/build
-/dist
-/out
-/.next/
-/public/build/
-
-# Miscellaneous
-.DS_Store
-*.pem
 *.log
+
+# Arquivos de ambiente
 .env
-.env*.local
-.vercel
-.cache
-.npm
-.yarn-cache
-
-# IDEs
-.idea/
-.vscode/
-.idx/
-
-# Firebase
-firebase-debug.log
+backend/.env
